@@ -18,6 +18,7 @@ from keras.wrappers.scikit_learn import KerasClassifier
 from sklearn.model_selection import StratifiedKFold, cross_validate, train_test_split
 from sklearn.model_selection import GridSearchCV, KFold
 import rs_models
+from kerashypetune import KerasGridSearch
 
 pd.options.display.max_columns = 1000
 import warnings
@@ -26,7 +27,7 @@ warnings.filterwarnings("ignore")
 
 # ## Open Dataset
 
-# In[16]:
+# In[ ]:
 
 
 df = pd.read_csv('MDF_final.csv')
@@ -44,30 +45,29 @@ print(f"rating with value 1: {df[df.rating == 1]['rating'].count() * 100 / len(d
 print(f"users: {n_users} \t items: {n_items} \t rating: {len(df)} \t items_features: {len(item_labels)} \t contexts_features: {n_contexts} \t ")
 
 
+# In[ ]:
+
+
+param_grid = {
+    'n_users': n_users,
+    'n_items': n_items,
+    'n_contexts': n_contexts,
+    'epochs': [5, 10, 15, 20], 
+    'batch_size': [64, 128, 256],
+    'learn_rate': [0.0001, 0.001, 0.01]
+}
+
+
 # ## Matrix factorization
 
 # In[ ]:
 
 
-mf = rs_models.MF(n_users, n_items)
-
 x_train, x_test, y_train, y_test = train_test_split(df[['user', 'item']], df['rating'], test_size=0.20, random_state=42)
-mf.fit([x_train.user, x_train.item], y_train, epochs=1, batch_size=128, verbose=False)
-results = mf.evaluate([x_test.user, x_test.item], y_test, verbose=False)
-print(f'ACCURACY = {results[1]*100} % \t AUC = {results[2]}')
-
-
-# ## NCF
-
-# In[ ]:
-
-
-ncf = rs_models.NCF(n_users, n_items)
-
-x_train, x_test, y_train, y_test = train_test_split(df[['user', 'item']], df['rating'], test_size=0.20, random_state=42)
-ncf.fit([x_train.user, x_train.item], y_train, epochs=1, batch_size=128, verbose=False)
-results = ncf.evaluate([x_test.user, x_test.item], y_test, verbose=False)
-print(f'ACCURACY = {results[1]*100} % \t AUC = {results[2]}')
+mf = rs_models.MF
+kgs = KerasGridSearch(mf, param_grid, monitor='val_auc', greater_is_better=True, tuner_verbose=0)
+kgs.search([x_train.user, x_train.item], y_train, validation_data=([x_test.user, x_test.item], y_test))
+print(f'MF best AUC: {kgs.best_score} using {kgs.best_params}')
 
 
 # ## NeuMF
@@ -75,25 +75,11 @@ print(f'ACCURACY = {results[1]*100} % \t AUC = {results[2]}')
 # In[ ]:
 
 
-neumf = rs_models.NeuMF(n_users, n_items)
-
 x_train, x_test, y_train, y_test = train_test_split(df[['user', 'item']], df['rating'], test_size=0.20, random_state=42)
-neumf.fit([x_train.user, x_train.item], y_train, epochs=1, batch_size=128, verbose=False)
-results = neumf.evaluate([x_test.user, x_test.item], y_test, verbose=False)
-print(f'ACCURACY = {results[1]*100} % \t AUC = {results[2]}')
-
-
-# ### ECAM NCF
-
-# In[ ]:
-
-
-ecam_ncf = rs_models.ECAM_NCF(n_users, n_items, n_contexts)
-
-x_train, x_test, y_train, y_test = train_test_split(df[['user', 'item'] + context_labels], df['rating'], test_size=0.20, random_state=42)
-ecam_ncf.fit([x_train.user, x_train.item, x_train[context_labels]], y_train, epochs=1, batch_size=128, verbose=False)
-results = ecam_ncf.evaluate([x_test.user, x_test.item, x_test[context_labels]], y_test, verbose=False)
-print(f'ACCURACY = {results[1]*100} % \t AUC = {results[2]}')
+neumf = rs_models.NeuMF
+kgs = KerasGridSearch(neumf, param_grid, monitor='val_auc', greater_is_better=True, tuner_verbose=0)
+kgs.search([x_train.user, x_train.item], y_train, validation_data=([x_test.user, x_test.item], y_test))
+print(f'NeuMF best AUC: {kgs.best_score} using {kgs.best_params}')
 
 
 # ## ECAM NeuMF
@@ -101,12 +87,11 @@ print(f'ACCURACY = {results[1]*100} % \t AUC = {results[2]}')
 # In[ ]:
 
 
-ecam_neumf = rs_models.ECAM_NeuMF(n_users, n_items, n_contexts)
-
 x_train, x_test, y_train, y_test = train_test_split(df[['user', 'item'] + context_labels], df['rating'], test_size=0.20, random_state=42)
-ecam_neumf.fit([x_train.user, x_train.item, x_train[context_labels]], y_train, epochs=1, batch_size=128, verbose=False)
-results = ecam_neumf.evaluate([x_test.user, x_test.item, x_test[context_labels]], y_test, verbose=False)
-print(f'ACCURACY = {results[1]*100} % \t AUC = {results[2]}')
+ecam_neumf = rs_models.ECAM_NeuMF
+kgs = KerasGridSearch(ecam_neumf, param_grid, monitor='val_auc', greater_is_better=True, tuner_verbose=0)
+kgs.search([x_train.user, x_train.item, x_train[context_labels]], y_train, validation_data=([x_test.user, x_test.item, x_test[context_labels]], y_test))
+print(f'NeuMF best AUC: {kgs.best_score} using {kgs.best_params}')
 
 
 # ## Classifier
@@ -123,10 +108,11 @@ ff_net = KerasClassifier(build_fn=rs_models.mobile_model, verbose=False)
 learn_rate = [0.0005, 0.001, 0.005]
 batch_size = [64, 128, 256]
 epochs = [5, 10, 15, 20, 30]
-neurons = [200]
+neurons = [100, 200, 400]
+layers = [3, 4, 5]
 
 # Make a dictionary of the grid search parameters
-param_grid = dict(learn_rate=learn_rate, batch_size=batch_size, epochs=epochs, neurons=neurons)
+param_grid = dict(learn_rate=learn_rate, batch_size=batch_size, epochs=epochs, neurons=neurons, layers=layers)
 
 # create and fit gridsearch
 grid = GridSearchCV(estimator=ff_net, scoring=['accuracy', 'roc_auc'], refit='roc_auc', param_grid=param_grid, 
@@ -137,7 +123,7 @@ mean_accuracy = grid_results.cv_results_['mean_test_accuracy']
 mean_auc = grid_results.cv_results_['mean_test_roc_auc']
 params = grid_results.cv_results_['params']
 
-print("Best: %f using %s" % (grid_results.best_score_, grid_results.best_params_))
+print(f'FFnet best AUC: {grid_results.best_score_} using {grid_results.best_params_}')
 
-for accuracy, auc, params in zip(mean_accuracy, mean_auc, params):
-    print(f'ACCURACY = {accuracy*100} % \t AUC = {auc} \t PARAMS = {params}')
+
+
