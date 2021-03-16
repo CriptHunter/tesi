@@ -42,7 +42,7 @@ def NeuMF(param):
     # MF part
     mf_user_latent = Flatten()(MF_Embedding_User(user_input))
     mf_item_latent = Flatten()(MF_Embedding_Item(item_input))
-    mf_vector = tf.keras.layers.Dot(axes=1)([mf_user_latent, mf_item_latent])
+    mf_vector = tf.keras.layers.Multiply()([mf_user_latent, mf_item_latent])
 
     # MLP part 
     mlp_user_latent = Flatten()(MLP_Embedding_User(user_input))
@@ -62,7 +62,7 @@ def NeuMF(param):
     prediction = Dense(1, activation='sigmoid', name = "prediction")(predict_vector)
     
     model = keras.Model([user_input, item_input], prediction)
-    model.compile(loss='binary_crossentropy', optimizer=Adam(lr=param['learn_rate']), metrics=['accuracy', 'AUC'])
+    model.compile(loss='binary_crossentropy', optimizer=Adam(lr=param['learn_rate']), metrics=['accuracy', 'AUC', 'Precision', 'Recall'])
     
     return model
 
@@ -82,7 +82,7 @@ def ECAM_NeuMF(param):
     # MF part
     mf_user_latent = Flatten()(MF_Embedding_User(user_input))
     mf_item_latent = Flatten()(MF_Embedding_Item(item_input))
-    mf_vector = tf.keras.layers.Dot(axes=1)([mf_user_latent, mf_item_latent])
+    mf_vector = tf.keras.layers.Multiply()([mf_user_latent, mf_item_latent])
 
     # MLP part 
     mlp_user_latent = Flatten()(MLP_Embedding_User(user_input))
@@ -101,7 +101,7 @@ def ECAM_NeuMF(param):
     prediction = Dense(1, activation='sigmoid', name = "prediction")(predict_vector)
     
     model = keras.Model([user_input, item_input, context_input], prediction)
-    model.compile(loss='binary_crossentropy', optimizer=Adam(lr=param['learn_rate']), metrics=['accuracy', 'AUC'])
+    model.compile(loss='binary_crossentropy', optimizer=Adam(lr=param['learn_rate']), metrics=['accuracy', 'AUC', 'Precision', 'Recall'])
     
     return model
 
