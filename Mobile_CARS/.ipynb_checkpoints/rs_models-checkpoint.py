@@ -191,9 +191,9 @@ def kfold_train(model, param, df, context_labels=[], n_splits=2):
     return results/idx
 
 
-def train_mf(df, factors=128, regularization=5, iterations=50, n_splits=10, k=10):
+def train_mf(df, factors=128, regularization=5, iterations=50, n_splits=10, K=[1, 3, 5]):
     """
-    Train ALS matrix factorization model from implicit library on n splits
+    Train ALS matrix factorization model from implicit library on n splits, and return metrics results
     
     Parameters
     ----------
@@ -207,29 +207,38 @@ def train_mf(df, factors=128, regularization=5, iterations=50, n_splits=10, k=10
         The number of ALS iterations to use when fitting data
     n_splits: int
         the number of train/test
+    K: list
+        List that contains on how many item the model is evaluated
         
     Returns
     -------
-    results : numpy array
-        An array containing metrics averages obtained by evaluating the model on n_splits
+    results : dictionary
+        A dictionary that contains metrics averages obtained by evaluating the model on n_splits
     """
     ratings = coo_matrix((df['rating'].astype(np.float32),
                          (df['item'],
                           df['user']))).tocsr()
-    results = np.zeros(2)
+    auc = np.zeros(len(K))
+    precision = np.zeros(len(K))
+    
     for x in range(n_splits):
         train, test = train_test_split(ratings, train_percentage=0.8)
         model = AlternatingLeastSquares(factors=factors, regularization=regularization, iterations=iterations, calculate_training_loss=True)
         model.fit(train, show_progress=False)
+        
+        for idx, k in enumerate(K):
+            auc[idx] = auc[idx] + AUC_at_k(model, train.T.tocsr(), test.T.tocsr(), K=k, show_progress=False, num_threads=4)
+            precision[idx] = precision[idx] + precision_at_k(model, train.T.tocsr(), test.T.tocsr(), K=k, show_progress=False, num_threads=4)
+            
+    auc = auc / (x+1)
+    precision = precision / (x+1)
+    results = {'AUC': auc, 'precision': precision}
+        
+    return results
 
-        auc = AUC_at_k(model, train.T.tocsr(), test.T.tocsr(), K=k, show_progress=False, num_threads=4)
-        precision = precision_at_k(model, train.T.tocsr(), test.T.tocsr(), K=k, show_progress=False, num_threads=4)
-        results = np.add(results, [auc, precision])
-    return results/(x+1)
 
 
-
-def mf_grid_search(df, factors, regularization, iterations, n_splits, monitor, k):
+def mf_grid_search(df, factors, regularization, iterations, n_splits, monitor, K):
     """
     Grid search for ALS matrix factorization from implicit library
     
@@ -260,20 +269,19 @@ def mf_grid_search(df, factors, regularization, iterations, n_splits, monitor, k
                 combinations.append((x, y, z)) 
              
      # select which metric is used to select the best parameters combination
-    if monitor == 'auc':
-        idx = 0
-    elif monitor == 'precision':
-        idx = 1
-    else:
+    if monitor != 'AUC' and monitor != 'precision':
         raise Exception("Unknown metric, possible metrics are: auc, precision")
-
 
     best_metric = 0
     best_parameters = []
     for factors, regularization, iterations in tqdm(combinations):
         results = train_mf(df, factors=factors, regularization=regularization, 
-                           iterations=iterations, n_splits=n_splits, k=k) # train model on n splits
-        if results[idx] > best_metric:
+                           iterations=iterations, n_splits=n_splits, K=K) # train model on n splits
+        
+        results = np.array(results[monitor]) # get monitor metric as an array of @k metrics
+        results_avg = np.sum(results) / len(K) # average of @k metrics
+                
+        if results_avg > best_metric:
             best_parameters = [factors, regularization, iterations]
-            best_metric = results[idx]
+            best_metric = results_avg
     return best_parameters
