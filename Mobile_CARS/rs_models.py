@@ -171,15 +171,15 @@ def kfold_train(model, param, df, context_labels=[], n_splits=2):
     x_labels = ['user', 'item'] 
     y_labels = 'rating'
     df = df.sample(frac=1) # shuffle dataset
-    kfold = kfold_split(df, x_labels+context_labels, y_labels, n_splits) # generator that returns training and test index
+    kfold = kfold_split(df, x_labels+context_labels, y_labels, n_splits) # generator that returns train and test dataframes
     idx = 0
 
     for x_train, y_train, x_test, y_test in kfold:
         net = model(param)
 
-        input_list = [x_train[e] for e in x_labels] # split user, item input
+        input_list = [x_train[e] for e in x_labels] # split (user, item) input into two separate inputs
         input_list = [input_list + [x_train[context_labels]] if context_labels else input_list] # add context if it's available
-        net.fit(input_list, y_train, epochs=param['epochs'], batch_size=param['batch_size'], verbose=False)
+        net.fit(input_list, y_train, epochs=param['epochs'], batch_size=param['batch_size'], verbose=False) # train network
 
         input_list = [x_test[e] for e in x_labels] # same split for test values
         input_list = [input_list + [x_test[context_labels]] if context_labels else input_list]
@@ -188,7 +188,7 @@ def kfold_train(model, param, df, context_labels=[], n_splits=2):
         else: # else add new results to array
             results = np.add(results, net.evaluate(input_list, y_test, batch_size=512, verbose=False))
         idx = idx + 1
-    return results/idx
+    return results/idx # return results average
 
 
 def train_mf(df, factors=128, regularization=5, iterations=50, n_splits=10, K=[1, 3, 5]):
@@ -268,8 +268,8 @@ def mf_grid_search(df, factors, regularization, iterations, n_splits, monitor, K
             for z in iterations:
                 combinations.append((x, y, z)) 
              
-     # select which metric is used to select the best parameters combination
-    if monitor != 'AUC' and monitor != 'precision':
+     
+    if monitor != 'AUC' and monitor != 'precision': # select which metric is used to select the best parameters combination
         raise Exception("Unknown metric, possible metrics are: auc, precision")
 
     best_metric = 0
