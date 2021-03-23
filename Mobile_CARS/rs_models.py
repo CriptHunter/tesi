@@ -60,7 +60,6 @@ def NeuMF(param):
     dense = Dense(200, name='fully_connected_1')(mlp_vector)
     dense_2 = Dense(100, name='fully_connected_2')(dense)
     dense_3 = Dense(50, name='fully_connected_3')(dense_2)
-    dense_4 = Dense(25, name='fully_connected_3')(dense_3)
 
     # Concatenate MF and MLP parts
     predict_vector = Concatenate()([mf_vector, dense_3])
