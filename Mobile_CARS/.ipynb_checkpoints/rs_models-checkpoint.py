@@ -10,6 +10,13 @@ import numpy as np
 from sklearn.model_selection import KFold
 from tqdm import tqdm
 
+from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
+from sklearn.metrics import roc_auc_score
+from sklearn.metrics import accuracy_score
+
+
 
 def MF(param):
     # Input variables
@@ -60,7 +67,6 @@ def NeuMF(param):
     dense = Dense(200, name='fully_connected_1')(mlp_vector)
     dense_2 = Dense(100, name='fully_connected_2')(dense)
     dense_3 = Dense(50, name='fully_connected_3')(dense_2)
-    dense_4 = Dense(25, name='fully_connected_3')(dense_3)
 
     # Concatenate MF and MLP parts
     predict_vector = Concatenate()([mf_vector, dense_3])
@@ -191,7 +197,7 @@ def kfold_train(model, param, df, context_labels=[], n_splits=2):
     return results/idx # return results average
 
 
-def train_mf(df, factors=128, regularization=5, iterations=50, n_splits=10, K=[1, 3, 5]):
+def train_mf(df, factors=128, regularization=5, iterations=50, n_splits=10):
     """
     Train ALS matrix factorization model from implicit library on n splits, and return metrics results
     
@@ -206,36 +212,35 @@ def train_mf(df, factors=128, regularization=5, iterations=50, n_splits=10, K=[1
     iterations : int
         The number of ALS iterations to use when fitting data
     n_splits: int
-        the number of train/test
-    K: list
-        List that contains on how many item the model is evaluated
-        
+        the number of train/test        
     Returns
     -------
-    results : dictionary
-        A dictionary that contains metrics averages obtained by evaluating the model on n_splits
+    results : numpy array
+        numpy arrays that contains average for accuracy, AUC, precision and recall
     """
-    ratings = coo_matrix((df['rating'].astype(np.float32),
+    ratings_coo = coo_matrix((df['rating'].astype(np.float32),
                          (df['item'],
                           df['user']))).tocsr()
-    auc = np.zeros(len(K))
-    precision = np.zeros(len(K))
-    
+ 
+    results = np.zeros(4)
+ 
     for x in range(n_splits):
-        train, test = train_test_split(ratings, train_percentage=0.8)
-        model = AlternatingLeastSquares(factors=factors, regularization=regularization, iterations=iterations, calculate_training_loss=True)
+        train, test = train_test_split(ratings_coo, train_percentage=0.8)
+        model = AlternatingLeastSquares(factors=factors, regularization=regularization, iterations=iterations)
         model.fit(train, show_progress=False)
+        pred = np.dot(model.item_factors, model.user_factors.T) # get predicted matrix
+        pred = pred.flatten() 
+        ratings = np.array(ratings_coo.todense()).flatten()
+        np_round = np.vectorize(lambda x: 0 if x < 0.2 else 1) # make a round function that works with numpy arrays
+        pred_rounded = np_round(pred) # round continuos values to 0 or 1
         
-        for idx, k in enumerate(K):
-            auc[idx] = auc[idx] + AUC_at_k(model, train.T.tocsr(), test.T.tocsr(), K=k, show_progress=False, num_threads=4)
-            precision[idx] = precision[idx] + precision_at_k(model, train.T.tocsr(), test.T.tocsr(), K=k, show_progress=False, num_threads=4)
-            
-    auc = auc / (x+1)
-    precision = precision / (x+1)
-    results = {'AUC': auc, 'precision': precision}
+        results[0] = results[0] + accuracy_score(ratings, pred_rounded)
+        results[1] = results[1] + roc_auc_score(ratings, pred)
+        results[2] = results[2] + precision_score(ratings, pred_rounded)
+        results[3] = results[3] + recall_score(ratings, pred_rounded)
         
-    return results
-
+        
+    return results/n_splits
 
 
 def mf_grid_search(df, factors, regularization, iterations, n_splits, monitor, K):
@@ -268,8 +273,8 @@ def mf_grid_search(df, factors, regularization, iterations, n_splits, monitor, K
             for z in iterations:
                 combinations.append((x, y, z)) 
              
-     # select which metric is used to select the best parameters combination
-    if monitor != 'AUC' and monitor != 'precision':
+     
+    if monitor != 'AUC' and monitor != 'precision': # select which metric is used to select the best parameters combination
         raise Exception("Unknown metric, possible metrics are: auc, precision")
 
     best_metric = 0
