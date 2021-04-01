@@ -17,31 +17,6 @@ from sklearn.metrics import roc_auc_score
 from sklearn.metrics import accuracy_score
 
 
-
-def MF(param):
-    # Input variables
-    user_input = Input(shape=(1,), dtype='int32', name = 'user_input')
-    item_input = Input(shape=(1,), dtype='int32', name = 'item_input')
-
-    MF_Embedding_User = Embedding(input_dim = param['n_users']+1, output_dim = 50, name = 'user_embedding', input_length=1)
-    MF_Embedding_Item = Embedding(input_dim = param['n_items']+1, output_dim = 50, name = 'item_embedding', input_length=1)   
-    
-    # flatten an embedding vector
-    user_latent = Flatten()(MF_Embedding_User(user_input))
-    item_latent = Flatten()(MF_Embedding_Item(item_input))
-    
-    # Element-wise product of user and item embeddings 
-    predict_vector = tf.keras.layers.Dot(axes=1)([user_latent, item_latent])
-    
-    # Final prediction layer
-    prediction = Dense(1, activation='sigmoid', name = 'prediction')(predict_vector)
-    
-    model = keras.Model([user_input, item_input], prediction)
-    model.compile(loss='binary_crossentropy', optimizer=Adam(lr=param['learn_rate']), metrics=['accuracy', 'AUC'])
-
-    return model
-
-
 def NeuMF(param):
     user_input = Input(shape=(1,), dtype='int32', name = 'user_input')
     item_input = Input(shape=(1,), dtype='int32', name = 'item_input')
@@ -197,96 +172,58 @@ def kfold_train(model, param, df, context_labels=[], n_splits=2):
     return results/idx # return results average
 
 
-def train_mf(df, factors=128, regularization=5, iterations=50, n_splits=10):
-    """
-    Train ALS matrix factorization model from implicit library on n splits, and return metrics results
-    
+def mf_AUC(model, train, test):
+    '''
     Parameters
     ----------
-    df : pandas dataframe
-        user, item, rating data
-    factors: int
-        The number of latent factors to compute
-    regularization : float
-        The regularization factor to use
-    iterations : int
-        The number of ALS iterations to use when fitting data
-    n_splits: int
-        the number of train/test        
-    Returns
-    -------
-    results : numpy array
-        numpy arrays that contains average for accuracy, AUC, precision and recall
-    """
-    ratings_coo = coo_matrix((df['rating'].astype(np.float32),
-                         (df['item'],
-                          df['user']))).tocsr()
- 
-    results = np.zeros(4)
- 
-    for x in range(n_splits):
-        train, test = train_test_split(ratings_coo, train_percentage=0.8)
-        model = AlternatingLeastSquares(factors=factors, regularization=regularization, iterations=iterations)
-        model.fit(train, show_progress=False)
-        pred = np.dot(model.item_factors, model.user_factors.T) # get predicted matrix
-        pred = pred.flatten() 
-        ratings = np.array(ratings_coo.todense()).flatten()
-        np_round = np.vectorize(lambda x: 0 if x < 0.2 else 1) # make a round function that works with numpy arrays
-        pred_rounded = np_round(pred) # round continuos values to 0 or 1
-        
-        results[0] = results[0] + accuracy_score(ratings, pred_rounded)
-        results[1] = results[1] + roc_auc_score(ratings, pred)
-        results[2] = results[2] + precision_score(ratings, pred_rounded)
-        results[3] = results[3] + recall_score(ratings, pred_rounded)
-        
-        
-    return results/n_splits
-
-
-def mf_grid_search(df, factors, regularization, iterations, n_splits, monitor, K):
-    """
-    Grid search for ALS matrix factorization from implicit library
-    
-    Parameters
-    ----------
-    df : pandas dataframe
-        user, item, rating data
-    factors: list of int
-        The number of latent factors to compute
-    regularization : list of float
-        The regularization factor to use
-    iterations : list of int
-        The number of ALS iterations to use when fitting data
-    n_splits: int
-        the number of train/test
-    monitor: string
-        Metric that is used to select the best parameters combination
+    model : implicit
+        Implicit library MF model
+    train : numpy array
+        (item, user) matrix used to train the model
+    test : numpy array
+        (item, user) matrix with new interactions
         
     Returns
     -------
-    best_parameters : numpy array
-        An array containing the best parameters combination (factors, regularization, iterations)
-    """
-    combinations = []  # possible combination of grid search parameters   
-    for x in factors:  # fill combinations list         
-        for y in regularization: 
-            for z in iterations:
-                combinations.append((x, y, z)) 
-             
-     
-    if monitor != 'AUC' and monitor != 'precision': # select which metric is used to select the best parameters combination
-        raise Exception("Unknown metric, possible metrics are: auc, precision")
-
-    best_metric = 0
-    best_parameters = []
-    for factors, regularization, iterations in tqdm(combinations):
-        results = train_mf(df, factors=factors, regularization=regularization, 
-                           iterations=iterations, n_splits=n_splits, K=K) # train model on n splits
+    results : float
+        mean AUC between users AUC
         
-        results = np.array(results[monitor]) # get monitor metric as an array of @k metrics
-        results_avg = np.sum(results) / len(K) # average of @k metrics
-                
-        if results_avg > best_metric:
-            best_parameters = [factors, regularization, iterations]
-            best_metric = results_avg
-    return best_parameters
+        
+    - selezionare solo utenti che hanno almeno un rating alterato (uno o più rating con valore 1 sono stati messi a 0 nel train set)
+    - per ogni utente alterato:
+        - `idx` = indici nel train set per cui rating == 0, in questo modo evito di calcolare l'AUC su rating con valore 1 nel train set
+        - `pred` = valori dalla matrice predicted con indici in `idx`
+        - `actual` = valori dal test set con indici `idx`
+        - calcolare AUC per l'utente tra `actual` e `pred`
+    - fare media AUC
+    '''
+    altered_users = [] # list of user that has at least one rating with value 1 hidden from the train set
+    train_dense = np.array(train.todense())
+    test_dense = np.array(test.todense())
+    pred_dense = np.dot(model.item_factors, model.user_factors.T)
+    
+    # fill altered_user list
+    for user in range(np.shape(test_dense)[1]):
+        test_user = test_dense[:, user]
+        if 1 in test_user: # check if user has items altered
+            altered_users.append(user)
+
+    auc = 0
+
+    for user in altered_users:
+        train_user = train_dense[:, user] # get ratings in train set for one user
+        zero_idx = np.where(train_user == 0) # find where ratings is zero
+
+        # get predicted values
+        user_vec = pred_dense[:, user]
+        pred_user = user_vec[zero_idx]
+
+        # get actual value in test set
+        user_vec2 = test_dense[:, user]
+        actual_user = user_vec2[zero_idx]
+
+        auc_user = roc_auc_score(actual_user, pred_user)
+        auc = auc + auc_user
+
+
+    return auc/len(altered_users)
