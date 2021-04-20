@@ -1,0 +1,1 @@
+best AUC: 0.7083986933784123 using {'batch_size': 128, 'epochs': 20, 'layers': 3, 'learn_rate': 0.01, 'neurons': 100}
