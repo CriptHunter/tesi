@@ -1,0 +1,2 @@
+04-22 11:17:22.474 21194 21194 E tflite  : Average inference timings in us: Warmup: 1124.52, Init: 468591, Inference: 1200Overall max resident set size = 19.0078 MB, total malloc-ed size = 0 MB, in-use allocated/mmapped size = 3.34982 MB
+04-22 11:17:41.890 21243 21243 E tflite  : Average inference timings in us: Warmup: 1145.94, Init: 397105, Inference: 1111.02Overall max resident set size = 18.832 MB, total malloc-ed size = 0 MB, in-use allocated/mmapped size = 3.31987 MB
