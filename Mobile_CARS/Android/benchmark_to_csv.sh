@@ -2,17 +2,15 @@
 
 OUT_FILE="performances.csv"
 
-declare -a FILES=("mobile_log" "neumf_log")
-declare -a DEVICES=("mobile" "neumf")
-declare -a CORES=(1 1)
+declare -a FILES=("mobile_log" "neumf_log" "ecam_neumf_log")
+declare -a DEVICES=("mobile" "neumf" "ecam neumf")
 
-echo "model,cores,warmup,init,inference" > $OUT_FILE
+echo "model,warmup,init,inference" > $OUT_FILE
 
 for i in "${!FILES[@]}"
 do
     dev_i=${DEVICES[i]}
-    core_i=${CORES[i]}
-    dev_core_i="$dev_i,$core_i,"   # concat device name and number of core, this variable will be passed to AWK
+    dev_core_i="$dev_i,"   # concat device name and number of core, this variable will be passed to AWK
 
     # write to a CSV file with columns device, cores, warmup, init, inference
     awk -F 'in us: ' '{print $2}' ${FILES[i]} | awk -F 'Overall' '{print $1}' | sed 's/Warmup: //g' | sed 's/Init: //g' | 
