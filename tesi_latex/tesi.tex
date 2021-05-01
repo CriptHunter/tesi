@@ -1,0 +1,178 @@
+\documentclass[12pt,italian]{report}
+\usepackage{tesi}
+
+%
+%			INFORMAZIONI SULLA TESI
+%			DA COMPILARE!
+%
+
+% CORSO DI LAUREA:
+\def\myCDL{Corso di Laurea magistrale in\\Informatica}
+% TITOLO TESI:
+\def\myTitle{Il titolo\\della tesi}
+
+% AUTORE:
+\def\myName{Lorenzo D'Alessandro}
+\def\myMat{Matr. Nr. 939416}
+
+% RELATORE E CORRELATORE:
+\def\myRefereeA{Relatore 1}
+\def\myRefereeB{Correlatore 1}
+
+% ANNO ACCADEMICO
+\def\myYY{2020-2021}
+
+% Il seguente comando introduce un elenco delle figure dopo l'indice (facoltativo)
+%\figurespagetrue
+
+% Il seguente comando introduce un elenco delle tabelle dopo l'indice (facoltativo)
+%\tablespagetrue
+
+%
+%			PREAMBOLO
+%			Inserire qui eventuali package da includere o definizioni di comandi personalizzati
+%
+
+% Package di formato
+\usepackage[a4paper]{geometry}		% Formato del foglio
+\usepackage[italian]{babel}			% Supporto per l'italiano
+\usepackage[utf8]{inputenc}			% Supporto per UTF-8
+%\usepackage[a-1b]{pdfx}			% File conforme allo standard PDF-A (obbligatorio per la consegna)
+
+% Package per la grafica
+\usepackage{graphicx}				% Funzioni avanzate per le immagini
+\usepackage{hologo}					% Bibtex logo with \hologo{BibTeX}
+%\usepackage{epsfig}				% Permette immagini in EPS
+%\usepackage{xcolor}				% Gestione avanzata dei colori
+
+% Package tipografici
+\usepackage{amssymb,amsmath,amsthm} % Simboli matematici
+\usepackage{listings}				% Scrittura di codice
+
+% Package ipertesto
+\usepackage{url}					% Visualizza e rendere interattii gli URL
+\usepackage{hyperref}				% Rende interattivi i collegamenti interni
+
+
+\begin{document}
+
+% Creazione automatica del frontespizio
+\frontespizio
+\beforepreface
+
+% 
+%			PAGINA DI DEDICA E/O CITAZIONE
+%			facoltativa, questa è l'unica cosa che dovete formattare a mano, un po' come vi pare
+%
+
+{\raggedleft \large \sl Dedica \\}
+         
+% 
+%			PREFAZIONE (facoltativa)
+%
+
+%\prefacesection{Prefazione}
+%Le prefazioni non sono molto comuni, tuttavia a volte capita che qualcuno voglia dire qualcosa che esuli dal lavoro in s\'e (come un meta-commento sull'elaborato), o voglia fornire informazioni riguardanti l'eventuale progetto entro cui la tesi si colloca (in questo caso \`e probabile che sia il relatore a scrivere questa parte).
+
+%
+%			RINGRAZIAMENTI (facoltativi)
+%
+
+\prefacesection{Ringraziamenti}
+Questa sezione, facoltativa, contiene i ringraziamenti.
+
+%
+%			Creazione automatica dell'indice
+%
+
+\afterpreface
+
+% 
+%			CAPITOLO 1: Introduzione o Abstract
+% 
+
+\chapter{Introduzione}
+\label{cap:introduzione}
+
+Introduzione...
+
+\section{I contenuti}
+\label{sec:contenuti}
+
+Spiegazione problema...
+
+
+\section{Organizzazione della tesi}
+\label{sec:organizzazione}
+
+Organizzazione tesi...
+
+% 
+%			CAPITOLO 2: Stato dell'arte
+% 
+
+\chapter{Stato dell'arte}
+\label{chap:stato_arte}
+
+
+
+% 
+%			CAPITOLO 3: Lavoro svolto
+% 
+
+\chapter{Classificatore}
+\label{chap:classificatore}
+
+I recommender system della famiglia collaborative filtering utilizzano le informazioni su users e items per raccomandare gli items a users simili...
+Il numero di users e items è fisso, questo è vero sia per matrix factorization che lavora su una matrice con un numero di righe pari al numero di users e un numero di colonne pari al numero di items, sia per i modelli neurali che utilizzano dei vettori di embedding con dimensione decisa a tempo di compilazione. Aggiungere un nuovo user/item significa ricompilare il modello ed eseguire nuovamente la fase di training. Questo non è un problema in un ambiente desktop in cui dei server aggiornano giornalmente le preferenze di ogni utente. Diverso è il caso in cui si vuole eseguire il training del recommender system direttamente sul dispositivo mobile, ed è quindi impensabile eseguire il training ogni volta che si incontra un nuovo user/item
+
+Il modello proposto in questa tesi è una rete feed-forward fully-connected, un modello di rete neurale molto comune. Questa rete è composta da $n$ layers che contengono $x$ neuroni. Ogni neurone è connesso a tutti i neuroni del livello successivo e non esistono cicli nel grafo \cite{Goodfellow-et-al-2016}
+
+
+% 
+%			CAPITOLO 4: Datasets
+% 
+
+\chapter{Datasets}
+\label{chap:datasets}
+
+
+% 
+%			CAPITOLO 5: Risultati
+% 
+
+\chapter{Risultati}
+\label{chap:risultati}
+
+
+% 
+%			CAPITOLO 6: Conclusioni e sviluppi futuri
+% 
+
+\chapter{Conclusioni}
+\label{cap6}
+
+\section{Conclusioni}
+
+Conclusioni...
+
+\section{Sviluppi futuri}
+
+Sviluppi futuri...
+
+
+
+%
+%			BIBLIOGRAFIA
+%
+
+\bibliographystyle{unsrt}
+\bibliography{bibliografia}
+\nocite{*}
+\addcontentsline{toc}{chapter}{Bibliografia}
+
+
+\end{document}
+
+
+ 
