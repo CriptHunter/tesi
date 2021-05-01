@@ -123,11 +123,22 @@ Organizzazione tesi...
 \chapter{Classificatore}
 \label{chap:classificatore}
 
-I recommender system della famiglia collaborative filtering utilizzano le informazioni su users e items per raccomandare gli items a users simili...
-Il numero di users e items è fisso, questo è vero sia per matrix factorization che lavora su una matrice con un numero di righe pari al numero di users e un numero di colonne pari al numero di items, sia per i modelli neurali che utilizzano dei vettori di embedding con dimensione decisa a tempo di compilazione. Aggiungere un nuovo user/item significa ricompilare il modello ed eseguire nuovamente la fase di training. Questo non è un problema in un ambiente desktop in cui dei server aggiornano giornalmente le preferenze di ogni utente. Diverso è il caso in cui si vuole eseguire il training del recommender system direttamente sul dispositivo mobile, ed è quindi impensabile eseguire il training ogni volta che si incontra un nuovo user/item
+\section{Limitazioni recsys collaborative filtering}
+La principale limitazione dei recommender system dei collaborative filtering è definire il numero di users e items prima di iniziare l'aggiornamento/training del modello. Nel caso degli algoritmi di matrix factorization la matrice di input è composta da un numero di righe pari al numero di users, e un numero di colonne pari al numero di items. Nel caso dei modelli basati su reti neurali descritti nel \autoref{chap:stato_arte} è necessario dare in input ai modelli le lunghezze dei vettori di users e items che corrispondono rispettvamente al numero di users e items.
 
-Il modello proposto in questa tesi è una rete feed-forward fully-connected, un modello di rete neurale molto comune. Questa rete è composta da $n$ layers che contengono $x$ neuroni. Ogni neurone è connesso a tutti i neuroni del livello successivo e non esistono cicli nel grafo \cite{Goodfellow-et-al-2016}
+In entrambi se si vuole aggiungere un nuovo user/item è necessario ricompilare il modello ed eseguire nuovamente da zero la fase di training. Questo non è un problema in un ambiente desktop in cui è possibile aggiornare giornalmente lato server le preferenze di tutti gli utenti con una cadenza regolare (es. una volta al giorno).
 
+Eseguire di nuovo il traning da zero ogni volta che nuovi users/items vengono scoperti è un problema se si vuole fare il traning direttamente su dispositivo mobile. In questo caso c'è un problema sia di dispendio energetico, sia di tempo effettivo per il traing.
+
+\section{Struttura classificatore}
+Il modello proposto in questa tesi è una rete feed-forward fully-connected. Una rete feed-forward non contiene cicli nel suo grafo \cite{Goodfellow-et-al-2016}, mentre fully connected indica che ogni neurone in un layer è connesso a tutti i neuroni del layer successivo. Il numero di layer nascosti e il numero di neuroni in ogni layer è stato deciso nella fase di tuning descritta nel \autoref{chap:risultati}.
+Il numero di neuroni nel layer di output è sempre 1 come è prassi nei problemi di classificazione binaria. La funzione di attivazione scelta per i layer nascosti è ReLU (rectified linear unit), che è più plausibile biologicamente rispetto ad altre funzioni come sigmoide hyperbolic tangent, non viene saturata e aiuta a prevenire l'overfitting del modello \cite{rectifier-neural-networks}. La funzione di attivazione scelta per il layer di output è la sigmoide che limita l'output a valori compresi tra 0 e 1. La funzione di loss della rete è binary cross entropy.
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{immagini/ffnet_schema.png}
+  \caption{Schema rete feed-forward}
+  \label{fig:ffnet_schema}
+\end{figure}
 
 % 
 %			CAPITOLO 4: Datasets
