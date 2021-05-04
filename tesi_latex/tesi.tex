@@ -116,8 +116,17 @@ Organizzazione tesi...
 
 \chapter{Stato dell'arte}
 \label{chap:stato_arte}
-I recommender system sono algoritmi mirati a suggerire oggetti rilevanti agli utenti. La definizione di oggetto è generica e include ad esempio film da guardare, libri da leggere, prodotti da comprare o qualsiasi altra cosa a seconda del settore in cui sono implementati. 
-I recommender system si dividono principalmente in 3 categorie:
+I recommender system sono algoritmi mirati a suggerire oggetti rilevanti agli utenti. La definizione di oggetto è generica e include ad esempio film da guardare, libri da leggere, prodotti da comprare o qualsiasi altra cosa a seconda del contesto in cui sono implementati. 
+Quando gli utenti interagiscono con il sistema generano dei feedback. Questi feedback possono essere di due tipi: espliciti o impliciti. I feedback espliciti sono valori numerici che un utente assegna ad un prodotto, i feedback impliciti riflettono indirettamente le opinioni di un utente osservando la cronologia degli acquisti, i link clickati, gli elementi visualizzati, etc.
+Basandosi sui feedback passati, i RS imparano un modello per prevedere quanto un utente può essere interessato a nuovi oggetti. Questi oggetti sono poi ordinati in base alla pertinenza prevista per l'utente. In ultimo, gli oggetti con il rank più alto vengono suggeriti all'utente. La relazione tra utenti e oggetti è rappresentata con una matrice $R_M$ in cui sono memorizzati i rating passati degli utenti.
+La \textit{ratings matrix} è definita come: 
+$$
+R_M: U \times I \rightarrow R
+$$
+dove $U = \{u_1, \dots, u_m\}$ rappresenta l'insieme degli utenti, $I = \{i_1,\dots, i_n\}$ rappresenta l'insieme degli utenti, e $R = \{r_1, \dots, r_k\}$ rappresenta l'insieme dei possibili ratings che un utente ha espresso riguardo a degli oggetti. Un valore mancante nella ratings matrix può avere due significati: l'utente non vuole esprimere un'opinione su un oggetto specifico, oppure l'utente non conoscendo ancora l'oggetto non può averlo valutato \cite{survey-mattia}.
+
+\vspace{5mm}
+\noindent I recommender system si dividono principalmente in 3 categorie:
 \begin{itemize}
 	\item collaborative filtering
 	\item content based
@@ -125,14 +134,31 @@ I recommender system si dividono principalmente in 3 categorie:
 \end{itemize}
 
 \section{Collaborative filtering}
-Collaborative filtering (CF) è considerata la tecnica di raccomandazione più popolare e ampiamente utilizzata nei RS. Il presupposto alla base di CF è che le persone con preferenze simili valuteranno gli stessi oggetti con valutazioni simili. CF quindi sfrutta le informazioni sul comportamento passato o le opinioni di una comunità di utenti esistente per prevedere quali elementi potranno piacere o saranno interessanti per l'utente corrente del sistema \cite{recsys-intro}. Gli approcci CF puri non sfruttano né richiedono alcuna conoscenza degli oggetti stessi ma solo dei feedback degli utenti. I feedback possono essere espliciti o impliciti. I feedback espliciti sono valori numerici che un utente assegna ad un prodotto, i feedback impliciti riflettono indirettamente le opinioni di un utente osservando la cronologia degli acquisti, la cronologia del browser o altro. 
+Collaborative filtering (CF) è considerata la tecnica di raccomandazione più popolare e ampiamente utilizzata nei RS. Il presupposto alla base di CF è che le persone con preferenze simili valuteranno gli stessi oggetti con ratings simili. CF quindi sfrutta le informazioni sul comportamento passato o le opinioni di una comunità di utenti esistente per prevedere quali elementi potranno piacere o saranno interessanti per l'utente corrente del sistema \cite{recsys-intro}. Gli approcci CF puri non sfruttano né richiedono alcuna conoscenza degli oggetti stessi ma solo dei feedback degli utenti.
+
 La classe di algoritmi più famosa è quella di Matrix Factorization, ma recentemente sono stati sviluppati diversi approcci basati sul deep learning \cite{deep-learning-survey}.
 
+\subsection{Vantaggi e svantaggi}
+\textbf{Vantaggi:}
+\begin{itemize}
+
+ \item \textit{Nessuna conoscenza del dominio necessaria:} il modello può funzionare in domini in cui non c'è molto contenuto associato agli oggetti e in cui il contenuto è difficile da analizzare per un sistema informatico (come opinioni e ideali) \cite{recsys-principle-methods-evaluation}.
+ 
+ \item \textit{Serendipity:} il modello ha la capacità di fornire consigli fortuiti, il che significa che può consigliare elementi pertinenti per l'utente anche senza che il contenuto si trovi nel profilo dell'utente permettendo all'utente di scoprire nuovi interessi \cite{recsys-principle-methods-evaluation} \cite{cf-advantages-google}.
+\end{itemize}
+
+\noindent \textbf{Svantaggi:}
+\begin{itemize}
+ \item \textit{Problema del cold-start:} Si riferisce alla situazione in cui il sistema di raccomandazione non ha abbastanza informazioni su un utente od un oggetto per poter fare previsioni rilevanti. Il profilo del nuovo utente o del nuovo oggetto sarà vuoto perchè non ha valutato nessun oggetto; quindi, i suoi gusti non saranno conosciuti al sistema \cite{recsys-principle-methods-evaluation}.   
+ 
+ \item  \textit{Problema di data sparsity:} questo è il problema che si verifica a causa della mancanza di informazioni sufficienti, cioè quando solo pochi rispetto al numero totale di oggetti disponibili in un database sono valutati dagli utenti. Ciò porta ad una rating matrix sparsa, e raccomandazioni poco efficaci \cite{recsys-principle-methods-evaluation}.
+ 
+ \item \textit{Scalabilità:} Questo è un altro problema associato agli algoritmi di raccomandazione perchè il tempo di computazione cresce linearmente con il numero di utenti e oggetti. Un sistema di raccomandazione efficiente con un dataset limitato potrebbe non esserlo quando il volume è incrementato \cite{recsys-principle-methods-evaluation}.
+\end{itemize}
 
 \subsection{Matrix factorization}
 Gli algoritmi basati su matrix factorization(MF) caratterizzano sia utenti che oggetti mediante dei vettori di fattori estratti dai pattern sui ratings. Una corrispondenza alta tra i fattori di un utente e un oggetto porta ad una raccomandazione. Questi metodi sono diventati popolari negli ultimi anni perchè combinano scalabilità e accuratezza.
-
-Più formalmente, i modelli basati su matrix factorization mappano utenti e oggetti in uno spazio di fattori latenti di dimensionalità $f$, tale che le interazioni tra utenti e oggetti sono modellate come prodotti in quello spazio. Di conseguenza, ogni oggetto $i$ è associato con un vettore $q_i \in \mathbb{R}^f$, e ogni utente $u$ con un vettore $p_u \in \mathbb{R}^f$. Per un dato oggetto $i$, gli elementi di $q_i$ indicano la misura in cui l'oggetto possiede quei fattori, positivi o negativi. Per un dato utente $u$, gli elementi di $p_u$ indicato la misura di interesse che l'utente ha per gli oggetti sui fattori corrispondenti, positivi o negativi. Il prodotto scalare $q_i^Tp_u$ indica l'interesse dell'utente $u$ per le caratteristiche dell'oggetto $i$ \cite{matrix-factorization}. Quindi il rating $r_{ui}$ può essere approssimato come
+Più formalmente, i modelli basati su matrix factorization mappano utenti e oggetti in uno spazio di fattori latenti di dimensionalità $f$, tale che le interazioni tra utenti e oggetti sono modellate come prodotti in quello spazio. Di conseguenza, ogni oggetto $i$ è associato con un vettore $q_i \in \mathbb{R}^f$, e ogni utente $u$ con un vettore $p_u \in \mathbb{R}^f$. Per un dato oggetto $i$, gli elementi di $q_i$ indicano la misura in cui l'oggetto possiede quei fattori, positivi o negativi. Per un dato utente $u$, gli elementi di $p_u$ indicato l'entità dell'interesse che l'utente ha per gli oggetti che hanno un valore alto sui fattori corrispondenti, positivi o negativi. Il prodotto scalare $q_i^Tp_u$ indica l'interesse dell'utente $u$ per le caratteristiche dell'oggetto $i$ \cite{matrix-factorization}. Quindi il rating $r_{ui}$ può essere approssimato come
 
 \begin{equation} \label{eq:dot_product}
 r_{ui} = q_i^Tp_u
@@ -140,12 +166,14 @@ r_{ui} = q_i^Tp_u
 
 Il problema principale è calcolare il mapping di ogni oggetto e utente su dei vettori $q_i, p_u \in \mathbb{R}^f$. Una volta che il recommender system ha completato il mapping, può facilmente stimare il rating che un utente darà a qualsiasi oggetto utilizzando l'equazione \ref{eq:dot_product}. 
 
-In \autoref{fig:matrix_factorization} è mostrato come la matrice dei ratings $A \in \mathbb{R}^{m \times n}$, in cui $m$ è il numero di utenti e $n$ il numero di oggetti, viene decomposta in due matrici più piccole:
+In \autoref{fig:matrix_factorization} è mostrato come la matrice dei ratings $A \in \mathbb{R}^{m \times n}$, con $m$ numero di utenti e $n$ numero di oggetti, viene decomposta in due matrici di dimensionalità minore:
 
 \begin{itemize}
 	\item Una matrice di embedding per gli utenti $P \in \mathbb{R}^{m \times f}$, in cui la riga $i$ è l'embedding dell'utente $i$
-	\item Una matrice di embedding per gli oggetti $Q \in \mathbb{R}^{m \times f}$, in cui la colonna $j$ è l'embedding dell'utente $j$
+	\item Una matrice di embedding per gli oggetti $Q \in \mathbb{R}^{n \times f}$, in cui la colonna $j$ è l'embedding dell'utente $j$
 \end{itemize}
+
+Gli embedding di $P$ e $Q$ sono imparati in modo tale che il prodotto $PQ^T$ sia una buona approssimazione della matrice dei ratings $A$
 
 \begin{figure}
   \includegraphics[width=\linewidth]{immagini/matrix_factorization.pdf}
@@ -153,11 +181,37 @@ In \autoref{fig:matrix_factorization} è mostrato come la matrice dei ratings $A
   \label{fig:matrix_factorization}
 \end{figure}
 
-\section{Content based}
-Nei recommender system content-based, gli attributi descrittivi degli oggetti sono usati per produrre raccomandazioni. Il termine "content" indica queste descrizioni. Nei metodi content-based, i ratings degli utenti sono combinati con le informazioni disponibili per gli oggetti, per poi essere usati come training data per creare un modello di classificazione o regressione specifico per l'utente. Questo modello specifico dell'utente viene utilizzato per prevedere se alla persona corrispondente piacerà un articolo per il quale la sua valutazione è ancora sconosciuta \cite{recsys-book}.
+\section{Content-based}
+Nei recommender system content-based (CB), gli attributi descrittivi degli oggetti sono usati per produrre raccomandazioni. Il termine "content" indica queste descrizioni. Nei metodi content-based, i ratings degli utenti sono combinati con le informazioni disponibili per gli oggetti, per poi essere usati come training data per creare un modello di classificazione o regressione specifico per l'utente. Questo modello specifico dell'utente viene utilizzato per prevedere se alla persona corrispondente piacerà un articolo per il quale la sua valutazione è ancora sconosciuta \cite{recsys-book}.
 
+Mentre nei CF la similarità tra due oggetti (o due utenti) è calcolato come la correlazione o la similarità tra i ratings forniti dagli altri utenti, i recommender system content-based sono progettati per consigliare oggetti simili a quelli che l'utente ha preferito in passato. Non considerando gli altri utenti, la lista di raccomandazioni può essere generata anche se c'è un solo utente.
 
+\subsection{Vantaggi e svantaggi}
+\textbf{Vantaggi:}
+\begin{itemize}
+ \item \textit{Consigliare nuovi oggetti:} Questi modelli hanno la capacità di consigliare nuovi oggetti anche se non ci sono valutazioni fornite dagli utenti. Non soffrono quindi del problema del cold-start dei collaborative filtering \cite{recsys-principle-methods-evaluation}.
 
+ \item ???
+\end{itemize}
+
+\noindent \textbf{Svantaggi:}
+\begin{itemize}
+ \item \textit{Features degli oggetti:} la precisione del modello dipende dall'insieme delle features che descrivono gli oggetti. Identificare le features più rilevanti non è semplice e dipende molto dall'applicazione specifica \cite{survey-mattia}.
+ 
+ \item \textit{Content overspecialization:} Dato che i metodi CB si affidano solo alle caratteristiche degli oggetti già valutati dall'utente corrente, egli riceverà solo raccomandazioni simili ad altri oggetti già definiti nel suo profilo \cite{recsys-principle-methods-evaluation}.
+ 
+ \item \textit{Dimensione training set:} In modo da consentire a un RS content-based di imparare le preferenze di un utente, egli dovrà valutare un numero sufficiente di oggetti. In caso contrario, il RS non avrà sufficienti informazioni per imparare un modello accurato e fallirà nel raccomandare oggetti a utenti con pochi o nessun ratings.
+\end{itemize}
+
+\section{Hybrid}
+I modelli ibridi combinano tipi diversi di sistemi di raccomandazione per formare dei modelli in grado di superare le debolezze dei modelli singoli. In \cite{recsys-book} sono descritti tre modi per creare recommender system ibridi:
+
+\begin{enumerate}
+ \item \textit{Ensemble design:} Con questo metodo i risultati degli algoritmi base sono combinati in un output singolo più robusto. Il principio base è molto simile ai metodi di ensemble usati in molte applicazioni di data mining come clustering, classificazione e analisi degli outlier.  La combinazione può essere fatta in vari modi, ad esempio calcolando la media pesata delle varie predizioni. La caratteristica comune è che questi sistemi usano sistemi di raccomandazione già esistenti per produrre uno score/ranking unico.
+ 
+ 
+
+\end{enumerate} 
 
 
 % 
@@ -167,34 +221,7 @@ Nei recommender system content-based, gli attributi descrittivi degli oggetti so
 \chapter{Classificatore}
 \label{chap:classificatore}
 
-\section{Introduzione}
-In questo capitolo vengono descritti i problemi dell'implementazione di modelli di raccomandazione collaborative filtering in ambiente mobile. Viene poi descritto un nuovo modello che supera le limitazioni delle soluzioni proposte in letteratura, facendo comunque uso delle informazioni su users e items.
 
-\section{Limitazioni recsys collaborative filtering}
-La principale limitazione dei recommender system dei collaborative filtering è definire il numero di users e items prima di iniziare l'aggiornamento/training del modello. Nel caso degli algoritmi di matrix factorization la matrice di input è composta da un numero di righe pari al numero di users, e un numero di colonne pari al numero di items. Nel caso dei modelli basati su reti neurali descritti nel \autoref{chap:stato_arte} è necessario dare in input ai modelli le lunghezze dei vettori di users e items che corrispondono rispettivamente al numero di users e items.
-
-In entrambi se si vuole aggiungere un nuovo user/item è necessario ricompilare il modello ed eseguire nuovamente da zero la fase di training. Questo non è un problema in un ambiente desktop in cui è possibile aggiornare giornalmente lato server le preferenze di tutti gli utenti con una cadenza regolare (es. una volta al giorno).
-
-Eseguire di nuovo il traning da zero ogni volta che nuovi users/items vengono scoperti è un problema se si vuole fare il traning direttamente su dispositivo mobile. In questo caso c'è un problema sia di dispendio energetico, sia di tempo effettivo per il traing.
-
-\section{Struttura classificatore}
-Il modello proposto in questa tesi è una rete feed-forward fully-connected. Una rete feed-forward non contiene cicli nel suo grafo \cite{Goodfellow-et-al-2016}, mentre fully connected indica che ogni neurone in un layer è connesso a tutti i neuroni del layer successivo. Il numero di layer nascosti e il numero di neuroni in ogni layer è stato deciso nella fase di tuning descritta nel \autoref{chap:risultati}.
-Il numero di neuroni nel layer di output è sempre 1 come è prassi nei problemi di classificazione binaria. La funzione di attivazione scelta per i layer nascosti è ReLU (rectified linear unit), che è più plausibile biologicamente rispetto ad altre funzioni come sigmoide o hyperbolic tangent, non viene saturata e aiuta a prevenire l'overfitting del modello \cite{rectifier-neural-networks}. La funzione di attivazione scelta per il layer di output è la sigmoide che limita l'output a valori compresi tra 0 e 1. La funzione di loss della rete è binary cross entropy. \\
-
-L'input di un recommender system context aware solitamente è composto da:
-\begin{itemize}
-	\item ID user
-	\item ID item
-	\item informazioni di contesto
-\end{itemize}
-
-L'idea alla base del modello proposto in questa tesi è sostituire gli ID di users e items con delle features che li rappresentano. In questo modo non è necessario definire a priori il numero di users e items, e il modello può essere aggiornato senza dover ricominciare ogni volta il training da capo. La scelta delle features di users e items dipende dalla disponibilità dei dati e dal tipo di recommender system che verrà implementato. In generale qualsiasi feature descrittiva di una caratteristica di utenti e oggetti che porta ad un miglioramento delle prestazioni del modello è una scelta valida. Essendo un modello context aware, alle informazioni su users e items si aggiungono le informazioni di contesto. Nei CARS il contesto è definito come le informazioni aggiuntive rilevanti per migliorare i consigli, come l'ora del giorno, la posizione dell'utente o il meteo. A questo si può aggiungere il contesto sociale che descrive le interazioni dell'utente con altre persone \cite{survey-mattia}. Come per le features di users e items anche le features del contesto fisico e sociale sono variabili e dipendono dalla disponibilità dei dati. Ad esempio nei dataset descritti nel \autoref{chap:datasets} solo il dataset MDF contiene il contesto sociale, e inoltre ha un contesto fisico decisamente più informativo rispetto a quello del dataset Frappe. In \autoref{fig:ffnet_schema} è rappresentato lo schema del classificatore. Per semplicità la rete è composta da 4 layers che contengono 10 neuroni ciascuno ad eccezione del layer di output che contiene un solo neurone. Il layer di input riceve le features di utenti e oggetti, il contesto fisico e il contesto sociale. L'input è propagato e processato dai layer nascosti fino al layer di output che contiene un solo neurone. Il layer di output da un risultato 0/1, per cui 0 indica che l'item non è rilevante per l'utente in quel determinato contesto, 1 che è rilevante.
-
-\begin{figure}
-  \includegraphics[width=\linewidth]{immagini/ffnet_schema.png}
-  \caption{Schema rete feed-forward}
-  \label{fig:ffnet_schema}
-\end{figure}
 
 % 
 %			CAPITOLO 4: Datasets
@@ -235,7 +262,6 @@ Sviluppi futuri...
 
 \bibliographystyle{unsrt}
 \bibliography{bibliografia}
-\nocite{*}
 \addcontentsline{toc}{chapter}{Bibliografia}
 
 
