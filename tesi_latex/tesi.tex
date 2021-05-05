@@ -129,16 +129,26 @@ dove $U = \{u_1, \dots, u_m\}$ rappresenta l'insieme degli utenti, $I = \{i_1,\d
 \noindent I recommender system si dividono principalmente in 3 categorie:
 \begin{itemize}
 	\item collaborative filtering
-	\item content based
+	\item content-based
 	\item hybrid
 \end{itemize}
+
+\noindent In figura \autoref{fig:cb-cf} è schematizzato il modo diverso in cui operano i metodi collaborative filtering rispetto a quelli content-based.
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{immagini/cb_cf_schema.png}
+  \caption{Collaborative filtering vs Content-based}
+  \label{fig:cb-cf}
+\end{figure}
+
+
 
 \section{Collaborative filtering}
 Collaborative filtering (CF) è considerata la tecnica di raccomandazione più popolare e ampiamente utilizzata nei RS. Il presupposto alla base di CF è che le persone con preferenze simili valuteranno gli stessi oggetti con ratings simili. CF quindi sfrutta le informazioni sul comportamento passato o le opinioni di una comunità di utenti esistente per prevedere quali elementi potranno piacere o saranno interessanti per l'utente corrente del sistema \cite{recsys-intro}. Gli approcci CF puri non sfruttano né richiedono alcuna conoscenza degli oggetti stessi ma solo dei feedback degli utenti.
 
 La classe di algoritmi più famosa è quella di Matrix Factorization, ma recentemente sono stati sviluppati diversi approcci basati sul deep learning \cite{deep-learning-survey}.
 
-\subsection{Vantaggi e svantaggi}
+\subsection{Vantaggi e svantaggi} \label{ssec:pros-cons-cf}
 \textbf{Vantaggi:}
 \begin{itemize}
 
@@ -149,7 +159,7 @@ La classe di algoritmi più famosa è quella di Matrix Factorization, ma recente
 
 \noindent \textbf{Svantaggi:}
 \begin{itemize}
- \item \textit{Problema del cold-start:} Si riferisce alla situazione in cui il sistema di raccomandazione non ha abbastanza informazioni su un utente od un oggetto per poter fare previsioni rilevanti. Il profilo del nuovo utente o del nuovo oggetto sarà vuoto perchè non ha valutato nessun oggetto; quindi, i suoi gusti non saranno conosciuti al sistema \cite{recsys-principle-methods-evaluation}.   
+ \item \textit{Problema del cold-start:} Si riferisce alla situazione in cui il sistema di raccomandazione non ha abbastanza informazioni su un utente od un oggetto per poter fare previsioni rilevanti. Un nuovo oggetto inserito nel RS di solito non ha voti, ed è quindi improbabile che venga raccomandato. Un oggetto non consigliato passa inosservato a gran parte della community. Il problema è presente anche per i nuovi utenti: gli utenti che hanno espresso nessuna o poche valutazioni non ricevono raccomandazioni affidabili \cite{cold-start}.   
  
  \item  \textit{Problema di data sparsity:} questo è il problema che si verifica a causa della mancanza di informazioni sufficienti, cioè quando solo pochi rispetto al numero totale di oggetti disponibili in un database sono valutati dagli utenti. Ciò porta ad una rating matrix sparsa, e raccomandazioni poco efficaci \cite{recsys-principle-methods-evaluation}.
  
@@ -158,6 +168,7 @@ La classe di algoritmi più famosa è quella di Matrix Factorization, ma recente
 
 \subsection{Matrix factorization}
 Gli algoritmi basati su matrix factorization(MF) caratterizzano sia utenti che oggetti mediante dei vettori di fattori estratti dai pattern sui ratings. Una corrispondenza alta tra i fattori di un utente e un oggetto porta ad una raccomandazione. Questi metodi sono diventati popolari negli ultimi anni perchè combinano scalabilità e accuratezza.
+
 Più formalmente, i modelli basati su matrix factorization mappano utenti e oggetti in uno spazio di fattori latenti di dimensionalità $f$, tale che le interazioni tra utenti e oggetti sono modellate come prodotti in quello spazio. Di conseguenza, ogni oggetto $i$ è associato con un vettore $q_i \in \mathbb{R}^f$, e ogni utente $u$ con un vettore $p_u \in \mathbb{R}^f$. Per un dato oggetto $i$, gli elementi di $q_i$ indicano la misura in cui l'oggetto possiede quei fattori, positivi o negativi. Per un dato utente $u$, gli elementi di $p_u$ indicato l'entità dell'interesse che l'utente ha per gli oggetti che hanno un valore alto sui fattori corrispondenti, positivi o negativi. Il prodotto scalare $q_i^Tp_u$ indica l'interesse dell'utente $u$ per le caratteristiche dell'oggetto $i$ \cite{matrix-factorization}. Quindi il rating $r_{ui}$ può essere approssimato come
 
 \begin{equation} \label{eq:dot_product}
@@ -189,7 +200,7 @@ Mentre nei CF la similarità tra due oggetti (o due utenti) è calcolato come la
 \subsection{Vantaggi e svantaggi}
 \textbf{Vantaggi:}
 \begin{itemize}
- \item \textit{Consigliare nuovi oggetti:} Questi modelli hanno la capacità di consigliare nuovi oggetti anche se non ci sono valutazioni fornite dagli utenti. Non soffrono quindi del problema del cold-start dei collaborative filtering \cite{recsys-principle-methods-evaluation}.
+ \item \textit{Consigliare nuovi oggetti:} Questi modelli hanno la capacità di consigliare nuovi oggetti anche se non ci sono valutazioni fornite dagli utenti a differenza dei modelli collaborative filtering \cite{recsys-principle-methods-evaluation}.
 
  \item ???
 \end{itemize}
@@ -207,10 +218,10 @@ Mentre nei CF la similarità tra due oggetti (o due utenti) è calcolato come la
 I modelli ibridi combinano tipi diversi di sistemi di raccomandazione per formare dei modelli in grado di superare le debolezze dei modelli singoli. In \cite{recsys-book} sono descritti tre modi per creare recommender system ibridi:
 
 \begin{enumerate}
- \item \textit{Ensemble design:} Con questo metodo i risultati degli algoritmi base sono combinati in un output singolo più robusto. Il principio base è molto simile ai metodi di ensemble usati in molte applicazioni di data mining come clustering, classificazione e analisi degli outlier.  La combinazione può essere fatta in vari modi, ad esempio calcolando la media pesata delle varie predizioni. La caratteristica comune è che questi sistemi usano sistemi di raccomandazione già esistenti per produrre uno score/ranking unico.
- 
- 
-
+ \item \textit{Ensemble design:} Con questo metodo i risultati degli algoritmi base sono combinati in un output singolo più robusto. Il principio fondamentale è molto simile ai metodi di ensemble usati in molte applicazioni di data mining come clustering, classificazione e analisi degli outlier. 
+Gli ensemble design possono essere formalizzati nel modo seguente. Sia $R^k$ una matrice $m \times n$ contenente le predizioni di $m$ utenti per $n$ oggetti dell'algoritmo k-esimo, con $k \in \{1, \dots ,q\}$. Pertanto, un totale di $q$ algoritmi diversi sono usati per ottenere queste predizioni. L'elemento $(u,j)$-esimo di $R^k$ contiene il rating predetto per l'utente $u$ sull'oggetto $j$ dall'algoritmo $k$-esimo. Gli elementi della matrice originale $R$ sono replicati in ogni $R^k$, e solo gli elementi non presenti in $R$ variano nei differenti $R^k$ a causa dei diversi risultati degli algoritmi. Il risultato finale è ottenuto combinando le predizioni $R^1, \dots, R^q$ in un singolo output. La combinazione può essere fatta in vari modi, ad esempio calcolando la media pesata delle varie predizioni. Le caratteristiche comuni di questi algoritmi sono usare sistemi di raccomandazione già esistenti e produrre uno score/ranking unico.
+ \item \textit{Monolithic design:} In questo caso, viene creato un algoritmo di raccomandazione integrato utilizzando vari tipi di dati. A volte non esiste una chiara distinzione tra le varie parti (es. content-based e collaborative filtering) dell'algoritmo. In altri casi, potrebbe essere necessario modificare gli algoritmi algoritmi di raccomandazione esistenti per essere usati all'interno dell'approccio generale, anche quando c'è una chiara distinzione tra gli algoritmi utilizzati.  Pertanto, questo approccio tende a integrare più strettamente le varie fonti di dati e non è possibile visualizzare facilmente i singoli componenti come black-boxes separate.
+ \item \textit{Mixed systems:}  Come per gli ensembles, questi sistemi usano diversi algoritmi di raccomandazione come black-boxes, ma gli oggetti raccomandati dai vari sistemi sono presentati insieme senza essere combinati.
 \end{enumerate} 
 
 
