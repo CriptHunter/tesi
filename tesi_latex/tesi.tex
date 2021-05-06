@@ -143,7 +143,7 @@ dove $U = \{u_1, \dots, u_m\}$ rappresenta l'insieme degli utenti, $I = \{i_1,\d
 
 
 
-\section{Collaborative filtering}
+\section{Collaborative filtering recommender system}
 Collaborative filtering (CF) è considerata la tecnica di raccomandazione più popolare e ampiamente utilizzata nei RS. Il presupposto alla base di CF è che le persone con preferenze simili valuteranno gli stessi oggetti con ratings simili. CF quindi sfrutta le informazioni sul comportamento passato o le opinioni di una comunità di utenti esistente per prevedere quali elementi potranno piacere o saranno interessanti per l'utente corrente del sistema \cite{recsys-intro}. Gli approcci CF puri non sfruttano né richiedono alcuna conoscenza degli oggetti stessi ma solo dei feedback degli utenti.
 
 La classe di algoritmi più famosa è quella di Matrix Factorization, ma recentemente sono stati sviluppati diversi approcci basati sul deep learning \cite{deep-learning-survey}.
@@ -192,7 +192,7 @@ Gli embedding di $P$ e $Q$ sono imparati in modo tale che il prodotto $PQ^T$ sia
   \label{fig:matrix_factorization}
 \end{figure}
 
-\section{Content-based}
+\section{Content-based recommender system}
 Nei recommender system content-based (CB), gli attributi descrittivi degli oggetti sono usati per produrre raccomandazioni. Il termine "content" indica queste descrizioni. Nei metodi content-based, i ratings degli utenti sono combinati con le informazioni disponibili per gli oggetti, per poi essere usati come training data per creare un modello di classificazione o regressione specifico per l'utente. Questo modello specifico dell'utente viene utilizzato per prevedere se alla persona corrispondente piacerà un articolo per il quale la sua valutazione è ancora sconosciuta \cite{recsys-book}.
 
 Mentre nei CF la similarità tra due oggetti (o due utenti) è calcolato come la correlazione o la similarità tra i ratings forniti dagli altri utenti, i recommender system content-based sono progettati per consigliare oggetti simili a quelli che l'utente ha preferito in passato. Non considerando gli altri utenti, la lista di raccomandazioni può essere generata anche se c'è un solo utente.
@@ -214,7 +214,7 @@ Mentre nei CF la similarità tra due oggetti (o due utenti) è calcolato come la
  \item \textit{Dimensione training set:} In modo da consentire a un RS content-based di imparare le preferenze di un utente, egli dovrà valutare un numero sufficiente di oggetti. In caso contrario, il RS non avrà sufficienti informazioni per imparare un modello accurato e fallirà nel raccomandare oggetti a utenti con pochi o nessun ratings.
 \end{itemize}
 
-\section{Hybrid}
+\section{Hybrid recommender system}
 I modelli ibridi combinano tipi diversi di sistemi di raccomandazione per formare dei modelli in grado di superare le debolezze dei modelli singoli. In \cite{recsys-book} sono descritti tre modi per creare recommender system ibridi:
 
 \begin{enumerate}
@@ -223,6 +223,54 @@ Gli ensemble design possono essere formalizzati nel modo seguente. Sia $R^k$ una
  \item \textit{Monolithic design:} In questo caso, viene creato un algoritmo di raccomandazione integrato utilizzando vari tipi di dati. A volte non esiste una chiara distinzione tra le varie parti (es. content-based e collaborative filtering) dell'algoritmo. In altri casi, potrebbe essere necessario modificare gli algoritmi algoritmi di raccomandazione esistenti per essere usati all'interno dell'approccio generale, anche quando c'è una chiara distinzione tra gli algoritmi utilizzati.  Pertanto, questo approccio tende a integrare più strettamente le varie fonti di dati e non è possibile visualizzare facilmente i singoli componenti come black-boxes separate.
  \item \textit{Mixed systems:}  Come per gli ensembles, questi sistemi usano diversi algoritmi di raccomandazione come black-boxes, ma gli oggetti raccomandati dai vari sistemi sono presentati insieme senza essere combinati.
 \end{enumerate} 
+
+\section{Context-aware recommender system}
+I recommender system context-aware (CARS) producono le loro raccomandazioni utilizzando informazioni addizionali che definiscono la situazione di un utente. Queste informazioni addizionali sono chiamate \textit{contesto}.
+
+\noindent Alcuni esempi di contesto sono:
+\begin{enumerate}
+ \item \textit{Data e ora:} Dalle informazioni di data e ora è possibile estrarre diverse features contestuali come il momento della giornata, il giorno della settimana, week-end, vacanze, stagioni ed altro ancora. Una raccomandazione potrebbe essere rilevante la mattina ma non il pomeriggio, e viceversa. Le raccomandazioni sui vestiti invernali o estivi possono essere molto diverse.
+ \item \textit{Posizione:} Con la crescente popolarità del GPS disponibile ormai su qualunque telefono, le raccomandazioni sensibili alla posizione dell'utente hanno guadagnato importanza. Per esempio, un viaggiatore potrebbe desiderare raccomandazioni su ristoranti vicini alla propria posizione. Questo può essere fatto aggiungendo la posizione come contesto nel recommender system.
+ \item \textit{Informazioni sociali:} Il contesto sociale è spesso importante per un sistema di raccomandazione. Le informazioni su amici, tag e cerchie sociali di un utente possono avere un impatto sul processo di raccomandazione. Per esempio una persona potrebbe scegliere di guardare un film diverso a seconda che lo guardi con i suoi genitori o con i suoi amici.
+\end{enumerate} 
+
+\noindent Il contesto può essere ottenuto in vari modi \cite{recsys-handbook} che includono:
+\begin{enumerate}
+ \item \textit{Esplicitamente} ponendo domande dirette alle persone rilevanti o richiedendo le informazioni con altri mezzi. Per esempio, un sito web potrebbe ottenere informazioni contestuali chiedendo agli utenti di compilare un form.
+ \item \textit{Implicitamente} dai dati o dall'ambiente, come il cambio di posizione rilevato da una compagnia di telefonia mobile. In questo caso non è necessario fare nulla in termini di interazione con l'utente o altre fonti di informazioni contestuali perché l'informazione contestuale è acceduta direttamente e i dati sono estratti da essa.
+ \item \textit{Per inferenza} usando metodi statistici o di data mining. 
+\end{enumerate}
+
+\subsection{Approccio multidimensionale}
+Il problema tradizionale di raccomandazione può essere visto come apprendere una funzione che associa le coppie utente-oggetto ai ratings. La funzione corrispondete $f_R$ è definita come:
+
+$$
+f_R : U \times I \rightarrow rating
+$$
+Quindi la rating function mappa da uno spazio bidimensionale di utenti e oggetti ai ratings.
+I CARS generalizzano questo approccio utilizzando un approccio multidimensionale in cui la ratings function può essere vista come un mapping da una matrice $n$-dimensionale all'insieme dei ratings \cite{survey-mattia}.
+$$
+g_R : D_1 \times D_2 \dots \times D_n \rightarrow rating
+$$
+In questo caso, il risultato è un cubo n-dimensionale al posto che una matrice bidimensionale. Le diverse dimensioni sono denotate come $D_1 \dots D_n$. Due di queste dimensioni saranno sempre utenti e oggetti, le altre $D_i$ dimensioni corrispondono alle features del contesto \cite{recsys-book}.
+\begin{figure}
+  \includegraphics[width=\linewidth, scale=0.60]{immagini/rating_cube.png}
+  \caption{Esempio di un cubo multidimensionale per $User \times Item \times Location$}
+  \label{fig:matrix_factorization}
+\end{figure}
+Il contesto può essere applicato nelle varie fasi del processo di raccomandazione. Si possono identificare tre categorie principali:
+\begin{enumerate}
+ \item \textit{Contextual pre-filtering:} In questo paradigma, le informazioni riguardo il contesto attuale sono utilizzate per selezionare o costruire l'insieme di dati rilevanti (la matrice dei ratings). Poi i ratings mancanti dai dati selezionati possono essere predetti utilizzando qualsiasi sistema di raccomandazione 2D tradizionale.
+ \item \textit{Contextual post-filtering:} In questo paradigma, le informazioni contestuali sono inizialmente ignorate, e i ratings sono predetti utilizzando qualsiasi sistema di raccomandazione 2D traidizionale. Poi, l'insieme di raccomandazioni viene regolato utilizzando le informazioni di contesto.
+ \item
+\end{enumerate}
+
+
+
+Contextual post-filtering (or contextualization of recommendation output). In
+this recommendation paradigm (presented in Figure 7.4b), contextual information is initially ignored, and the ratings are predicted using any traditional 2D
+7 Context-Aware Recommender Systems 233
+recommender system on the entire data. Then, the resulting set of recommendations is adjusted (contextualized) for each user using the contextual information
 
 
 % 
