@@ -219,7 +219,7 @@ I modelli ibridi combinano tipi diversi di sistemi di raccomandazione per formar
 
 \begin{enumerate}
  \item \textit{Ensemble design:} Con questo metodo i risultati degli algoritmi base sono combinati in un output singolo più robusto. Il principio fondamentale è molto simile ai metodi di ensemble usati in molte applicazioni di data mining come clustering, classificazione e analisi degli outlier. 
-Gli ensemble design possono essere formalizzati nel modo seguente. Sia $R^k$ una matrice $m \times n$ contenente le predizioni di $m$ utenti per $n$ oggetti dell'algoritmo k-esimo, con $k \in \{1, \dots ,q\}$. Pertanto, un totale di $q$ algoritmi diversi sono usati per ottenere queste predizioni. L'elemento $(u,j)$-esimo di $R^k$ contiene il rating predetto per l'utente $u$ sull'oggetto $j$ dall'algoritmo $k$-esimo. Gli elementi della matrice originale $R$ sono replicati in ogni $R^k$, e solo gli elementi non presenti in $R$ variano nei differenti $R^k$ a causa dei diversi risultati degli algoritmi. Il risultato finale è ottenuto combinando le predizioni $R^1, \dots, R^q$ in un singolo output. La combinazione può essere fatta in vari modi, ad esempio calcolando la media pesata delle varie predizioni. Le caratteristiche comuni di questi algoritmi sono usare sistemi di raccomandazione già esistenti e produrre uno score/ranking unico.
+Gli ensemble design possono essere formalizzati nel modo seguente. Sia $R^k$ una matrice $m \times n$ contenente le predizioni di $m$ utenti per $n$ oggetti dell'algoritmo $k$-esimo, con $k \in \{1, \dots ,q\}$. Pertanto, un totale di $q$ algoritmi diversi sono usati per ottenere queste predizioni. L'elemento $(u,j)$-esimo di $R^k$ contiene il rating predetto per l'utente $u$ sull'oggetto $j$ dall'algoritmo $k$-esimo. Gli elementi della matrice originale $R$ sono replicati in ogni $R^k$, e solo gli elementi non presenti in $R$ variano nei differenti $R^k$ a causa dei diversi risultati degli algoritmi. Il risultato finale è ottenuto combinando le predizioni $R^1, \dots, R^q$ in un singolo output. La combinazione può essere fatta in vari modi, ad esempio calcolando la media pesata delle varie predizioni. Le caratteristiche comuni di questi algoritmi sono usare sistemi di raccomandazione già esistenti e produrre uno score/ranking unico.
  \item \textit{Monolithic design:} In questo caso, viene creato un algoritmo di raccomandazione integrato utilizzando vari tipi di dati. A volte non esiste una chiara distinzione tra le varie parti (es. content-based e collaborative filtering) dell'algoritmo. In altri casi, potrebbe essere necessario modificare gli algoritmi algoritmi di raccomandazione esistenti per essere usati all'interno dell'approccio generale, anche quando c'è una chiara distinzione tra gli algoritmi utilizzati.  Pertanto, questo approccio tende a integrare più strettamente le varie fonti di dati e non è possibile visualizzare facilmente i singoli componenti come black-boxes separate.
  \item \textit{Mixed systems:}  Come per gli ensembles, questi sistemi usano diversi algoritmi di raccomandazione come black-boxes, ma gli oggetti raccomandati dai vari sistemi sono presentati insieme senza essere combinati.
 \end{enumerate} 
@@ -250,27 +250,47 @@ $$
 Quindi la rating function mappa da uno spazio bidimensionale di utenti e oggetti ai ratings.
 I CARS generalizzano questo approccio utilizzando un approccio multidimensionale in cui la ratings function può essere vista come un mapping da una matrice $n$-dimensionale all'insieme dei ratings \cite{survey-mattia}.
 $$
-g_R : D_1 \times D_2 \dots \times D_n \rightarrow rating
+f_R : D_1 \times D_2 \dots \times D_n \rightarrow rating
 $$
-In questo caso, il risultato è un cubo n-dimensionale al posto che una matrice bidimensionale. Le diverse dimensioni sono denotate come $D_1 \dots D_n$. Due di queste dimensioni saranno sempre utenti e oggetti, le altre $D_i$ dimensioni corrispondono alle features del contesto \cite{recsys-book}.
+In questo caso, il risultato è un cubo n-dimensionale al posto che una matrice bidimensionale. Le diverse dimensioni sono denotate come $D_1 \dots D_n$. Due di queste dimensioni saranno sempre utenti e oggetti, le altre $D_i$ dimensioni corrispondono alle features del contesto \cite{recsys-book}. In \autoref{fig:ratings-cube} è mostrato un esempio di un cubo tridimensionale che memorizza i ratings per $User \times Items \times Location$, in cui $f_R(u_1, i_4, home) = 5$ significa che l'utente $u_1$ ha valutato con un punteggio pari a 5 l'oggetto $i_4$ mentre era a casa.
+
+Il contesto può essere applicato nelle varie fasi del processo di raccomandazione. Come rappresentato in \autoref{fig:context-paradigm} si possono identificare tre paradigmi principali:
+
 \begin{figure}
   \includegraphics[width=\linewidth, scale=0.60]{immagini/rating_cube.png}
   \caption{Esempio di un cubo multidimensionale per $User \times Item \times Location$}
-  \label{fig:matrix_factorization}
+  \label{fig:ratings-cube}
 \end{figure}
-Il contesto può essere applicato nelle varie fasi del processo di raccomandazione. Si possono identificare tre categorie principali:
+
 \begin{enumerate}
- \item \textit{Contextual pre-filtering:} In questo paradigma, le informazioni riguardo il contesto attuale sono utilizzate per selezionare o costruire l'insieme di dati rilevanti (la matrice dei ratings). Poi i ratings mancanti dai dati selezionati possono essere predetti utilizzando qualsiasi sistema di raccomandazione 2D tradizionale.
- \item \textit{Contextual post-filtering:} In questo paradigma, le informazioni contestuali sono inizialmente ignorate, e i ratings sono predetti utilizzando qualsiasi sistema di raccomandazione 2D traidizionale. Poi, l'insieme di raccomandazioni viene regolato utilizzando le informazioni di contesto.
- \item
+ \item \textit{Contextual pre-filtering:} In questo paradigma, le informazioni riguardo il contesto attuale sono utilizzate per selezionare o costruire l'insieme dei dati rilevanti (la matrice dei ratings). Poi i ratings mancanti dai dati selezionati possono essere predetti utilizzando qualsiasi sistema di raccomandazione 2D tradizionale.
+ \item \textit{Contextual post-filtering:} In questo paradigma, le informazioni contestuali sono inizialmente ignorate e i ratings sono predetti utilizzando qualsiasi sistema di raccomandazione 2D traidizionale. Poi, l'insieme di raccomandazioni non rilevanti nel contesto $c$ sono filtrate, e la lista di raccomandazioni è sistemata in base a $c$.
+ \item  \textit{Contextual modeling:} Mentre gli approcci di contextual pre-filtering e post filterning fanno uso di una funzione di raccomandazione 2D, gli approcci di contextual modeling danno luogo a funzioni di raccomandazione veramente multidimensionali che rappresentano modelli predittivi o euristiche che incorporano informazioni contestuali in aggiunta ai dati di utenti e oggetti.
 \end{enumerate}
 
+\begin{figure}
+  \includegraphics[width=\linewidth]{immagini/paradigm_for_context_inclusion.png}
+  \caption{Paradigmi per incorporare il contesto nei sistemi di raccomandazione}
+  \label{fig:context-paradigm}
+\end{figure}
 
 
-Contextual post-filtering (or contextualization of recommendation output). In
-this recommendation paradigm (presented in Figure 7.4b), contextual information is initially ignored, and the ratings are predicted using any traditional 2D
-7 Context-Aware Recommender Systems 233
-recommender system on the entire data. Then, the resulting set of recommendations is adjusted (contextualized) for each user using the contextual information
+
+
+\section{Alternate least square}
+\section{Neural collaborative filtering}
+Gli algoritmi basati su matrix factorization sono sicuramente i più popolari nell'ambito dei sistemi di raccomandazione collaborative filtering. Nonostante l'efficacia di questi modello, le loro performance  posso variare in base alla scelta della funzione di interazione. Ad esempio, per quanto riguarda il task di rating prediction su feedback espliciti, è noto che le performance di MF possono essere migliorate incorporando il bias di utenti e oggetti nella funzione di interazione. Anche se si tratta solo di una piccola modifica, dimostra l'effetto positivo di progettare una migliore funzione di interazione usata per modellare l'interazione delle feature latenti di utenti e oggetti. 
+Secondo gli autori di \cite{NCF} il prodotto scalare, che combina la moltiplicazione delle features latenti in modo lineare, potrebbe non essere sufficiente per catturare la complessa struttura dei dati che rappresentano le interazioni dell'utente. 
+
+\subsection{Limiti di matrix factorization}
+La \autoref{fig:mf-limits} mostra come il prodotto scale può limitare l'espressività di MF. La similarità tra due utenti può essere misurata con il prodotto scalare o in modo equivalente con il coseno dell'angolo tra i loro vettori latenti. Dalla matrice utenti-oggetti in figura indicata con (a), l'utente $u_4$ è più simile a $u_1$, seguito da $u_3$, e in ultimo da $u_2$. Tuttavia, nello spazio latente indicato con (b), posizionare $p_4$ più vicino a $p_1$ rende $p_4$ più vicino a $p_2$ e non a $p_3$, portando ad un aumento dell'errore.
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{immagini/user_item_vectors.png}
+  \caption{Limitazioni di matrix factorization}
+  \label{fig:mf-limits}
+\end{figure}
+
 
 
 % 
