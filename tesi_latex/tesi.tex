@@ -257,7 +257,8 @@ In questo caso, il risultato è un cubo n-dimensionale al posto che una matrice 
 Il contesto può essere applicato nelle varie fasi del processo di raccomandazione. Come rappresentato in \autoref{fig:context-paradigm} si possono identificare tre paradigmi principali:
 
 \begin{figure}
-  \includegraphics[width=\linewidth, scale=0.60]{immagini/rating_cube.png}
+  \centering
+  \includegraphics[scale=0.80]{immagini/rating_cube.png}
   \caption{Esempio di un cubo multidimensionale per $User \times Item \times Location$}
   \label{fig:ratings-cube}
 \end{figure}
@@ -274,16 +275,12 @@ Il contesto può essere applicato nelle varie fasi del processo di raccomandazio
   \label{fig:context-paradigm}
 \end{figure}
 
-
-
-
 \section{Alternate least square}
 \section{Neural collaborative filtering}
 Gli algoritmi basati su matrix factorization sono sicuramente i più popolari nell'ambito dei sistemi di raccomandazione collaborative filtering. Nonostante l'efficacia di questi modello, le loro performance  posso variare in base alla scelta della funzione di interazione. Ad esempio, per quanto riguarda il task di rating prediction su feedback espliciti, è noto che le performance di MF possono essere migliorate incorporando il bias di utenti e oggetti nella funzione di interazione. Anche se si tratta solo di una piccola modifica, dimostra l'effetto positivo di progettare una migliore funzione di interazione usata per modellare l'interazione delle feature latenti di utenti e oggetti. 
 Secondo gli autori di \cite{NCF} il prodotto scalare, che combina la moltiplicazione delle features latenti in modo lineare, potrebbe non essere sufficiente per catturare la complessa struttura dei dati che rappresentano le interazioni dell'utente. 
 
-\subsection{Limiti di matrix factorization}
-La \autoref{fig:mf-limits} mostra come il prodotto scale può limitare l'espressività di MF. La similarità tra due utenti può essere misurata con il prodotto scalare o in modo equivalente con il coseno dell'angolo tra i loro vettori latenti. Dalla matrice utenti-oggetti in figura indicata con (a), l'utente $u_4$ è più simile a $u_1$, seguito da $u_3$, e in ultimo da $u_2$. Tuttavia, nello spazio latente indicato con (b), posizionare $p_4$ più vicino a $p_1$ rende $p_4$ più vicino a $p_2$ e non a $p_3$, portando ad un aumento dell'errore.
+La \autoref{fig:mf-limits} mostra come il prodotto scalare può limitare l'espressività di MF. La similarità tra due utenti può essere misurata con il prodotto scalare o in modo equivalente con il coseno dell'angolo tra i loro vettori latenti. Dalla matrice utenti-oggetti in figura indicata con (a), l'utente $u_4$ è più simile a $u_1$, seguito da $u_3$, e in ultimo da $u_2$. Tuttavia, nello spazio latente indicato con (b), posizionare $p_4$ più vicino a $p_1$ rende $p_4$ più vicino a $p_2$ e non a $p_3$.
 
 \begin{figure}
   \includegraphics[width=\linewidth]{immagini/user_item_vectors.png}
@@ -291,7 +288,40 @@ La \autoref{fig:mf-limits} mostra come il prodotto scale può limitare l'espress
   \label{fig:mf-limits}
 \end{figure}
 
+\subsection{Multi-layer perceptron}
+Per superare le limitazioni di matrix factorization in \cite{NCF} viene proposta una rappresentazione multi-layer che modella le interazioni utente-oggetto $y_{ui}$. Il layer di input consiste in due vettori $v_u^U$ e $v_i^I$ che descrivono rispettivamente l'utente $u$ e l'oggetto $i$. Dato che l'input nei modelli collaborative filtering è composto dagli ID univoci di $u$ e $i$, essi devono essere convertiti con one-hot encoding in dei vettori binari sparsi.
+Sopra al layer di input c'è il layer di embedding; è un layer fully connected che proietta la rappresentazione sparsa in un vettore denso.
+Gli embedding di utenti e oggetti ottenuti possono essere visti come i vettori latenti di utenti e oggetti nel contesto dei modelli a fattori latenti come matrix factorization.
+I vettori di embedding di user e item sono dati in input a un architettura neurale multi-layer, chiamati neural collaborative filterings layers, e infine al layer di output per calcolare lo score predetto $y_{ui}$. In \autoref{fig:ncf} è rappresentata l'architettura generale del framework neural collaborative filtering.
 
+\begin{figure}
+  \includegraphics[width=\linewidth]{immagini/ncf.png}
+  \caption{Neural collaborative filtering}
+  \label{fig:ncf}
+\end{figure}
+
+\subsection{Generalized matrix factorization}
+In \cite{NCF} viene poi mostrato come MF può essere interpretato come un caso particolare del framework NCF. Dato che gli ID di utenti e oggetti sono convertiti in one-hot encoding, i vettori di embedding possono essere visti come i vettori latenti di utenti e oggetti.
+
+Siano $p_u$ il vettore latente degli utenti e $q_i$ il vettore latente degli oggetti. Si può ridefinire la mapping function del primo neural CF layer come
+$$
+\phi(p_u, q_1) = p_u \odot q_i
+$$
+in cui $\odot$ è il prodotto elemento per elemento dei vettori. Si proietta poi il vettore risultato sul layer di output:
+$$
+y_{ui} = a_{out}(h^T(p_u \odot q_i))
+$$
+dove $a_{out}$ è la funzione di attivazione e $h$ i pesi del layer di output.
+
+In questo modo il framework NCF è utilizzato per simulare la famiglia di metodi basata su MF ed è chiamato generalized matrix factorization (GMF).
+
+\subsection{Neural matrix factorization}
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{immagini/neumf.png}
+  \caption{Neural matrix factorization}
+  \label{fig:neumf}
+\end{figure}
 
 % 
 %			CAPITOLO 3: Lavoro svolto
