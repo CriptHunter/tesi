@@ -166,7 +166,7 @@ La classe di algoritmi più famosa è quella di Matrix Factorization, ma recente
  \item \textit{Scalabilità:} Questo è un altro problema associato agli algoritmi di raccomandazione perchè il tempo di computazione cresce linearmente con il numero di utenti e oggetti. Un sistema di raccomandazione efficiente con un dataset limitato potrebbe non esserlo quando il volume è incrementato \cite{recsys-principle-methods-evaluation}.
 \end{itemize}
 
-\subsection{Matrix factorization}
+\subsection{Matrix factorization} \label{ssec:mf}
 Gli algoritmi basati su matrix factorization(MF) caratterizzano sia utenti che oggetti mediante dei vettori di fattori estratti dai pattern sui ratings. Una corrispondenza alta tra i fattori di un utente e un oggetto porta ad una raccomandazione. Questi metodi sono diventati popolari negli ultimi anni perchè combinano scalabilità e accuratezza.
 
 Più formalmente, i modelli basati su matrix factorization mappano utenti e oggetti in uno spazio di fattori latenti di dimensionalità $f$, tale che le interazioni tra utenti e oggetti sono modellate come prodotti in quello spazio. Di conseguenza, ogni oggetto $i$ è associato con un vettore $q_i \in \mathbb{R}^f$, e ogni utente $u$ con un vettore $p_u \in \mathbb{R}^f$. Per un dato oggetto $i$, gli elementi di $q_i$ indicano la misura in cui l'oggetto possiede quei fattori, positivi o negativi. Per un dato utente $u$, gli elementi di $p_u$ indicato l'entità dell'interesse che l'utente ha per gli oggetti che hanno un valore alto sui fattori corrispondenti, positivi o negativi. Il prodotto scalare $q_i^Tp_u$ indica l'interesse dell'utente $u$ per le caratteristiche dell'oggetto $i$ \cite{matrix-factorization}. Quindi il rating $r_{ui}$ può essere approssimato come
@@ -275,12 +275,28 @@ Il contesto può essere applicato nelle varie fasi del processo di raccomandazio
   \label{fig:context-paradigm}
 \end{figure}
 
-\section{Alternate least square}
+\section{Alternating least square}
+Alternating least square (ALS) \cite{als} è un algoritmo di matrix factorization stato dell'arte per quanto riguarda i feedback impliciti. ALS è un processo di ottimizzazione iterativo in cui ad ogni iterazione si cerca di arrivare più vicino possibile a una rappresentazione fattorizzata dei dati originali. 
+Come spiegato nella \autoref{ssec:mf}, data la matrice dei feedback $R$ di dimensione $u \times i$ con $u$ numero di utenti e $i$ numero di oggetti, si vuole fattorizzare la matrice in due matrici di dimensione $u \times f$ e $f \times i$ tali che il loro prodotto approssimi la matrice originale $R$ nel modo più accurato possibile : $R \approx U \times V$.
+Inizializzando in modo casuale i valori contenuti in $U$ e $V$ e usando i minimi quadrati, si arriva iterativamente ad un approssimazione di $R$. L'approccio usando i minimi quadrati significa
+
+By randomly assigning the values in U and V and using least squares iteratively we can arrive at what weights yield the best approximation of R. The least squares approach in it’s basic forms means fitting some line to the data, measuring the sum of squared distances from all points to the line and trying to get an optimal fit by minimising this value.
+With the alternating least squares approach we use the same idea but iteratively alternate between optimizing U and fixing V and vice versa. We do this for each iteration to arrive closer to R = U x V.
+
+
+
 \section{Neural collaborative filtering}
-Gli algoritmi basati su matrix factorization sono sicuramente i più popolari nell'ambito dei sistemi di raccomandazione collaborative filtering. Nonostante l'efficacia di questi modello, le loro performance  posso variare in base alla scelta della funzione di interazione. Ad esempio, per quanto riguarda il task di rating prediction su feedback espliciti, è noto che le performance di MF possono essere migliorate incorporando il bias di utenti e oggetti nella funzione di interazione. Anche se si tratta solo di una piccola modifica, dimostra l'effetto positivo di progettare una migliore funzione di interazione usata per modellare l'interazione delle feature latenti di utenti e oggetti. 
+Gli algoritmi basati su matrix factorization sono sicuramente i più popolari nell'ambito dei sistemi di raccomandazione collaborative filtering. Nonostante l'efficacia di questi modello, le loro performance  posso variare in base alla scelta della funzione di interazione. Ad esempio, per quanto riguarda il task di rating prediction su feedback espliciti, è noto che le performance di MF possono essere migliorate incorporando il bias di utenti e oggetti nella funzione di interazione. Anche se si tratta solo di una piccola modifica, dimostra l'effetto positivo di progettare una migliore funzione usata per modellare l'interazione delle feature latenti di utenti e oggetti. 
 Secondo gli autori di \cite{NCF} il prodotto scalare, che combina la moltiplicazione delle features latenti in modo lineare, potrebbe non essere sufficiente per catturare la complessa struttura dei dati che rappresentano le interazioni dell'utente. 
 
 La \autoref{fig:mf-limits} mostra come il prodotto scalare può limitare l'espressività di MF. La similarità tra due utenti può essere misurata con il prodotto scalare o in modo equivalente con il coseno dell'angolo tra i loro vettori latenti. Dalla matrice utenti-oggetti in figura indicata con (a), l'utente $u_4$ è più simile a $u_1$, seguito da $u_3$, e in ultimo da $u_2$. Tuttavia, nello spazio latente indicato con (b), posizionare $p_4$ più vicino a $p_1$ rende $p_4$ più vicino a $p_2$ e non a $p_3$.
+
+Viene quindi proposto di usare le reti neurali che sono considerate approssimatori universali \cite{NN-universal-approx} per imparare le interazioni utente-oggetto. In particolare sono proposti tre modelli basati su deep neural networks:
+\begin{enumerate}
+ \item Multi-Layer Perceptron (MLP)
+ \item Generalized Matrix Factorization (GMF)
+ \item Neural Matrix Factorization (NeuMF)
+\end{enumerate}
 
 \begin{figure}
   \includegraphics[width=\linewidth]{immagini/user_item_vectors.png}
@@ -289,21 +305,19 @@ La \autoref{fig:mf-limits} mostra come il prodotto scalare può limitare l'espre
 \end{figure}
 
 \subsection{Multi-layer perceptron}
-Per superare le limitazioni di matrix factorization in \cite{NCF} viene proposta una rappresentazione multi-layer che modella le interazioni utente-oggetto $y_{ui}$. Il layer di input consiste in due vettori $v_u^U$ e $v_i^I$ che descrivono rispettivamente l'utente $u$ e l'oggetto $i$. Dato che l'input nei modelli collaborative filtering è composto dagli ID univoci di $u$ e $i$, essi devono essere convertiti con one-hot encoding in dei vettori binari sparsi.
+Il primo modello proposto è una rete neurale multi-layer che modella le interazioni utente-oggetto $y_{ui}$. Il layer di input consiste di due vettori $v_u^U$ e $v_i^I$ che descrivono rispettivamente l'utente $u$ e l'oggetto $i$. Dato che l'input nei modelli collaborative filtering è composto dagli ID univoci di $u$ e $i$, essi devono essere convertiti con one-hot encoding in dei vettori binari sparsi.
 Sopra al layer di input c'è il layer di embedding; è un layer fully connected che proietta la rappresentazione sparsa in un vettore denso.
 Gli embedding di utenti e oggetti ottenuti possono essere visti come i vettori latenti di utenti e oggetti nel contesto dei modelli a fattori latenti come matrix factorization.
-I vettori di embedding di user e item sono dati in input a un architettura neurale multi-layer, chiamati neural collaborative filterings layers, e infine al layer di output per calcolare lo score predetto $y_{ui}$. In \autoref{fig:ncf} è rappresentata l'architettura generale del framework neural collaborative filtering.
+I vettori di embedding di user e item sono dati in input a un architettura neurale multi-layer, chiamati neural collaborative filterings layers, e infine al layer di output per calcolare lo score predetto $y_{ui}$. In \autoref{fig:ncf} è rappresentata l'architettura del MLP con $X$ neural CF layers.
 
 \begin{figure}
   \includegraphics[width=\linewidth]{immagini/ncf.png}
-  \caption{Neural collaborative filtering}
+  \caption{multi-layer perceptron}
   \label{fig:ncf}
 \end{figure}
 
 \subsection{Generalized matrix factorization}
-In \cite{NCF} viene poi mostrato come MF può essere interpretato come un caso particolare del framework NCF. Dato che gli ID di utenti e oggetti sono convertiti in one-hot encoding, i vettori di embedding possono essere visti come i vettori latenti di utenti e oggetti.
-
-Siano $p_u$ il vettore latente degli utenti e $q_i$ il vettore latente degli oggetti. Si può ridefinire la mapping function del primo neural CF layer come
+In \cite{NCF} viene poi mostrato come la famiglia di metodi basata su matrix factorization possa essere approssimata utilizzando una rete neurale. In questa rete il layer di input e il layer di embedding sono gli stessi del modello MLP, la differenza è nei neural collaborative filtering layers. Come detto prima i vettori di embedding possono essere visti come i vettori latenti di utenti e oggetti imparati dagli algoritmi di MF. Siano $p_u$ il vettore latente degli utenti e $q_i$ il vettore latente degli oggetti. Si può ridefinire la funzione del primo neural CF layer per eseguire la moltiplicazione tra i due vettori di embedding:
 $$
 \phi(p_u, q_1) = p_u \odot q_i
 $$
@@ -311,11 +325,10 @@ in cui $\odot$ è il prodotto elemento per elemento dei vettori. Si proietta poi
 $$
 y_{ui} = a_{out}(h^T(p_u \odot q_i))
 $$
-dove $a_{out}$ è la funzione di attivazione e $h$ i pesi del layer di output.
-
-In questo modo il framework NCF è utilizzato per simulare la famiglia di metodi basata su MF ed è chiamato generalized matrix factorization (GMF).
+dove $a_{out}$ e $h$ sono rispettivamente la funzione di attivazione e  i pesi del layer di output. In questo modo la rete neurale è utilizzata per simulare la famiglia di metodi basata su MF ed è chiamato generalized matrix factorization (GMF).
 
 \subsection{Neural matrix factorization}
+A questo punto si hanno due diverse implementazioni di recommender system collaborative filtering basati su reti neurali: GMF che applica un kernel lineare per per imparare le interazioni delle features latenti, e MLP che invece applica un kernel non lineare. Le due reti possono essere combinate per modellare in modo più preciso le complesse interazioni utente-oggetto. Una soluzione semplice è permettere a GMF e MLP di condividere lo stesso layer di embedding, questo può limitare le performance del modello perchè GMF e MLP devono usare embedding della stessa dimensione. Per fornire più flessibilità al modello fuso, GMF e MLP imparano vettori di embedding separati, e i due modelli sono combinati concatenando l'output del loro ultimo layer nascosto. L'architettura del modello fuso chiamata neural matrix factorization (NeuMF) è mostrata in \autoref{fig:neumf}.
 
 \begin{figure}
   \includegraphics[width=\linewidth]{immagini/neumf.png}
