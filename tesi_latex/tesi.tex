@@ -276,13 +276,36 @@ Il contesto può essere applicato nelle varie fasi del processo di raccomandazio
 \end{figure}
 
 \section{Alternating least square}
-Alternating least square (ALS) \cite{als} è un algoritmo di matrix factorization stato dell'arte per quanto riguarda i feedback impliciti. ALS è un processo di ottimizzazione iterativo in cui ad ogni iterazione si cerca di arrivare più vicino possibile a una rappresentazione fattorizzata dei dati originali. 
-Come spiegato nella \autoref{ssec:mf}, data la matrice dei feedback $R$ di dimensione $u \times i$ con $u$ numero di utenti e $i$ numero di oggetti, si vuole fattorizzare la matrice in due matrici di dimensione $u \times f$ e $f \times i$ tali che il loro prodotto approssimi la matrice originale $R$ nel modo più accurato possibile : $R \approx U \times V$.
-Inizializzando in modo casuale i valori contenuti in $U$ e $V$ e usando i minimi quadrati, si arriva iterativamente ad un approssimazione di $R$. L'approccio usando i minimi quadrati significa
+Alternating least square (ALS) \cite{als} è un algoritmo di matrix factorization stato dell'arte per quanto riguarda i feedback impliciti. ALS è un processo di ottimizzazione iterativo in cui ad ogni iterazione si cerca di arrivare il più vicino possibile a una rappresentazione fattorizzata dei dati originali \cite{als-medium}. 
 
-By randomly assigning the values in U and V and using least squares iteratively we can arrive at what weights yield the best approximation of R. The least squares approach in it’s basic forms means fitting some line to the data, measuring the sum of squared distances from all points to the line and trying to get an optimal fit by minimising this value.
-With the alternating least squares approach we use the same idea but iteratively alternate between optimizing U and fixing V and vice versa. We do this for each iteration to arrive closer to R = U x V.
+\subsection{Feedback impliciti}
+I feedback impliciti hanno alcune importanti caratteristiche che li distinguono dai feedback espliciti e impediscono di usare direttamente algoritmi progettati con i feedback espliciti in mente \cite{als}:
+\begin{enumerate}
+ \item \textit{Non ci sono feedback negativi.} Osservando il comportamento di un utente, è possibile inferire quali oggetti gli piacciono e che quindi ha scelto di consumare. è difficile però capire in modo affidabile quali oggetti l'utente non apprezza. Per esempio, un utente che non ha guardato una serie tv potrebbe averlo fatto perchè non gli interessa quella serie, oppure perché non la conosceva. Questa asimmetria non esiste nei feedback espliciti in cui un utente si esprime su cosa gli piace e cosa non gli piace. Anche i dati mancanti sono un problema, nei feedback espliciti si conosce quali ratings non sono stati espressi dall'utente, nei feedback impliciti no.
+ 
+ \item \textit{I feedback impliciti sono intrinsicamente rumorosi.} Tenendo traccia passivamente dei comportamenti degli utenti è difficile distinguere il caso in cui un utente ha consumato un oggetto perchè davvero interessato o per altri motivi.
+ 
+ \item Il valore numerico dei feedback espliciti indica la \textit{preferenza}, mentre il valore numerico dei feedback impliciti indica la \textit{confidenza}. I sistemi basati sui feedback espliciti permettono all'utente di impostare il loro livello di preferenza, ad esempio con un voto da 1 a 5. I feedback impliciti invece descrivono la frequenza di un'azione, ma un valore più alto  non indica per forza una preferenza maggiore
+\end{enumerate}
 
+\subsection{Il modello}
+Per prima cosa vengono formalizzati i concetti di preferenza e confidenza. La preferenza di un utente $u$ per un item $i$ è indicata con un valore binario $p_{ui}$:
+$$
+p_{ui} =     \begin{cases}
+				1 \;\;\; r_{ui} > 0 \\
+				0 \;\;\; r_{ui} = 0
+              \end{cases}
+$$
+In pratica, se un utente $u$ ha consumato un oggetto $i$ ($r_{ui} > 0$), allora si ha un indicazione che $u$ è interessato a $i$. D'altro canto, se $u$ non ha mai consumato $i$ la preferenza è uguale a 0. In generale, con l'aumento del valore di $r_{ui}$ si ha un indicazione più forte che l'utente sia davvero interessato all'oggetto. Di conseguenza, si può indicare con $c_{ui}$ la confidenza nell'osservare $p_{ui}$. Una possibile scelta è
+$$
+c_{ui} = 1 + \alpha r_{ui}
+$$
+In questo modo, si ha una confidenza minima su $p_{ui}$ per ogni coppia utente-oggetto, ma osservando più preferenze positive la confidenza su $p_{ui} = 1$ aumenta. La velocità di incremento è controllata dalla costante $\alpha$
+
+Come spiegato nella \autoref{ssec:mf}, l'obbiettivo è trovare un vettore $x_u \in R^f$ per ogni utente $u$, ed un vettore $y_i \in R^f$ per ogni oggetto $i$ che fattorizzano le preferenze degli utenti. Le preferenze possono essere poi calcolate come $p_{ui} = x_u^Ty_i$. I vettori in ALS sono calcolati minimizzando la funzione obbiettivo:	
+$$
+\min_{x_*,y_*} \sum
+$$
 
 
 \section{Neural collaborative filtering}
