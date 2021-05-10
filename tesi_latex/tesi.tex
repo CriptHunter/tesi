@@ -116,7 +116,7 @@ Organizzazione tesi...
 
 \chapter{Stato dell'arte}
 \label{chap:stato_arte}
-I recommender system sono algoritmi mirati a suggerire oggetti rilevanti agli utenti. La definizione di oggetto è generica e include ad esempio film da guardare, libri da leggere, prodotti da comprare o qualsiasi altra cosa a seconda del contesto in cui sono implementati. 
+I recommender system sono algoritmi mirati a generare consigli significativi a una insieme di utenti per articoli o prodotti che potrebbero interessarli \cite{recsys-definition}. La definizione di oggetto è generica e include ad esempio film da guardare, libri da leggere, prodotti da comprare o qualsiasi altra cosa a seconda del contesto in cui sono implementati. 
 Quando gli utenti interagiscono con il sistema generano dei feedback. Questi feedback possono essere di due tipi: espliciti o impliciti. I feedback espliciti sono valori numerici che un utente assegna ad un prodotto, i feedback impliciti riflettono indirettamente le opinioni di un utente osservando la cronologia degli acquisti, i link clickati, gli elementi visualizzati, etc.
 Basandosi sui feedback passati, i RS imparano un modello per prevedere quanto un utente può essere interessato a nuovi oggetti. Questi oggetti sono poi ordinati in base alla pertinenza prevista per l'utente. In ultimo, gli oggetti con il rank più alto vengono suggeriti all'utente. La relazione tra utenti e oggetti è rappresentata con una matrice $R_M$ in cui sono memorizzati i rating passati degli utenti.
 La \textit{ratings matrix} è definita come: 
@@ -126,7 +126,7 @@ $$
 dove $U = \{u_1, \dots, u_m\}$ rappresenta l'insieme degli utenti, $I = \{i_1,\dots, i_n\}$ rappresenta l'insieme degli utenti, e $R = \{r_1, \dots, r_k\}$ rappresenta l'insieme dei possibili ratings che un utente ha espresso riguardo a degli oggetti. Un valore mancante nella ratings matrix può avere due significati: l'utente non vuole esprimere un'opinione su un oggetto specifico, oppure l'utente non conoscendo ancora l'oggetto non può averlo valutato \cite{survey-mattia}.
 
 \vspace{5mm}
-\noindent I recommender system si dividono principalmente in 3 categorie:
+\noindent I recommender system si dividono principalmente in tre categorie:
 \begin{itemize}
 	\item collaborative filtering
 	\item content-based
@@ -140,8 +140,6 @@ dove $U = \{u_1, \dots, u_m\}$ rappresenta l'insieme degli utenti, $I = \{i_1,\d
   \caption{Collaborative filtering vs Content-based}
   \label{fig:cb-cf}
 \end{figure}
-
-
 
 \section{Collaborative filtering recommender system}
 Collaborative filtering (CF) è considerata la tecnica di raccomandazione più popolare e ampiamente utilizzata nei RS. Il presupposto alla base di CF è che le persone con preferenze simili valuteranno gli stessi oggetti con ratings simili. CF quindi sfrutta le informazioni sul comportamento passato o le opinioni di una comunità di utenti esistente per prevedere quali elementi potranno piacere o saranno interessanti per l'utente corrente del sistema \cite{recsys-intro}. Gli approcci CF puri non sfruttano né richiedono alcuna conoscenza degli oggetti stessi ma solo dei feedback degli utenti.
@@ -281,15 +279,15 @@ Alternating least square (ALS) \cite{als} è un algoritmo di matrix factorizatio
 \subsection{Feedback impliciti}
 I feedback impliciti hanno alcune importanti caratteristiche che li distinguono dai feedback espliciti e impediscono di usare direttamente algoritmi progettati con i feedback espliciti in mente \cite{als}:
 \begin{enumerate}
- \item \textit{Non ci sono feedback negativi.} Osservando il comportamento di un utente, è possibile inferire quali oggetti gli piacciono e che quindi ha scelto di consumare. è difficile però capire in modo affidabile quali oggetti l'utente non apprezza. Per esempio, un utente che non ha guardato una serie tv potrebbe averlo fatto perchè non gli interessa quella serie, oppure perché non la conosceva. Questa asimmetria non esiste nei feedback espliciti in cui un utente si esprime su cosa gli piace e cosa non gli piace. Anche i dati mancanti sono un problema, nei feedback espliciti si conosce quali ratings non sono stati espressi dall'utente, nei feedback impliciti no.
+ \item \textit{Non ci sono feedback negativi.} Osservando il comportamento di un utente, è possibile inferire quali oggetti gli interessano e che quindi ha scelto di consumare. \'E difficile però capire in modo affidabile quali oggetti l'utente non apprezza. Per esempio, un utente che non ha guardato una serie tv potrebbe non averlo fatto perchè non interessato a quella serie, oppure perché non la conosceva. Questa asimmetria non esiste nei feedback espliciti in cui un utente si esprime su cosa gli piace e cosa non gli piace. Anche i dati mancanti sono un problema, nei feedback espliciti si conosce quali ratings non sono stati espressi dall'utente, nei feedback impliciti no.
  
  \item \textit{I feedback impliciti sono intrinsicamente rumorosi.} Tenendo traccia passivamente dei comportamenti degli utenti è difficile distinguere il caso in cui un utente ha consumato un oggetto perchè davvero interessato o per altri motivi.
  
- \item Il valore numerico dei feedback espliciti indica la \textit{preferenza}, mentre il valore numerico dei feedback impliciti indica la \textit{confidenza}. I sistemi basati sui feedback espliciti permettono all'utente di impostare il loro livello di preferenza, ad esempio con un voto da 1 a 5. I feedback impliciti invece descrivono la frequenza di un'azione, ma un valore più alto  non indica per forza una preferenza maggiore
+ \item Il valore numerico dei feedback espliciti indica la \textit{preferenza}, mentre il valore numerico dei feedback impliciti indica la \textit{confidenza}. I sistemi basati sui feedback espliciti permettono all'utente di impostare il loro livello di preferenza su un oggetto, ad esempio con un voto da 1 a 5. I feedback impliciti invece descrivono la frequenza di un'azione, ma un valore più alto  non indica per forza una preferenza maggiore
 \end{enumerate}
 
 \subsection{Il modello}
-Per prima cosa vengono formalizzati i concetti di preferenza e confidenza. La preferenza di un utente $u$ per un item $i$ è indicata con un valore binario $p_{ui}$:
+Per prima cosa vanno formalizzati i concetti di preferenza e confidenza. La preferenza di un utente $u$ per un item $i$ è indicata con un valore binario $p_{ui}$:
 $$
 p_{ui} =     \begin{cases}
 				1 \;\;\; r_{ui} > 0 \\
@@ -302,11 +300,13 @@ c_{ui} = 1 + \alpha r_{ui}
 $$
 In questo modo, si ha una confidenza minima su $p_{ui}$ per ogni coppia utente-oggetto, ma osservando più preferenze positive la confidenza su $p_{ui} = 1$ aumenta. La velocità di incremento è controllata dalla costante $\alpha$
 
-Come spiegato nella \autoref{ssec:mf}, l'obbiettivo è trovare un vettore $x_u \in R^f$ per ogni utente $u$, ed un vettore $y_i \in R^f$ per ogni oggetto $i$ che fattorizzano le preferenze degli utenti. Le preferenze possono essere poi calcolate come $p_{ui} = x_u^Ty_i$. I vettori in ALS sono calcolati minimizzando la funzione obbiettivo:	
+Come spiegato nella \autoref{ssec:mf}, l'obbiettivo è trovare un vettore $x_u \in R^f$ per ogni utente $u$, ed un vettore $y_i \in R^f$ per ogni oggetto $i$ che fattorizzano le preferenze degli utenti. Le preferenze possono essere poi calcolate come $p_{ui} = x_u^Ty_i$. I vettori latenti in ALS sono calcolati minimizzando la funzione obbiettivo:	
 $$
-\min_{x_*,y_*} \sum
+\min_{x_*,y_*} \sum_{u,i} c_{ui} (p_{ui} - x_u^Ty_i)^2 + 
+\lambda \left( \sum_u ||x_u||^2 + \sum_i ||y_i||^2 \right)
 $$
-
+Il termine $\lambda \left( \sum_u ||x_u||^2 + \sum_i ||y_i||^2 \right)$ è necessario per regolarizzare il modello ed evitare l'overfitting durante il training. Il valore esatto di $\lambda$ dipende dai dati e si determina tramite cross validation. 
+Quando il vettore latente degli utenti o degli oggetti rimane fissato, la funzione obbiettivo diventa quadratica è si può calcolare un minimo globale. Questo porta ad un processo di ottimizzazione con il metodo dei minimi quadrati, in cui si alterna tra il ricalcolare il vettore degli utenti mantenendo fissato quello degli oggetti e viceversa. Ad ogni step il valore della funzioni di costo diminuisce.
 
 \section{Neural collaborative filtering}
 Gli algoritmi basati su matrix factorization sono sicuramente i più popolari nell'ambito dei sistemi di raccomandazione collaborative filtering. Nonostante l'efficacia di questi modello, le loro performance  posso variare in base alla scelta della funzione di interazione. Ad esempio, per quanto riguarda il task di rating prediction su feedback espliciti, è noto che le performance di MF possono essere migliorate incorporando il bias di utenti e oggetti nella funzione di interazione. Anche se si tratta solo di una piccola modifica, dimostra l'effetto positivo di progettare una migliore funzione usata per modellare l'interazione delle feature latenti di utenti e oggetti. 
@@ -359,11 +359,18 @@ A questo punto si hanno due diverse implementazioni di recommender system collab
   \label{fig:neumf}
 \end{figure}
 
+\section{Raccomandazioni context-aware con modelli di deep learning}
+A dataset with many features naturally leads to high-dimensional space and consequently leads to sparsity with maybe only a small number of features per object. This is known as curse of dimensionality [21].
+
+
+I context-aware recommender system usano principalmente un set predefinito di informazioni contestuali esplicite. Il contesto specifico descrive la situazioni in cui le informazioni sono state raccolte come il meteo (soleggiato...),  o il tempo (weekday,weekend, ...). Il vantaggio principale del contesto esplicito è che si può integrare facilmente nei recommender system esistenti data la bassa dimensionalità. Tuttavia, i CARS espliciti hanno le seguenti limitazioni: 1. la selezione del contesto specifico è un task che richiede tempo essendo fatto a mano dagli esperti, 2. il contesto selezionato potrebbe non rappresentare il set di features contestuali più efficace per il recsys in questione. 3. privacy...
+La limitazione sul numero di feature contestuali è un problema quando è possibile ricavare feature di contesto da numerosi sensori dei telefoni come accelerometro, campo magnetico, GPS, e luce e molto altro. L'accelerometro può essere usato per inferire l'attiivtò dell'utente (camminare, seduto), mentre altre feature come il GPS per la posizione
+
 % 
 %			CAPITOLO 3: Lavoro svolto
 % 
 
-\chapter{Classificatore}
+\chapter{Capitolo 3}
 \label{chap:classificatore}
 
 
@@ -372,7 +379,7 @@ A questo punto si hanno due diverse implementazioni di recommender system collab
 %			CAPITOLO 4: Datasets
 % 
 
-\chapter{Datasets}
+\chapter{Capitolo 4}
 \label{chap:datasets}
 
 
@@ -380,7 +387,7 @@ A questo punto si hanno due diverse implementazioni di recommender system collab
 %			CAPITOLO 5: Risultati
 % 
 
-\chapter{Risultati}
+\chapter{Capitolo 5}
 \label{chap:risultati}
 
 
