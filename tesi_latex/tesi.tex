@@ -1,5 +1,7 @@
 \documentclass[12pt,italian]{report}
 \usepackage{tesi}
+\usepackage{algorithm}
+\usepackage{algorithmic}
 %\usepackage[section]{placeins}
 
 %
@@ -360,11 +362,40 @@ A questo punto si hanno due diverse implementazioni di recommender system collab
 \end{figure}
 
 \section{Raccomandazioni context-aware con modelli di deep learning}
-A dataset with many features naturally leads to high-dimensional space and consequently leads to sparsity with maybe only a small number of features per object. This is known as curse of dimensionality [21].
+I sistemi di raccomandazione context-aware tradizionali usano principalmente un set predefinito di informazioni contestuali esplicite. Il contesto specifico descrive le circostanze in cui le informazioni sono state raccolte come il meteo (soleggiato, nuvoloso, etc.), o il tempo (giorno della settimana, ora, etc.). Il vantaggio principale è la bassa dimensionalità del contesto che permette di integrarlo facilmente nei sistemi di raccomandazione esistenti \cite{context-aware-deep-learning}. Infatti un dataset con molte features porta naturalmente ad uno spazio multidimensionale e quindi a sparsità. Questo fenomeno è conosciuto come curse of dimensionality \cite{curse-of-dim-CARS}.
+
+Tuttavia, i CARS espliciti hanno le seguenti limitazioni: (1) la selezione del contesto specifico è un task che richiede tempo essendo fatto a mano da esperti di dominio, (2) il contesto selezionato potrebbe non rappresentare il set di features contestuali più efficace per il recommender system in questione; (3) l'utilizzo di contesti espliciti, come la posizione dell'utente, può sollevare problemi di privacy  \cite{context-aware-deep-learning}. La limitazione sul numero di features contestuali potrebbe essere un problema in quegli ambienti in cui il contesto è complesso e dinamico. Ad esempio, sfruttando in numerosi sensori presenti sugli smartphone come accelerometro, campo magnetico, GPS, e sensore di luminosità, possono essere raccolta informazioni di contesto ad alta dimensionalità. Queste informazioni sono poi utilizzate per inferire il contesto e il comportamento dell'utente; dall'accelerometro si può capire l'attività dell'utente (es. camminare, stare seduto, correre, etc.), mentre con il GPS si può inferire la posizione (es. a casa, al lavoro, etc.).
+
+Per risolvere i problemi legati all'utilizzo del contesto multidimensionale viene proposto di ridurre la dimensionalità del contesto con autoencoder o PCA\cite{latent-context} \cite{context-autoencoder}, di costruire una rappresentazione gerarchica del contesto \cite{hirarchical-context}, e di usare dei modelli di deep learning in grado di supportare molte features di contesto\cite{context-aware-deep-learning}.
+
+\subsection{Estrazione del contesto latente}
+Come detto prima, il contesto ad alta dimensionalità è spesso composto da dati di sensori (GPS, accelerometro, etc.) che sono altamente correlati. Si può usare un auto-encoder per scoprire le correlazioni tra features differenti ed estrarre una rappresentazione a bassa dimensionalità del contesto \cite{latent-context}. Un autoencoder è una rete neurale che trasforma l'input ad alta dimensionalità in una rappresentazione latente a bassa dimensionalità (encoder), poi esegue una ricostruzione dell'input originale a partire rappresentazione latente (decoder) \cite{autoencoder}.
 
 
-I context-aware recommender system usano principalmente un set predefinito di informazioni contestuali esplicite. Il contesto specifico descrive la situazioni in cui le informazioni sono state raccolte come il meteo (soleggiato...),  o il tempo (weekday,weekend, ...). Il vantaggio principale del contesto esplicito è che si può integrare facilmente nei recommender system esistenti data la bassa dimensionalità. Tuttavia, i CARS espliciti hanno le seguenti limitazioni: 1. la selezione del contesto specifico è un task che richiede tempo essendo fatto a mano dagli esperti, 2. il contesto selezionato potrebbe non rappresentare il set di features contestuali più efficace per il recsys in questione. 3. privacy...
-La limitazione sul numero di feature contestuali è un problema quando è possibile ricavare feature di contesto da numerosi sensori dei telefoni come accelerometro, campo magnetico, GPS, e luce e molto altro. L'accelerometro può essere usato per inferire l'attiivtò dell'utente (camminare, seduto), mentre altre feature come il GPS per la posizione
+\begin{algorithm}
+\caption{Estrazione del contesto latente usando un autoencoder}
+ \hspace*{\algorithmicindent} \textbf{Input:} S \\
+ \hspace*{\algorithmicindent} \textbf{Output:} O
+\begin{algorithmic}[1]
+\STATE $y \leftarrow 1$
+\IF{$n < 0$}
+\STATE $X \leftarrow 1 / x$
+\STATE $N \leftarrow -n$
+\ELSE
+\STATE $X \leftarrow x$
+\STATE $N \leftarrow n$
+\ENDIF
+\WHILE{$N \neq 0$}
+\IF{$N$ is even}
+\STATE $X \leftarrow X \times X$
+\STATE $N \leftarrow N / 2$
+\ELSE[$N$ is odd]
+\STATE $y \leftarrow y \times X$
+\STATE $N \leftarrow N - 1$
+\ENDIF
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
 
 % 
 %			CAPITOLO 3: Lavoro svolto
