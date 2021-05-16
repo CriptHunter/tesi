@@ -172,6 +172,9 @@ In questo sezione viene descritta l'implementazione di un recommender system con
  \item L'algoritmo di raccomandazione utilizza sia i feedback dell'utente locale che quelli ricevuti da altri utenti.
  \item Il recommender system supporta informazioni di contesto fisico e sociale.
 \end{enumerate}
+Normalmente l'input di un modello collaborative filtering è composto da tuple (user-ID, item-ID, physical context). Si può sostituire item-ID con delle feature che descrivono l'oggetto, esattamente nello stesso modo in cui operano i sistemi di raccomandazione context aware. Ad esempio se si sta sviluppando un RS per raccomandazione per consigliare ristoranti agli utenti, si può sostituire l'ID del ristorante con feature specifiche come il tipo di cibo servito, il suo prezzo, l'atmosfera, se ha sedute all'aperto, etc. Allo stesso modo si può sostituire lo user-ID con delle feature che descrivono l'utente. Queste possono essere feature generiche che descrivono l'utente come l'età e il sesso, a cui si aggiungo feature specifiche per il RS che si sta sviluppando. Tornando all'esempio dei ristoranti si potrebbe chiedere all'utente quanto è disposto a spendere per mangiare fuori e il tipo di cucina preferita. A feature di utente e oggetto si aggiungono le feature del contesto fisico e sociale. Un'istanza di rating per il modello proposto in questa tesi è quindi del tipo [user-features, item-features, physical context, social context].
+
+\subsection{Struttura modello}
 
 \begin{figure}
   \includegraphics[width=\linewidth]{immagini/ffnet_schema.png}
@@ -179,8 +182,15 @@ In questo sezione viene descritta l'implementazione di un recommender system con
   \label{fig:curse-dim}
 \end{figure}
 
-Normalmente l'input di un modello collaborative filtering è composto da tuple (user-ID, item-ID, physical context). Si può sostituire item-ID con delle feature che descrivono l'oggetto, esattamente nello stesso modo in cui operano i sistemi di raccomandazione context aware. Ad esempio se si sta sviluppando un RS per raccomandazione per consigliare ristoranti agli utenti, si può sostituire l'ID del ristorante con feature specifiche come il tipo di cibo servito, il suo prezzo, l'atmosfera, se ha sedute all'aperto, etc. Allo stesso modo si può sostituire lo user-ID con delle feature che descrivono l'utente. Queste possono essere feature generiche che descrivono l'utente come l'età e il sesso, a cui si aggiungo feature specifiche per il RS che si sta sviluppando. Tornando all'esempio dei ristoranti si potrebbe chiedere all'utente quanto è disposto a spendere per mangiare fuori e il tipo di cucina preferita. A feature di utente e oggetto si aggiungono le feature del contesto fisico e sociale. Un'istanza di rating per il modello proposto in questa tesi è quindi del tipo [user-features, item-features, physical context, social context].
+L'istanza di ratings descritta prima è data in input ad una rete feed-forward fully connected. Una rete feed-forward non contiene cicli nel suo grafo \cite{Goodfellow-et-al-2016}, fully connected indica che ogni neurone del layer $i$ è connesso a tutti i neuroni del layer $i+1$. La rete ha un layer di input, un layer di output e $n$ layer nascosti. Il layer di input ha un numero di neuroni pari alle feature in ingresso (sommando user, item e context feature), il layer di output ha sempre un neurone, mentre il numero di neuroni nei layer nascosti, e il numero di layer nascosti si può trovare tramite grid search o random search. In questa tesi è stato utilizzato lo stesso numero di neuroni in ogni layer nascosto, ma si può ad esempio adottare un design a torre in cui i layer più profondi hanno meno neuroni di quelli dei primi layer. Come funzione di attivazione del layer di input e dei layer nascosti ho scelto la funzione rectified linear unit (ReLU) definita come $f(x) = max\{0, x\}$. La funzione ReLU è consigliata per la maggior parte delle reti feed-forward \cite{Goodfellow-et-al-2016} e ha diversi vantaggi rispetto a funzioni di attivazione come sigmoide e tanh: è più plausibile biologicamente, non viene saturata (a differenza della sigmoide che ha al massimo valore 1), e incoraggiando l'attivazione sparsa dei neuroni rende più difficile che si verifichi l'overfitting del modello durante il training \cite{relu}. Come funzione di attivazione del layer di output ho scelto la funzione sigmoide definita come 
+$$f
+(x) = \frac{1}{1+e^{-x}}
+$$
+che restringe l'output della rete in valori tra 0 e 1, ed è quindi adatta per problemi di classificazione binaria \cite{choose-act-func}. Come funzione di loss la scelta classica per un classificatore binario è la binary cross-entropy / log loss, definita come
 
+$$
+H_p(q) = -\frac{1}{N} \sum_{i=1}^N y_i \cdot \log(p(y_i)) + (1-y_i) \cdot \log(1-p(y_i))
+$$
 
 % 
 %			CAPITOLO 4: Datasets
