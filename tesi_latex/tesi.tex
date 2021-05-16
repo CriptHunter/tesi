@@ -133,30 +133,53 @@ Nelle reti opportunistiche, di solito, un dispositivo mobile dovrebbe essere in 
 
 Un altra caratteristica importante per un sistema di raccomandazione per dispositivi mobili è il supporto per il contesto utente. Sfruttando i numerosi sensori presenti sui dispositivi degli utenti è possibile generare un contesto ad alta dimensionalità che caratterizza in modo migliore la situazione dell'utente e permette raccomandazioni più accurate. Al contesto fisico si può aggiungere il contesto sociale, che descrive ad esempio che tipo di persone l'utente ha intorno a se (amici, colleghi, sconosciuti) e con che tipo di persone ha scambiato le proprie informazioni, e quindi da chi ha ricevuto una raccomandazione.
 
-
-In questo capitolo viene descritta l'implementazione di un recommender system context-aware basato su deep-learning e pensato per dispositivi mobili con le seguenti caratteristiche:
-\begin{enumerate}
- \item L'algoritmo di raccomandazione esegue la fase di training e inferenza direttamente su dispositivo mobile.
- 
-  \item Non c'è un architettura client-server con un server che ha conoscenza globale dell'informazioni.
-  \item Le valutazioni sono feedback impliciti con valore 0 o 1, ma è possibile anche implementare una versione con feedback impliciti.
-  \item L'algoritmo di raccomandazione utilizza sia i rating dell'utente locale che quelli ricevuti da altri utenti.
-  \item Il recommender system supporta informazioni di contesto fisico e sociale.
-\end{enumerate}
-
-
 \section{Limitazioni dei RS tradizionali}
 Gli algoritmi di raccomandazione stato dell'arte descritti nel \autoref{chap:stato_arte} hanno alcune limitazioni che rendono impossibile un'implentazione senza modifiche in ambiente mobile.
 
 \myparagraph{ALS}
-Alternating least square (descritto in ...) è un algoritmo di matrix factorization per feedback impliciti. L'input di ALS è una matrice $R$ di dimensione $u \times i$ con $u$ numero di utenti, e $i$ numero di oggetti. In ambiente mobile inizialmente la matrice $R$ è vuota, ogni volta che un nuovo utente o un nuovo oggetto viene scoperto si aggiunge una nuova riga / colonna. Il problema è che l'aggiunta di un nuovo utente/oggetto comporta un cambiamento della dimensione della matrice $R$ e l'algoritmo deve essere addestrato di nuovo per poter raccomandare i nuovi oggetti. 
+Alternating least square (descritto in ...) è un algoritmo di matrix factorization per feedback impliciti. L'input di ALS è una matrice $R$ di dimensione $u \times i$ con $u$ numero di utenti, e $i$ numero di oggetti. Un elemento $r_{ui}$ della matrice $R$ indica quante volte l'utente $u$ ha consumato l'oggetto $i$. In ambiente mobile inizialmente la matrice $R$ è vuota perché l'utente non ha espresso nessuna valutazione e non ha incontrato altri utenti. Ogni volta che un nuovo utente o un nuovo oggetto viene scoperto si aggiunge una nuova riga / colonna. Il primo problema di questo algoritmo, e più in generale degli algoritmi di matrix factorization è quindi che l'aggiunta di un nuovo utente/oggetto comporta un cambiamento della dimensione della matrice $R$ e l'algoritmo deve essere addestrato di nuovo per poter raccomandare i nuovi oggetti. Inoltre il tempo di training cresce linearmente con il numero di utenti e oggetti [Verificare]. Il secondo problema di MF è l'aggiunta del contesto. Come descritto in [sezione context-aware] ogni feature di contesto è una dimensione aggiunta alla matrice dei rating $R$. Con l'aumento delle dimensioni, lo spazio dimensionale aumenta in modo esponenziale \cite{curse-of-dim}. Questa crescita esponenziale porta un'alta sparsità dei dati, fino a quando ogni punto è equidistante dagli altri. La \autoref{curse-dim}, mostra uno spazio dimensionale diviso in 4 regioni. Aggiungendo una dimensione lo spazio cresce esponenzialmente a 16 regioni. Aggiungendo una terza dimensione si arriva a 64 regioni.
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{immagini/curse_of_dimensionality.png}
+  \caption{Curse of dimensionality}
+  \label{fig:curse-dim}
+\end{figure}
 
 \myparagraph{NeuMF}
-Neural matrix factorization
+Neural matrix factorization (descritto...) implementa un RS
+collaborative-filtering con una deep neural network. L'input della 
+rete è del tipo user-id, item-id, rating. Per essere compresi 
+dalla rete user-id e item-id sono convertiti con one-hot encoding in 
+vettori binari. Questi vettori hanno lunghezza pari al numero di 
+user/item e hanno valore 1 solo in corrispondenza della cella numero 
+user-id, il resto sono 0. La dimensione dei vettori di embedding è quindi da definire a livello di compilazione della rete prima di eseguire il training. Una volta terminato il training, passati alla fase di utilizzo, l'input della rete deve avere la stessa dimensione impostata a livello di compilazione. Come per ALS quindi aggiungere un nuovo utente od un nuovo oggetto significa dover compilare di nuovo il modello ed eseguire di nuovo il training da zero. Questo modello inoltre, come presentato nel paper originale \cite{NCF} non ha nessun supporto per le feature di contesto.
 
 \myparagraph{Context-aware NeuMF}
-Context-aware neural matrix factorization
+Context-aware neural matrix factorization (descritto ...) è un estensione di NeuMF che supporta le feature di contesto. Questo modello come dimostrato nel paper in cui è stato proposto, non soffre del problema di curse of dimensionality di matrix factorization. é quindi possibile dare in input alla rete un vettore del tipo [user-id, item-id, context, rating], in cui il vettore context può avere un'alta dimensionalità. Risolve quindi il propvlema dell'integrare le numerose feature di contesto fisico estratte dai sensori degli smartphone e le features sociali che descrivono il contesto sociale dell'utente. Rimangono le stesse limitazioni di NeuMF sugli utenti e gli oggetti che sono sempre dati in input come vettori in one-hot encoding definiti a livello di compilazione.
 
+\section{Nome modello}
+I problemi principali nell'implementare un sistema di raccomandazione per sistemi mobili e pervasivi quindi sono principalmente due:
+\begin{enumerate}
+ \item Non si conosce a priori il numero di utenti e oggetti presenti nel sistema perchè l'utente ne scopre di nuovi gradualmente tramite interazione D2D.
+ \item \`E difficile integrare le numerose informazioni di contesto fisico generate dai dispositivi mobili e le informazioni di contesto sociale che descrivono la situazione dell'utente.
+\end{enumerate}
+In questo sezione viene descritta l'implementazione di un recommender system context-aware basato su deep-learning e pensato per dispositivi mobili con le seguenti caratteristiche:
+\begin{enumerate}
+ \item L'algoritmo di raccomandazione esegue la fase di training e inferenza direttamente su dispositivo mobile.
+ \item Non c'è un architettura client-server con un server che ha conoscenza globale dell'informazioni.
+ \item Ogni utente ha un propria istanza locale dell'algoritmo di raccomandazione
+ \item Le valutazioni sono feedback impliciti con valore 0 o 1.
+ \item L'algoritmo di raccomandazione utilizza sia i feedback dell'utente locale che quelli ricevuti da altri utenti.
+ \item Il recommender system supporta informazioni di contesto fisico e sociale.
+\end{enumerate}
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{immagini/ffnet_schema.png}
+  \caption{Schema di nome modello}
+  \label{fig:curse-dim}
+\end{figure}
+
+Normalmente l'input di un modello collaborative filtering è composto da tuple (user-ID, item-ID, physical context). Si può sostituire item-ID con delle feature che descrivono l'oggetto, esattamente nello stesso modo in cui operano i sistemi di raccomandazione context aware. Ad esempio se si sta sviluppando un RS per raccomandazione per consigliare ristoranti agli utenti, si può sostituire l'ID del ristorante con feature specifiche come il tipo di cibo servito, il suo prezzo, l'atmosfera, se ha sedute all'aperto, etc. Allo stesso modo si può sostituire lo user-ID con delle feature che descrivono l'utente. Queste possono essere feature generiche che descrivono l'utente come l'età e il sesso, a cui si aggiungo feature specifiche per il RS che si sta sviluppando. Tornando all'esempio dei ristoranti si potrebbe chiedere all'utente quanto è disposto a spendere per mangiare fuori e il tipo di cucina preferita. A feature di utente e oggetto si aggiungono le feature del contesto fisico e sociale. Un'istanza di rating per il modello proposto in questa tesi è quindi del tipo [user-features, item-features, physical context, social context].
 
 
 % 
