@@ -2,6 +2,7 @@
 \usepackage{tesi}
 \usepackage{algorithm}
 \usepackage{algorithmic}
+
 \newcommand{\myparagraph}[1]{\paragraph{#1}\mbox{}\\}
 %\usepackage[section]{placeins}
 
@@ -135,10 +136,10 @@ In queste reti, di solito, un dispositivo mobile dovrebbe essere in grado di con
 Un'altra caratteristica importante per un sistema di raccomandazione per dispositivi mobili è il supporto per il contesto utente. Sfruttando i numerosi sensori presenti sui dispositivi degli utenti è possibile generare un contesto ad alta dimensionalità che caratterizza in modo accurato la situazione dell'utente e permette raccomandazioni più accurate. Al contesto fisico estratto dai sensori o altre fonti, si può aggiungere il contesto sociale che descrive quali tipologie di persone l'utente ha intorno a se (amici, colleghi, sconosciuti, etc.) e con che tipo di persone ha scambiato le proprie informazioni, e quindi da chi ha ricevuto una raccomandazione.
 
 \section{Limitazioni dei RS tradizionali}
-Gli algoritmi di raccomandazione stato dell'arte descritti nel \autoref{chap:stato_arte} hanno alcune limitazioni che rendono impossibile un'implentazione senza modifiche in ambiente mobile.
+Gli algoritmi di raccomandazione stato dell'arte descritti nel \autoref{chap:stato_arte} hanno alcune limitazioni che rendono difficile l'implementazione senza alcuna modifica nell'ambiente di riferimento.
 
 \myparagraph{ALS}
-Alternating least square (descritto in ...) è un algoritmo di matrix factorization per feedback impliciti. L'input di ALS è una matrice $R$ di dimensione $u \times i$ con $u$ numero di utenti, e $i$ numero di oggetti. Un elemento $r_{ui}$ della matrice $R$ indica quante volte l'utente $u$ ha consumato l'oggetto $i$. In ambiente mobile inizialmente la matrice $R$ è vuota perché l'utente non ha espresso nessuna valutazione e non ha incontrato altri utenti. Ogni volta che un nuovo utente o un nuovo oggetto viene scoperto si aggiunge una nuova riga / colonna. Il primo problema di questo algoritmo, e più in generale degli algoritmi di matrix factorization è quindi che l'aggiunta di un nuovo utente/oggetto comporta un cambiamento della dimensione della matrice $R$ e l'algoritmo deve essere addestrato di nuovo per poter raccomandare i nuovi oggetti. Inoltre il tempo di training cresce linearmente con il numero di utenti e oggetti [Verificare]. Il secondo problema di MF è l'aggiunta del contesto. Come descritto in [sezione context-aware] ogni feature di contesto è una dimensione aggiunta alla matrice dei rating $R$. Con l'aumento delle dimensioni, lo spazio dimensionale aumenta in modo esponenziale \cite{curse-of-dim}. Questa crescita esponenziale porta un'alta sparsità dei dati, fino a quando ogni punto è equidistante dagli altri. La \autoref{fig:curse-dim}, mostra uno spazio dimensionale diviso in 4 regioni. Aggiungendo una dimensione lo spazio cresce esponenzialmente a 16 regioni. Aggiungendo una terza dimensione si arriva a 64 regioni.
+Alternating least square (descritto in ...) è un algoritmo di matrix factorization per feedback impliciti. L'input di ALS è una matrice $R$ di dimensione $u \times i$ con $u$ numero di utenti, e $i$ numero di oggetti. Un elemento $r_{ui}$ della matrice $R$ indica quante volte l'utente $u$ ha consumato l'oggetto $i$. In ambiente mobile inizialmente la matrice $R$ è vuota perché l'utente non ha espresso nessuna valutazione e non ha incontrato altri utenti. Ogni volta che un nuovo utente o un nuovo oggetto viene scoperto si aggiunge una nuova riga/colonna alla matrice $R$. Il primo problema di questo algoritmo, e più in generale degli algoritmi di matrix factorization è l'aggiunta di un nuovo utente/oggetto che comporta un cambiamento nella dimensione della matrice $R$. L'algoritmo deve essere addestrato nuovamente da zero sulla nuova matrice $R$ per poter raccomandare i nuovi oggetti e tenere conto delle valutazioni dei nuovi utenti. Il secondo problema di MF è l'aggiunta del contesto. Come detto in [sezione context-aware] ogni feature di contesto è una dimensione aggiunta alla matrice dei rating $R$. Con l'aumento delle dimensioni, lo spazio dimensionale aumenta in modo esponenziale \cite{curse-of-dim} mentre il numero dei punti nello spazio rimane sempre lo stesso. Questa crescita esponenziale porta un'alta sparsità dei dati, che impedisce al modello di generalizzare correttamente. La \autoref{fig:curse-dim}, mostra graficamente il problema. Nell'immagine a) lo spazio 1D è diviso in 4 regioni. In b) aggiungendo una dimensione lo spazio cresce esponenzialmente a 16 regioni. In c) aggiungendo una terza dimensione lo spazio è diviso in 64 regioni ma il numero di punti in ogni regione rispetto ad a) è molto minore.
 
 \begin{figure}
   \includegraphics[width=\linewidth]{immagini/curse_of_dimensionality.png}
@@ -149,14 +150,13 @@ Alternating least square (descritto in ...) è un algoritmo di matrix factorizat
 \myparagraph{NeuMF}
 Neural matrix factorization (descritto...) implementa un RS
 collaborative-filtering con una deep neural network. L'input della 
-rete è del tipo user-id, item-id, rating. Per essere compresi 
-dalla rete user-id e item-id sono convertiti con one-hot encoding in 
-vettori binari. Questi vettori hanno lunghezza pari al numero di 
-user/item e hanno valore 1 solo in corrispondenza della cella numero 
-user-id, il resto sono 0. La dimensione dei vettori di embedding è quindi da definire a livello di compilazione della rete prima di eseguire il training. Una volta terminato il training, passati alla fase di utilizzo, l'input della rete deve avere la stessa dimensione impostata a livello di compilazione. Come per ALS quindi aggiungere un nuovo utente od un nuovo oggetto significa dover compilare di nuovo il modello ed eseguire di nuovo il training da zero. Questo modello inoltre, come presentato nel paper originale \cite{NCF} non ha nessun supporto per le feature di contesto.
+rete è un record formato da \texttt{[user\_id, item\_id, rating]}.
+Per essere correttamente processati dalla dalla rete neurale \texttt{user\_id} e \texttt{item\_id} sono convertiti da numeri interi in vettori binari con one-hot encoding. Questi vettori hanno lunghezza pari al numero di 
+user/item e hanno valore 1 solo in corrispondenza dell'elemento numero 
+\texttt{user\_id}/\texttt{item\_id}, il resto degli elementi ha valore 0. La dimensione dell'input della rete e di conseguenza la dimensione dell'input del layer di embedding è da definire a livello di compilazione della rete prima di eseguire il training. Una volta terminato il training, la rete è in grado di predirre il rating degli stessi utenti/oggetti già presenti durante il training. Questo perché l'input deve avere la stessa dimensione di quello definito a livello di compilazione, e quindi il numero di utenti e oggetti è lostesso definito a livello di compilazione. Come per ALS quindi aggiungere un nuovo utente od un nuovo oggetto significa dover compilare di nuovo il modello ed eseguire di nuovo il training da zero. Questo modello inoltre, come presentato nel paper originale \cite{NCF} non ha nessun supporto per le feature di contesto.
 
 \myparagraph{Context-aware NeuMF}
-Context-aware neural matrix factorization (descritto ...) è un estensione di NeuMF che supporta le feature di contesto. Questo modello come dimostrato nel paper in cui è stato proposto, non soffre del problema di curse of dimensionality di matrix factorization. é quindi possibile dare in input alla rete un vettore del tipo [user-id, item-id, context, rating], in cui il vettore context può avere un'alta dimensionalità. Risolve quindi il propvlema dell'integrare le numerose feature di contesto fisico estratte dai sensori degli smartphone e le features sociali che descrivono il contesto sociale dell'utente. Rimangono le stesse limitazioni di NeuMF sugli utenti e gli oggetti che sono sempre dati in input come vettori in one-hot encoding definiti a livello di compilazione.
+Context-aware neural matrix factorization (descritto ...) è un estensione di NeuMF che supporta le feature di contesto. Questo modello essendo basato su reti neurali, è meno soggetto di matrix factorization al problema della curse of dimensionality. L'input della rete è un record formato da \texttt{[user\_id, item\_id, context, rating]}, in cui il vettore context può avere un'alta dimensionalità. Risolve quindi il problema dell'integrare le numerose feature di contesto fisico estratte dai sensori degli smartphone e le features sociali che descrivono il contesto sociale dell'utente. Rimangono le stesse limitazioni di NeuMF sull'input, dato che gli ID di utenti e oggetti sono dati in input come vettori in one-hot encoding con dimensione fissata.
 
 \section{Nome modello}
 I problemi principali nell'implementare un sistema di raccomandazione per sistemi mobili e pervasivi quindi sono principalmente due:
@@ -196,6 +196,30 @@ dove $y$ è il valore reale del feedback utente (0 oppure 1), e $p(y)$ è la pro
 
 Come ottimizzatore ho scelto Adam, nel paper in cui viene introdotto viene dimostrato empiricamente di essere generalmente migliore rispetto ad altri algoritmi di ottimizzazione stocastici e di risolvere in modo efficiente problemi di deep learning \cite{adam}. Adam ha diversi parametri configurabili, il più importante è il learning rate (chiamato $\alpha$ in Adam) che viene deciso tramite grid search, gli altri parametri ($\beta_1, \beta_2, \varepsilon$) sono lasciati al valore di default della libreria Keras.\footnote{\url{https://keras.io/api/optimizers/adam/}}. Gli altri iperparametri della rete neurale come il numero di epoche e la batch size sono ottimizzati tramite grid search e descritti nel \autoref{chap:cap6}.
 In \autoref{fig:ffnet} è rappresentata la struttura della rete. In questo caso la rete ha due layer nascosti ed ogni layer contiene 10 neuroni. Come si vede dall'input le feature di contesto sono più numerose rispetto a quelle di user, item e social context prese singolarmente. Ovviamente questo non è un constraint ma ci si aspetta che le feature di contesto fisico siano molto numerose.
+
+
+\section{Preprocessing dei dati}
+\subsection{Contesto sociale}
+Il contesto sociale si riferisce all'insieme di persone con cui l'utente ha interazioni sociali durante la vita giornaliera, come lavorare con il colleghi o chattare con gli amici. \'E stato provato in letteratura che esiste una forte correlazione tra le attività umane e i dati sociali. Questo implica che modellare una rete specifica per l'utente di relazioni sociali può contribuire a sottolineare le differenze tra i vari contesti in cui è coinvolto.
+
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.50]{immagini/ego-network.png}
+  \caption{Ego network}
+  \label{fig:ego-network}
+\end{figure}
+
+\subsubsection{Ego Network}
+Una ego network è una rete sociale composta da un individuo chiamato ego, e dalle persone con cui l'ego ha un collegamento sociale, chiamati alter. I legami sociali in una ego network non hanno tutti la stessa importanza. Ogni individuo ha solo pochi collegamenti forti e molti collegamenti deboli, dovuti alla capacità umana di gestire un numero limitato di relazioni sociali. Una rappresentazione della ego network è mostrata in \autoref{fig:ego-network}: l'ego è il punto rosso al centro dei quattro cerchi concentrici chiamati layer in cui gli alter sono distribuiti in base alla forza del legame sociale con l'ego. Il cerchio più interno (support clique) è il layer più piccolo, e contiene solo pochi alter che rappresentato le relazioni sociali più forti con l'ego. Il secondo layer (sympathy group) contiene le persone che possono essere considerati gli amici più cari. Il terzo cerchio (affinity group) è composto da "casual friends" [tradurre] e membri della famiglia meno vicini, mentre l'ultimo layer include persone con cui l'individuo ha interazioni sociali occasionali.
+
+\subsubsection{Modellare il contesto sociale dell'utente}
+Per modellare il contesto sociale di un utente in ambiente mobile, si caratterizzano le interazioni sociali usando le seguenti sorgenti di dati: (i) chiamate telefoniche e log degli SMS, (ii) dati di prossimità, e (iii) attività svolte dall'utente sugli online social networks (OSN).
+
+Il primo step per costruire l'ego network di un individuo è stimare la forza dei legami sociali con i sui alter. Un buon indicatore della forza delle relazione sociale tra due persone è data dal numero di interazioni che le due persone hanno avuto in passato. Basandosi su questa considerazione, per modellare la forza dei legami sociali dell'utente nel cyberspace[???che robba è], sono presi in considerazione diverse attività svolte dall'utente su OSN, inclusi commenti, reazioni (come "mi piace") e persone menzionate. Formalmente, la forza dei legami sociali virtuali tra l'ego $e$ e uno dei sui alter $a$, $\omega(e,a)$ è calcolata nel modo seguente:
+$$
+	\omega(e,a)=\sum_{v_\in V}I_S (e, a)
+$$
+dove $V$ è l'insieme delle sorgenti di dati degli OSN nominate prima, e la funzione $I_S (e, a)$ calcola il numero di interazioni tra $e$ ed $a$ per una data sorgente di dati.
 
 % 
 %			CAPITOLO 4: Datasets
