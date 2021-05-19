@@ -199,8 +199,23 @@ In \autoref{fig:ffnet} è rappresentata la struttura della rete. In questo caso 
 
 
 \section{Preprocessing dei dati}
+\subsection{Contesto fisico}
+Il contesto fisico è composto da tutte quelle informazioni rilevanti che possono essere utilizzate per caratterizzare la situazione di un utente. Le feature del contesto fisico possono essere ricavate sfruttando i sensori presenti sugli smartphone personali di ogni utente, informazioni aggiuntive sul sistema operativo e altre informazioni esterne come data, ora e meteo. In particolare sono raccolte informazioni dalle seguenti fonti:
+
+\paragraph{Posizione} Informazioni relative alla posizione geografica che includono latitudine, longitudine, precisione della posizione e direzione del movimento
+\paragraph{Movimento utente} Il movimento dell'utente che include sia il movimento a piedi, come correre o camminare, sia il movimento su un mezzo di trasporto come l'automobile o la bicicletta.
+\paragraph{Audio}  Informazioni relativi alla configurazione audio dello smartphone, che include la modalità audio (suono, vibrazione, silenzioso), il volume delle notifiche, e se l'altoparlante del telefono è acceso o spento.
+\paragraph{Batteria} Informazioni relative alla batteria del telefono che includono il livello di carica e se la batteria si sta caricando. 
+\paragraph{Display}  Stato dello schermo dello smartphone che indicano se è acceso, spento o si sta spegnendo perchè non è utilizzato, e orientamento dello schermo.
+\paragraph{Dati dei sensori fisici} che includono sensori ambientali (es. temperatura dell'ambiente e luce), sensori di movimento (es. accelerometro e giroscopio) e sensori di posizione (es. rotazione e prossimità).
+\paragraph{Celle di rete} Lista delle celle di rete mobile rilevante dal dispositivo. Per ogni cella si identifica il tipo di tecnologia (es. GSM o LTE), l'ID della cella, e la forza del segnale.
+\paragraph{Wi-Fi} Lista di tutti gli access point Wi-Fi disponibili in prossimità, e se lo smartphone è connesso ad uno di essi.
+\paragraph{Meteo}
+\paragraph{Data e ora}
+
+
 \subsection{Contesto sociale}
-Il contesto sociale si riferisce all'insieme di persone con cui l'utente ha interazioni sociali durante la vita giornaliera, come lavorare con il colleghi o chattare con gli amici. \'E stato provato in letteratura che esiste una forte correlazione tra le attività umane e i dati sociali. Questo implica che modellare una rete specifica per l'utente di relazioni sociali può contribuire a sottolineare le differenze tra i vari contesti in cui è coinvolto.
+Il contesto sociale si riferisce all'insieme di persone con cui l'utente ha interazioni sociali durante la vita giornaliera, come lavorare con i colleghi o chattare con gli amici. \'E stato provato in letteratura che esiste una forte correlazione tra le attività umane e i dati sociali. Questo implica che modellare una rete specifica per l'utente di relazioni sociali può contribuire a sottolineare le differenze tra i vari contesti in cui è coinvolto.
 
 \begin{figure}
   \centering
@@ -215,11 +230,25 @@ Una ego network è una rete sociale composta da un individuo chiamato ego, e dal
 \subsubsection{Modellare il contesto sociale dell'utente}
 Per modellare il contesto sociale di un utente in ambiente mobile, si caratterizzano le interazioni sociali usando le seguenti sorgenti di dati: (i) chiamate telefoniche e log degli SMS, (ii) dati di prossimità, e (iii) attività svolte dall'utente sugli online social networks (OSN).
 
-Il primo step per costruire l'ego network di un individuo è stimare la forza dei legami sociali con i sui alter. Un buon indicatore della forza delle relazione sociale tra due persone è data dal numero di interazioni che le due persone hanno avuto in passato. Basandosi su questa considerazione, per modellare la forza dei legami sociali dell'utente nel cyberspace[???che robba è], sono presi in considerazione diverse attività svolte dall'utente su OSN, inclusi commenti, reazioni (come "mi piace") e persone menzionate. Formalmente, la forza dei legami sociali virtuali tra l'ego $e$ e uno dei sui alter $a$, $\omega(e,a)$ è calcolata nel modo seguente:
-$$
-	\omega(e,a)=\sum_{v_\in V}I_S (e, a)
-$$
+Il primo step per costruire l'ego network di un individuo è stimare la forza dei legami sociali con i sui alter. Un buon indicatore della forza delle relazione sociale tra due persone è data dal numero di interazioni che le due persone hanno avuto in passato. Basandosi su questa considerazione, per modellare la forza dei legami sociali dell'utente nel cyberspace[???che robba è], sono presi in considerazione diverse attività svolte dall'utente su OSN, inclusi commenti, reazioni (come "mi piace") e persone menzionate. Formalmente, la forza dei legami sociali virtuali tra l'ego $e$ ed uno dei sui alter $a$, $\omega_{osn}(e,a)$ è calcolata nel modo seguente:
+\begin{equation}	
+	\omega_{osn}(e,a)=\sum_{v_\in V}I_S (e, a)
+\end{equation}
+
 dove $V$ è l'insieme delle sorgenti di dati degli OSN nominate prima, e la funzione $I_S (e, a)$ calcola il numero di interazioni tra $e$ ed $a$ per una data sorgente di dati.
+
+Per caratterizzare i link sociali fisici di un utente si calcola il numero di interazioni con altre persone basandosi su telefonate, SMS e contatti faccia a faccia inferiti usando tecnologie wireless disponibili sugli smartphone. In particolare sono considerate il Bluetooth (BT) e il Wi-Fi Direct (WFD) per scoprire persone che sono abbastanza vicine da aver un interazione con l'utente locale. Sono filtrati i dispositivi che non si trovano in prossimità dell'utente, e sono selezionati solo i dispositivi personali dell'utente, in modo tale da non considerare stampanti smart TV etc. In modo simile ai link sociali virtuali, si definisce la forza dei legami fisici sociali tra l'ego $e$ e un alter $a$ , $\omega_{phy}(e, a)$ come il numero delle loro interazioni tramite telefonate, SMS, e prossimità fisica come segue:
+\begin{equation}
+	\omega_{phy}(e, a) = \sum_{p \in P}I_p(e,a)
+\end{equation}
+
+dove $P$ è l'insieme delle sorgenti fisiche considerate, e $I_p(e,a)$ rappresenta il numero di interazioni tra due utenti per una data sorgente di dati. Infine, la forza complessiva del collegamento sociale tra $e$ ed $a$ è data dalla combinazione lineare delle interazioni online e fisiche descritte prima:
+\begin{equation}
+\label{eqn:final-weights}
+	\omega_s(e,a) = \lambda \cdot \omega_{osn}(e,a) + (1 - \lambda)
+	\cdot \omega_{phy}(e,a)
+\end{equation}
+con il parametro $\lambda$ che regola l'importanza delle interazioni sociali e fisiche. Per ogni alter, solo l'ultimo peso calcolato è mantenuto in memoria, e viene aggiornato quando nuove interazioni sociali sono identificate. I link sociali tra l'utente locale e le altre persone sono raggruppate in base al peso calcolato nell'\autoref{eqn:final-weights}. L'output finale è un array di valori in cui ogni elemento rappresenta la percentuale di utenti attivi in ogni cerchio della ego network di un utente.
 
 % 
 %			CAPITOLO 4: Datasets
