@@ -198,21 +198,22 @@ Come ottimizzatore ho scelto Adam, nel paper in cui viene introdotto viene dimos
 In \autoref{fig:ffnet} è rappresentata la struttura della rete. In questo caso la rete ha due layer nascosti ed ogni layer contiene 10 neuroni. Come si vede dall'input le feature di contesto sono più numerose rispetto a quelle di user, item e social context prese singolarmente. Ovviamente questo non è un constraint ma ci si aspetta che le feature di contesto fisico siano molto numerose.
 
 
-\section{Preprocessing dei dati}
+\section{Informazioni di contesto}
+In questa sezione sono descritte le informazioni di contesto fisico e sociale che vengono date in input al sistema di raccomandazione mobile. Tutte le feature sono raccolte e processate direttamente sul device dell'utente.
+
 \subsection{Contesto fisico}
-Il contesto fisico è composto da tutte quelle informazioni rilevanti che possono essere utilizzate per caratterizzare la situazione di un utente. Le feature del contesto fisico possono essere ricavate sfruttando i sensori presenti sugli smartphone personali di ogni utente, informazioni aggiuntive sul sistema operativo e altre informazioni esterne come data, ora e meteo. In particolare sono raccolte informazioni dalle seguenti fonti:
+Il contesto fisico è composto da tutte quelle informazioni rilevanti che possono essere utilizzate per caratterizzare la situazione di un utente. Le feature del contesto fisico sono ricavate dai sensori fisici dello smartphone di un utente come giroscopio e accelerometro, dal sistema operativo del telefono come stato del display e batteria. A queste feature si vanno a integrare informazioni esterne come il meteo, la data e l'ora. Più nel dettaglio il contesto utente è caratterizzato dalle seguenti informazioni:
 
-\paragraph{Posizione} Informazioni relative alla posizione geografica che includono latitudine, longitudine, precisione della posizione e direzione del movimento
-\paragraph{Movimento utente} Il movimento dell'utente che include sia il movimento a piedi, come correre o camminare, sia il movimento su un mezzo di trasporto come l'automobile o la bicicletta.
-\paragraph{Audio}  Informazioni relativi alla configurazione audio dello smartphone, che include la modalità audio (suono, vibrazione, silenzioso), il volume delle notifiche, e se l'altoparlante del telefono è acceso o spento.
-\paragraph{Batteria} Informazioni relative alla batteria del telefono che includono il livello di carica e se la batteria si sta caricando. 
-\paragraph{Display}  Stato dello schermo dello smartphone che indicano se è acceso, spento o si sta spegnendo perchè non è utilizzato, e orientamento dello schermo.
+\paragraph{Posizione} Informazioni relative alla posizione geografica che includono latitudine, longitudine, precisione della posizione e direzione del movimento. La posizione geografica può essere usata per capire il luogo in cui si trova l'utente (a casa, al lavoro, etc.) o per raccomandare punti di interesse nelle vicinanze.
+\paragraph{Movimento utente} Il movimento dell'utente include sia le attività svolte a piedi (correre e camminare), sia il movimento su un mezzo di trasporto (veicolo generico o bicicletta).
+\paragraph{Audio}  Informazioni relative alla configurazione audio dello smartphone, incluse la modalità audio (suono, vibrazione, silenzioso), il volume delle notifiche, e lo stato dell'altoparlante (acceso o spento). Anche l'audio può migliorare il riconoscimento del contesto, per esempio durante una riunione la modalità audio potrebbe essere impostata su silenzioso e l'altoparlante spento.
+\paragraph{Batteria} Informazioni relative alla batteria del telefono che includono il livello di carica e se la batteria si sta ricaricando. 
+\paragraph{Display}  Stato dello schermo dello smartphone (acceso o spento), e orientamento dello schermo (verticale od orizzontale).
 \paragraph{Dati dei sensori fisici} che includono sensori ambientali (es. temperatura dell'ambiente e luce), sensori di movimento (es. accelerometro e giroscopio) e sensori di posizione (es. rotazione e prossimità).
-\paragraph{Celle di rete} Lista delle celle di rete mobile rilevante dal dispositivo. Per ogni cella si identifica il tipo di tecnologia (es. GSM o LTE), l'ID della cella, e la forza del segnale.
+\paragraph{Celle di rete} Lista delle celle di rete mobile rilevate dal dispositivo. Per ogni cella si identifica il tipo di tecnologia (es. GSM o LTE), l'ID della cella, e la forza del segnale. La rete mobile può migliorare l'identificazione della posizione dell'utente.
 \paragraph{Wi-Fi} Lista di tutti gli access point Wi-Fi disponibili in prossimità, e se lo smartphone è connesso ad uno di essi.
-\paragraph{Meteo}
-\paragraph{Data e ora}
-
+\paragraph{Meteo} Informazioni relative alle condizioni meteo che includono il tempo in atto (es. nuvoloso, piovoso, soleggiato), la temperatura, l'umidità e la velocità del vento.
+\paragraph{Data e ora} Dalla data si possono generare feature come il giorno della settimana, comprendere se è il fine settimana o un periodo di vacanza, la stagione etc. Dall'orario invece si può capire il momento della giornata (mattina, pomeriggio, sera, notte).
 
 \subsection{Contesto sociale}
 Il contesto sociale si riferisce all'insieme di persone con cui l'utente ha interazioni sociali durante la vita giornaliera, come lavorare con i colleghi o chattare con gli amici. \'E stato provato in letteratura che esiste una forte correlazione tra le attività umane e i dati sociali. Questo implica che modellare una rete specifica per l'utente di relazioni sociali può contribuire a sottolineare le differenze tra i vari contesti in cui è coinvolto.
