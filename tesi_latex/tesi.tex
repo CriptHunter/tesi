@@ -175,13 +175,16 @@ Una funzione di loss è una misura dell'errore tra il valore previsto dal modell
 $$
 C = -\frac{1}{N} \sum_{i=1}^N y_i \cdot \log(p(y_i)) + (1-y_i) \cdot \log(1-p(y_i))
 $$
-dove $y$ è il valore reale del feedback di un utente su un oggetto (0 oppure 1), $p(y)$ è la probabilità predetta dalla rete che $y$ abbia valore 1, e $1-p(y_i)$ è la probabilità che $y$ abbia valore 0. % controllare bene il caso 0
+dove $y$ è il valore reale del feedback di un utente su un oggetto (0 oppure 1), $p(y)$ è la probabilità predetta dalla rete che $y$ abbia valore 1, e $1-p(y_i)$ è la probabilità che $y$ abbia valore 0 \cite{cross-entropy}.
 
 \paragraph{Ottimizzatore}
-Come ottimizzatore ho scelto Adam, nel paper in cui viene introdotto viene dimostrato empiricamente di essere generalmente migliore rispetto ad altri algoritmi di ottimizzazione stocastici e di risolvere in modo efficiente problemi di deep learning \cite{adam}. Adam ha diversi parametri configurabili, il più importante è il learning rate (chiamato $\alpha$ in Adam) che viene deciso tramite grid search, gli altri parametri ($\beta_1, \beta_2, \varepsilon$) sono lasciati al valore di default della libreria Keras.\footnote{\url{https://keras.io/api/optimizers/adam/}}. Gli altri iperparametri della rete neurale come il numero di epoche e la batch size sono ottimizzati tramite grid search e descritti nel \autoref{chap:cap6}.
+Un ottimizzatore è un algoritmo che modifica i pesi del modello in modo da minimizzare la funzione di loss e rendere le previsioni più corrette possibile. Come ottimizzatore ho scelto Adam, nel paper in cui viene introdotto viene dimostrato empiricamente di essere generalmente migliore rispetto ad altri algoritmi di ottimizzazione stocastici e di risolvere in modo efficiente problemi di deep learning \cite{adam}. Adam ha diversi parametri configurabili, il più importante è il learning rate (chiamato $\alpha$ in Adam) che viene deciso tramite grid search, gli altri parametri ($\beta_1, \beta_2, \varepsilon$) sono lasciati al valore di default della libreria Keras.\footnote{\url{https://keras.io/api/optimizers/adam/}}. 
+
+\paragraph{Epoche e batch size}
+Epoche e batch size sono due parametri molto importanti da ottimizzare, il numero di epoche e la dimensione della batch size ideali sono trovate tramite grid search nel \autoref{chap:risultati}. La batch size è il numero di campioni processati prima di aggiornare i parametri del modello. Il numero di epoche indica quante volte viene presentato alla rete il training set.
 
 \bigskip
-In \autoref{fig:ffnet} è rappresentata la struttura della rete. In questo caso la rete ha due layer nascosti ed ogni layer contiene 10 neuroni tranne il layer di output che contiene un solo neurone.
+In \autoref{fig:ffnet} è rappresentata la struttura della rete neurale. In questo caso il modello ha due layer nascosti ed ogni layer contiene 10 neuroni tranne il layer di output che contiene un solo neurone.
 
 \section{Informazioni di contesto} \label{sec:context-info}
 In questa sezione sono descritte le informazioni di contesto fisico e sociale che vengono date in input al sistema di raccomandazione mobile. Tutte le feature sono raccolte e processate direttamente sul device dell'utente.
