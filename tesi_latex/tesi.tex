@@ -2,6 +2,7 @@
 \usepackage{tesi}
 \usepackage{algorithm}
 \usepackage{algorithmic}
+\usepackage{xcolor}
 
 \newcommand{\myparagraph}[1]{\paragraph{#1}\mbox{}\\}
 %\usepackage[section]{placeins}
@@ -125,57 +126,22 @@ Organizzazione tesi...
 %			CAPITOLO 3: Lavoro svolto
 % 
 
-\chapter{Un RS per dispositivi mobili e pervasivi}
+\chapter{RS per dispositivi mobili e pervasivi}
 \label{chap:classificatore}
+
+
 \section{Introduzione}
+In questo capitolo è descritto un sistema di raccomandazione per sistemi mobili e pervasivi. Esso si inserisce all'interno di un meccanismo più complesso composto da tre diversi componenti:
 
-% nome classificatore: Mybrid
-In questo capitolo viene descritta l'implementazione di un algoritmo di raccomandazione pensato per dispositivi mobili e pervasivi immersi in un ambiente totalmente distribuito come quello delle reti opportunistiche.
-In queste reti, di solito, un dispositivo mobile dovrebbe essere in grado di condividere informazioni con altri dispositivi in prossimità in modo da scoprire contenuti utili per il suo proprietario. Un sistema di raccomandazione può essere utile per filtrare i contenuti più adatti ad un utente tra quelli scoperti nelle vicinanze. Non è però semplice estendere le soluzioni esistenti per adattarle alla limitazioni imposte da questo nuovo scenario. I recommender system tradizionali si appoggiano su un modello client/server centralizzato, in cui il sistema di raccomandazione esegue sul server, e processa le richieste in arrivo dai client che possono essere dispositivi mobili o fissi. Oltre a questo, il task di raccomandazione per un RS pervasivo è diverso rispetto a quello di un RS client/server. Tipicamente un RS deve imparare a prevedere i rating sulle coppie utente-oggetto per poter riempire i valori mancanti nella matrice dei rating. Questa matrice può essere vista come la conoscenza globale del sistema su tutti gli utenti e gli oggetti disponibili, e sulle valutazioni che gli utenti hanno dato agli oggetti. Nel caso dei RS collaborative-filtering il recommandation engine impara un modello singolo che sarà usato per fare raccomandazione su tutti gli utenti del sistema, mentre nel caso dei RS content-based sarà istanziato un modello per ogni utente che comunque ha una conoscienza globale di tutti gli oggetti del sistema. Al contrario nelle reti opportunistiche ogni dispositivo potrebbe essere a conoscenza solo di una piccola parte dell'informazione globale. Questa conoscenza è inizialmente circoscritta alle sole informazioni sull'utente locale, per poi allargarsi con lo scambio di informazioni tramite comunicazione device-to-device (D2D) con altri utenti o dispositivi di altra natura. Di conseguenza, un RS implementato in un ambiente distribuito impara un modello di raccomandazione basato unicamente sulle informazioni raccolte dal suo utente locale.
-
-Un'altra caratteristica importante per un sistema di raccomandazione per dispositivi mobili è il supporto per il contesto utente. Sfruttando i numerosi sensori presenti sui dispositivi degli utenti è possibile generare un contesto ad alta dimensionalità che caratterizza in modo accurato la situazione dell'utente e permette raccomandazioni più accurate. Al contesto fisico estratto dai sensori o altre fonti, si può aggiungere il contesto sociale che descrive quali tipologie di persone l'utente ha intorno a se (amici, colleghi, sconosciuti, etc.) e con che tipo di persone ha scambiato le proprie informazioni, e quindi da chi ha ricevuto una raccomandazione.
-
-\section{Limitazioni dei RS tradizionali}
-Gli algoritmi di raccomandazione stato dell'arte descritti nel \autoref{chap:stato_arte} hanno alcune limitazioni che rendono difficile l'implementazione senza alcuna modifica nell'ambiente di riferimento.
-
-\myparagraph{ALS}
-Alternating least square (descritto in ...) è un algoritmo di matrix factorization per feedback impliciti. L'input di ALS è una matrice $R$ di dimensione $u \times i$ con $u$ numero di utenti, e $i$ numero di oggetti. Un elemento $r_{ui}$ della matrice $R$ indica quante volte l'utente $u$ ha consumato l'oggetto $i$. In ambiente mobile inizialmente la matrice $R$ è vuota perché l'utente non ha espresso nessuna valutazione e non ha incontrato altri utenti. Ogni volta che un nuovo utente o un nuovo oggetto viene scoperto si aggiunge una nuova riga/colonna alla matrice $R$. Il primo problema di questo algoritmo, e più in generale degli algoritmi di matrix factorization è l'aggiunta di un nuovo utente/oggetto che comporta un cambiamento nella dimensione della matrice $R$. L'algoritmo deve essere addestrato nuovamente da zero sulla nuova matrice $R$ per poter raccomandare i nuovi oggetti e tenere conto delle valutazioni dei nuovi utenti. Il secondo problema di MF è l'aggiunta del contesto. Come detto in [sezione context-aware] ogni feature di contesto è una dimensione aggiunta alla matrice dei rating $R$. Con l'aumento delle dimensioni, lo spazio dimensionale aumenta in modo esponenziale \cite{curse-of-dim} mentre il numero dei punti nello spazio rimane sempre lo stesso. Questa crescita esponenziale porta un'alta sparsità dei dati, che impedisce al modello di generalizzare correttamente. La \autoref{fig:curse-dim}, mostra graficamente il problema. Nell'immagine a) lo spazio 1D è diviso in 4 regioni. In b) aggiungendo una dimensione lo spazio cresce esponenzialmente a 16 regioni. In c) aggiungendo una terza dimensione lo spazio è diviso in 64 regioni ma il numero di punti in ogni regione rispetto ad a) è molto minore.
-
-\begin{figure}
-  \includegraphics[width=\linewidth]{immagini/curse_of_dimensionality.png}
-  \caption{Curse of dimensionality}
-  \label{fig:curse-dim}
-\end{figure}
-
-\myparagraph{NeuMF}
-Neural matrix factorization (descritto...) implementa un RS
-collaborative-filtering con una deep neural network. L'input della 
-rete è un record formato da \texttt{[user\_id, item\_id, rating]}.
-Per essere correttamente processati dalla dalla rete neurale \texttt{user\_id} e \texttt{item\_id} sono convertiti da numeri interi in vettori binari con one-hot encoding. Questi vettori hanno lunghezza pari al numero di 
-user/item e hanno valore 1 solo in corrispondenza dell'elemento numero 
-\texttt{user\_id}/\texttt{item\_id}, il resto degli elementi ha valore 0. La dimensione dell'input della rete e di conseguenza la dimensione dell'input del layer di embedding è da definire a livello di compilazione della rete prima di eseguire il training. Una volta terminato il training, la rete è in grado di predirre il rating degli stessi utenti/oggetti già presenti durante il training. Questo perché l'input deve avere la stessa dimensione di quello definito a livello di compilazione, e quindi il numero di utenti e oggetti è lostesso definito a livello di compilazione. Come per ALS quindi aggiungere un nuovo utente od un nuovo oggetto significa dover compilare di nuovo il modello ed eseguire di nuovo il training da zero. Questo modello inoltre, come presentato nel paper originale \cite{NCF} non ha nessun supporto per le feature di contesto.
-
-\myparagraph{Context-aware NeuMF}
-Context-aware neural matrix factorization (descritto ...) è un estensione di NeuMF che supporta le feature di contesto. Questo modello essendo basato su reti neurali, è meno soggetto di matrix factorization al problema della curse of dimensionality. L'input della rete è un record formato da \texttt{[user\_id, item\_id, context, rating]}, in cui il vettore context può avere un'alta dimensionalità. Risolve quindi il problema dell'integrare le numerose feature di contesto fisico estratte dai sensori degli smartphone e le features sociali che descrivono il contesto sociale dell'utente. Rimangono le stesse limitazioni di NeuMF sull'input, dato che gli ID di utenti e oggetti sono dati in input come vettori in one-hot encoding con dimensione fissata.
-
-\section{Nome modello}
-I problemi principali nell'implementare un sistema di raccomandazione per sistemi mobili e pervasivi quindi sono principalmente due:
 \begin{enumerate}
- \item Non si conosce a priori il numero di utenti e oggetti presenti nel sistema perchè l'utente ne scopre di nuovi gradualmente tramite interazione D2D.
- \item \`E difficile integrare le numerose informazioni di contesto fisico generate dai dispositivi mobili e le informazioni di contesto sociale che descrivono la situazione dell'utente.
+ \item \textit{Sensing manager.} Il primo componente interagisce con il sistema operativo per raccogliere continuamente dati raw di contesto (come GPS e accelerometro), e dati che rappresentano informazioni più astratte relative allo stato del dispositivo come lo stato del display e il livello di batteria.
+ \item \textit{Context modeling.} I dati raw dei sensori devono essere processati ulteriormente per inferire una rappresentazione più astratta del contesto dell'utente. A questo scopo, il componente context modeling (CM) raccoglie periodicamente gli ultimi dati disponibili del SM. Queste osservazioni sono processate per estrarre feature numeriche e categoriche che caratterizzano il contesto dell'utente locale. Esempi di queste feature sono ad esempio le statistiche ottenute dai dati dei sensori fisici o la posizione dell'utente. Di queste feature eterogenee viene fatto l'encoding e vengono combinate in un singolo vettore di feature che rappresenta una fotografia del contesto corrente di un utente. L'insieme di feature che compongono il contesto fisico e sociale dell'utente sono descritte nella \autoref{sec:context-info}.
+ \item \textit{Sistema di raccomandazione.} Le feature di contesto $c$ sono concatenate alle feature degli utenti $u$ e degli oggetti $i$ in un unico vettore. Questo vettore è dato in input ha una rete neurale che restituisce valore 1, se per l'utente con feature $u$, l'oggetto con feature $i$ è rilevante nel contesto $c$, 0 altrimenti. L'input, la struttura e l'output della rete sono descritti nella sezione \autoref{sec:ffnet}.
 \end{enumerate}
-In questo sezione viene descritta l'implementazione di un recommender system context-aware basato su deep-learning e pensato per dispositivi mobili con le seguenti caratteristiche:
-\begin{enumerate}
- \item L'algoritmo di raccomandazione esegue la fase di training e inferenza direttamente su dispositivo mobile.
- \item Non c'è un architettura client-server con un server che ha conoscenza globale dell'informazioni.
- \item Ogni utente ha un propria istanza locale dell'algoritmo di raccomandazione
- \item Le valutazioni sono feedback impliciti con valore 0 o 1.
- \item L'algoritmo di raccomandazione utilizza sia i feedback dell'utente locale che quelli ricevuti da altri utenti.
- \item Il recommender system supporta informazioni di contesto fisico e sociale.
-\end{enumerate}
-Normalmente l'input di un modello collaborative filtering è composto da tuple (user-ID, item-ID, physical context). Si può sostituire item-ID con delle feature che descrivono l'oggetto, esattamente nello stesso modo in cui operano i sistemi di raccomandazione context aware. Ad esempio se si sta sviluppando un RS per raccomandazione per consigliare ristoranti agli utenti, si può sostituire l'ID del ristorante con feature specifiche come il tipo di cibo servito, il suo prezzo, l'atmosfera, se ha sedute all'aperto, etc. Allo stesso modo si può sostituire lo user-ID con delle feature che descrivono l'utente. Queste possono essere feature generiche che descrivono l'utente come l'età e il sesso, a cui si aggiungo feature specifiche per il RS che si sta sviluppando. Tornando all'esempio dei ristoranti si potrebbe chiedere all'utente quanto è disposto a spendere per mangiare fuori e il tipo di cucina preferita. A feature di utente e oggetto si aggiungono le feature del contesto fisico e sociale. Un'istanza di rating per il modello proposto in questa tesi è quindi del tipo [user-features, item-features, physical context, social context].
 
-\subsection{Struttura modello}
+Normalmente l'input di un modello collaborative filtering è composto da tuple \texttt{(user\_ID, item\_ID, rating, context)}, in cui \texttt{user\_ID} è l'utente che ha valutato l'oggetto \texttt{item\_ID} con una valutazione \texttt{rating} in una situazione descritta dal contesto \texttt{context}. Al posto che identificare \texttt{item\_ID} con un valore numerico, si descrive con delle feature che caratterizzano l'oggetto, esattamente nello stesso modo in cui è solitamente fatto nei sistemi di raccomandazione content-based. Ad esempio se si sta sviluppando un RS per consigliare ristoranti agli utenti, si può sostituire l'ID del ristorante con feature che lo caratterizzano nel dettaglio come il tipo di cibo servito, il prezzo medio, l'atmosfera, se ha sedute all'aperto, etc. Allo stesso modo si può sostituire \texttt{user\_ID} con delle feature che descrivono l'utente. Queste possono essere feature che caratterizzano l'utente a prescindere dal tipo di sistema di raccomandazione come l'età e il sesso oppure feature specifiche per il RS che si sta sviluppando. Tornando all'esempio dei ristoranti si potrebbe chiedere all'utente quanto è disposto a spendere per mangiare fuori e il tipo di cucina preferita. A feature di utente e oggetto si aggiungono le feature del contesto fisico e sociale. Un'istanza di rating per il modello proposto in questa tesi è quindi una tupla \texttt{(user\_features, item\_features, physical\_context, social\_context)}.
+
+\section{Sistema di raccomandazione} \label{sec:ffnet}
 
 \begin{figure}
   \includegraphics[width=\linewidth]{immagini/ffnet_schema.png}
@@ -198,11 +164,11 @@ Come ottimizzatore ho scelto Adam, nel paper in cui viene introdotto viene dimos
 In \autoref{fig:ffnet} è rappresentata la struttura della rete. In questo caso la rete ha due layer nascosti ed ogni layer contiene 10 neuroni. Come si vede dall'input le feature di contesto sono più numerose rispetto a quelle di user, item e social context prese singolarmente. Ovviamente questo non è un constraint ma ci si aspetta che le feature di contesto fisico siano molto numerose.
 
 
-\section{Informazioni di contesto}
+\section{Informazioni di contesto} \label{sec:context-info}
 In questa sezione sono descritte le informazioni di contesto fisico e sociale che vengono date in input al sistema di raccomandazione mobile. Tutte le feature sono raccolte e processate direttamente sul device dell'utente.
 
 \subsection{Contesto fisico}
-Il contesto fisico è composto da tutte quelle informazioni rilevanti che possono essere utilizzate per caratterizzare la situazione di un utente. Le feature del contesto fisico sono ricavate dai sensori fisici dello smartphone di un utente come giroscopio e accelerometro, dal sistema operativo del telefono come stato del display e batteria. A queste feature si vanno a integrare informazioni esterne come il meteo, la data e l'ora. Più nel dettaglio il contesto utente è caratterizzato dalle seguenti informazioni:
+Il contesto fisico è composto da tutte quelle informazioni rilevanti che possono essere utilizzate per caratterizzare la situazione di un utente. Le feature del contesto fisico sono ricavate dai sensori fisici dello smartphone di un utente (es. attività utente dall'accelerometro) e dal sistema operativo del telefono (es. stato display e livelo batteria). A queste feature si vanno a integrare informazioni esterne come il meteo, la data e l'ora. Più nel dettaglio il contesto utente è caratterizzato dalle seguenti informazioni:
 
 \paragraph{Posizione} Informazioni relative alla posizione geografica che includono latitudine, longitudine, precisione della posizione e direzione del movimento. La posizione geografica può essere usata per capire il luogo in cui si trova l'utente (a casa, al lavoro, etc.) o per raccomandare punti di interesse nelle vicinanze.
 \paragraph{Movimento utente} Il movimento dell'utente include sia le attività svolte a piedi (correre e camminare), sia il movimento su un mezzo di trasporto (veicolo generico o bicicletta).
@@ -211,9 +177,9 @@ Il contesto fisico è composto da tutte quelle informazioni rilevanti che posson
 \paragraph{Display}  Stato dello schermo dello smartphone (acceso o spento), e orientamento dello schermo (verticale od orizzontale).
 \paragraph{Dati dei sensori fisici} che includono sensori ambientali (es. temperatura dell'ambiente e luce), sensori di movimento (es. accelerometro e giroscopio) e sensori di posizione (es. rotazione e prossimità).
 \paragraph{Celle di rete} Lista delle celle di rete mobile rilevate dal dispositivo. Per ogni cella si identifica il tipo di tecnologia (es. GSM o LTE), l'ID della cella, e la forza del segnale. La rete mobile può migliorare l'identificazione della posizione dell'utente.
-\paragraph{Wi-Fi} Lista di tutti gli access point Wi-Fi disponibili in prossimità, e se lo smartphone è connesso ad uno di essi.
+\paragraph{Wi-Fi} Lista di tutti gli access point Wi-Fi disponibili in prossimità, e se l'utente è connesso ad uno di essi.
 \paragraph{Meteo} Informazioni relative alle condizioni meteo che includono il tempo in atto (es. nuvoloso, piovoso, soleggiato), la temperatura, l'umidità e la velocità del vento.
-\paragraph{Data e ora} Dalla data si possono generare feature come il giorno della settimana, comprendere se è il fine settimana o un periodo di vacanza, la stagione etc. Dall'orario invece si può capire il momento della giornata (mattina, pomeriggio, sera, notte).
+\paragraph{Data e ora} Dalla data si possono generare feature come il giorno della settimana, la stagione, comprendere se è il fine settimana o un periodo di vacanza, etc. Dall'orario invece si può capire il momento della giornata (mattina, pomeriggio, sera, notte).
 
 \subsection{Contesto sociale}
 Il contesto sociale si riferisce all'insieme di persone con cui l'utente ha interazioni sociali durante la vita giornaliera, come lavorare con i colleghi o chattare con gli amici. \'E stato provato in letteratura che esiste una forte correlazione tra le attività umane e i dati sociali. Questo implica che modellare una rete specifica per l'utente di relazioni sociali può contribuire a sottolineare le differenze tra i vari contesti in cui è coinvolto.
@@ -226,12 +192,12 @@ Il contesto sociale si riferisce all'insieme di persone con cui l'utente ha inte
 \end{figure}
 
 \subsubsection{Ego Network}
-Una ego network è una rete sociale composta da un individuo chiamato ego, e dalle persone con cui l'ego ha un collegamento sociale, chiamati alter. I legami sociali in una ego network non hanno tutti la stessa importanza. Ogni individuo ha solo pochi collegamenti forti e molti collegamenti deboli, dovuti alla capacità umana di gestire un numero limitato di relazioni sociali. Una rappresentazione della ego network è mostrata in \autoref{fig:ego-network}: l'ego è il punto rosso al centro dei quattro cerchi concentrici chiamati layer in cui gli alter sono distribuiti in base alla forza del legame sociale con l'ego. Il cerchio più interno (support clique) è il layer più piccolo, e contiene solo pochi alter che rappresentato le relazioni sociali più forti con l'ego. Il secondo layer (sympathy group) contiene le persone che possono essere considerati gli amici più cari. Il terzo cerchio (affinity group) è composto da "casual friends" [tradurre] e membri della famiglia meno vicini, mentre l'ultimo layer include persone con cui l'individuo ha interazioni sociali occasionali.
+Una ego network è una rete sociale composta da un individuo chiamato ego, e dalle persone con cui l'ego ha un collegamento sociale, chiamati alter. I legami sociali in una ego network non hanno tutti la stessa importanza. Ogni individuo ha solo pochi collegamenti forti e molti collegamenti deboli, dovuti alla capacità umana di gestire un numero limitato di relazioni sociali. Una rappresentazione della ego network è mostrata in \autoref{fig:ego-network}: l'ego è il punto rosso al centro dei quattro cerchi concentrici chiamati layer in cui gli alter sono distribuiti in base alla forza del legame sociale con l'ego. Il cerchio più interno (support clique) è il layer più piccolo, e contiene solo pochi alter che rappresentato le relazioni sociali più forti con l'ego. Il secondo layer (sympathy group) contiene le persone che possono essere considerati gli amici più cari. Il terzo cerchio (affinity group) è composto da amici e membri della famiglia meno vicini, mentre l'ultimo layer include persone con cui l'individuo ha interazioni sociali occasionali.
 
 \subsubsection{Modellare il contesto sociale dell'utente}
 Per modellare il contesto sociale di un utente in ambiente mobile, si caratterizzano le interazioni sociali usando le seguenti sorgenti di dati: (i) chiamate telefoniche e log degli SMS, (ii) dati di prossimità, e (iii) attività svolte dall'utente sugli online social networks (OSN).
 
-Il primo step per costruire l'ego network di un individuo è stimare la forza dei legami sociali con i sui alter. Un buon indicatore della forza delle relazione sociale tra due persone è data dal numero di interazioni che le due persone hanno avuto in passato. Basandosi su questa considerazione, per modellare la forza dei legami sociali dell'utente nel cyberspace[???che robba è], sono presi in considerazione diverse attività svolte dall'utente su OSN, inclusi commenti, reazioni (come "mi piace") e persone menzionate. Formalmente, la forza dei legami sociali virtuali tra l'ego $e$ ed uno dei sui alter $a$, $\omega_{osn}(e,a)$ è calcolata nel modo seguente:
+Il primo step per costruire l'ego network di un individuo è stimare la forza dei legami sociali con i suoi alter. Un buon indicatore della forza delle relazioni sociale tra due persone è data dal numero di interazioni che le due persone hanno avuto in passato. Basandosi su questa considerazione, per modellare la forza dei legami sociali dell'utente online, sono presi in considerazione diverse attività svolte dall'utente su OSN, inclusi commenti, reazioni (come "mi piace") e persone menzionate. Formalmente, la forza dei legami sociali virtuali tra l'ego $e$ ed uno dei sui alter $a$, $\omega_{osn}(e,a)$ è calcolata nel modo seguente:
 \begin{equation}	
 	\omega_{osn}(e,a)=\sum_{v_\in V}I_S (e, a)
 \end{equation}
