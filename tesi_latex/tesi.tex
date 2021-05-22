@@ -120,7 +120,7 @@ Organizzazione tesi...
 \chapter{Stato dell'arte}
 \label{chap:stato_arte}
 
-%\input{capitoli/stato_arte.tex}
+\input{capitoli/stato_arte.tex}
 
 % 
 %			CAPITOLO 3: Lavoro svolto
@@ -151,12 +151,6 @@ In questa sezione è descritto il sistema di raccomandazione vero e proprio. Nel
 \subsection{Input}
 Solitamente l'input dei modelli collaborative filtering context-aware è composto da tuple \texttt{(user\_ID, item\_ID, rating, context)}, in cui \texttt{user\_ID} è l'utente che ha valutato l'oggetto \texttt{item\_ID} con una valutazione \texttt{rating} in una situazione descritta dal contesto \texttt{context}. Al posto che identificare l'oggetto con un valore numerico intero \texttt{item\_ID}, si possono usare delle feature che caratterizzano l'oggetto, esattamente nello stesso modo in cui sono solitamente descritti gli oggetti nei sistemi di raccomandazione content-based. Ad esempio, se si sta sviluppando un RS per consigliare ristoranti agli utenti, si può sostituire il valore \texttt{item\_ID} che identifica il ristorante con delle feature che lo caratterizzano nel dettaglio come il tipo di cibo servito, il prezzo medio, l'atmosfera, se ha sedute all'aperto, etc. Allo stesso modo si può sostituire il valore \texttt{user\_ID} con delle feature che descrivono l'utente. Queste possono essere feature molto generiche come età o sesso, o feature specifiche per l'ambiente in cui il RS è implementato. Tornando all'esempio dei ristoranti, si potrebbe chiedere all'utente (es. attraverso un'applicazione mobile) quanto è disposto a spendere per mangiare fuori e il tipo di cucina preferita. A feature di utente e oggetto si aggiungono le feature del contesto fisico e sociale generate dal modulo di Context modeling. Un'istanza di rating per il modello proposto in questa tesi è quindi una tupla \texttt{(user\_features, item\_features, physical\_context, social\_context)}.
 
-\begin{figure}
-  \includegraphics[width=\linewidth]{immagini/ffnet_schema.png}
-  \caption{Schema di nome modello}
-  \label{fig:ffnet}
-\end{figure}
-
 \subsection{Struttura della rete neurale}
 Il vettore di feature appena descritto è dato in input ad una rete neurale che deve prevedere se l'utente caratterizzato da \texttt{user\_feature} è interessato all'oggetto caratterizzato da \texttt{item\_feature} nei contesti fisici e sociali \texttt{physical\_context} e \texttt{social\_context}. Si tratta quindi di un problema di classificazione binaria. Nei problemi di classificazione, l'obbiettivo è prevedere il valore di una variabile che può assumere diversi valori discreti. I problemi di classificazione in cui una variabile può assumere solo due valori possibili (come 0 o 1) sono chiamati problemi di classificazione binaria \cite{hands-on-ml}.
 
@@ -185,6 +179,12 @@ Epoche e batch size sono due parametri molto importanti da ottimizzare, il numer
 
 \bigskip
 In \autoref{fig:ffnet} è rappresentata la struttura della rete neurale. In questo caso il modello ha due layer nascosti ed ogni layer contiene 10 neuroni tranne il layer di output che contiene un solo neurone.
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{immagini/ffnet_schema.png}
+  \caption{Schema di nome modello}
+  \label{fig:ffnet}
+\end{figure}
 
 \section{Informazioni di contesto} \label{sec:context-info}
 In questa sezione sono descritte le informazioni di contesto fisico e sociale che vengono date in input al sistema di raccomandazione mobile. Tutte le feature sono raccolte e processate direttamente sul device dell'utente.
