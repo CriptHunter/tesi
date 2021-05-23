@@ -44,11 +44,11 @@ Il presupposto alla base di CF è che le persone con preferenze simili valuteran
 
 \noindent \textbf{Svantaggi:}
 \begin{itemize}
- \item \textit{Problema del cold-start:} Si riferisce alla situazione in cui il sistema di raccomandazione non ha abbastanza informazioni su un utente od un oggetto per poter fare previsioni rilevanti. Un nuovo oggetto inserito nel RS di solito non ha voti, ed è quindi improbabile che venga raccomandato. Un oggetto non consigliato passa inosservato a gran parte della community. Il problema è presente anche per i nuovi utenti: gli utenti che hanno espresso nessuna o poche valutazioni non ricevono raccomandazioni affidabili \cite{cold-start}.   
+ \item \textit{Problema del cold-start:} si riferisce alla situazione in cui il sistema di raccomandazione non ha abbastanza informazioni su un utente od un oggetto per poter fare previsioni rilevanti. Un nuovo oggetto inserito nel RS di solito non ha voti, ed è quindi improbabile che venga raccomandato. Un oggetto non consigliato passa inosservato a gran parte della community. Il problema è presente anche per i nuovi utenti: gli utenti che hanno espresso nessuna o poche valutazioni non ricevono raccomandazioni affidabili \cite{cold-start}.   
  
  \item  \textit{Problema di data sparsity:} questo è il problema che si verifica a causa della mancanza di informazioni sufficienti, cioè quando solo pochi rispetto al numero totale di oggetti disponibili in un database sono valutati dagli utenti. Ciò porta ad una rating matrix sparsa, e raccomandazioni poco efficaci \cite{recsys-principle-methods-evaluation}.
  
- \item \textit{Scalabilità:} Questo è un altro problema associato agli algoritmi di raccomandazione perché il tempo di computazione cresce linearmente sia con il numero di utenti, sia con il numero di oggetti. Un sistema di raccomandazione efficiente con un dataset limitato potrebbe non esserlo con un dataset di dimensioni maggiori \cite{recsys-principle-methods-evaluation}.
+ \item \textit{Scalabilità:} questo è un altro problema associato agli algoritmi di raccomandazione perché il tempo di computazione cresce linearmente sia con il numero di utenti, sia con il numero di oggetti. Un sistema di raccomandazione efficiente con un dataset limitato potrebbe non esserlo con un dataset di dimensioni maggiori \cite{recsys-principle-methods-evaluation}.
 \end{itemize}
 
 
@@ -56,20 +56,12 @@ Il presupposto alla base di CF è che le persone con preferenze simili valuteran
 \subsection{Matrix factorization} \label{ssec:mf}
 Gli algoritmi basati su matrix factorization (MF) caratterizzano utenti e oggetti mediante dei vettori di fattori estratti dai pattern sui rating. Questi vettori, chiamati fattori latenti, sono delle feature nascoste che descrivono utenti e oggetti. Una corrispondenza alta tra i fattori di un utente e un oggetto porta ad una raccomandazione. Questi metodi sono diventati popolari negli ultimi anni perchè combinano scalabilità e accuratezza. % esempi di utilizzo
 
-Più formalmente, i modelli basati su matrix factorization mappano utenti e oggetti in uno spazio di fattori latenti di dimensionalità $d$, tale che le interazioni tra utenti e oggetti sono modellate come prodotti in quello spazio. Di conseguenza, ogni oggetto $i$ è associato con un vettore $q_i \in \mathbb{R}^d$, e ogni utente $u$ con un vettore $p_u \in \mathbb{R}^d$. Per un dato oggetto $i$, gli elementi di $q_i$ indicano la misura in cui l'oggetto possiede quei fattori, positivi o negativi. Per un dato utente $u$, gli elementi di $p_u$ indicato l'entità dell'interesse che l'utente ha per gli oggetti che hanno un valore alto sui fattori corrispondenti, positivi o negativi. Il prodotto scalare $q_i^Tp_u$ indica l'interesse dell'utente $u$ per le caratteristiche dell'oggetto $i$ \cite{matrix-factorization}. Quindi il rating $r_{ui}$ può essere approssimato come
+Più formalmente, i modelli basati su matrix factorization mappano utenti e oggetti in uno spazio di fattori latenti di dimensionalità $d$, tale che le interazioni tra utenti e oggetti sono modellate come prodotti in quello spazio. Di conseguenza, ogni oggetto $i$ è associato con un vettore $q_i \in \mathbb{R}^d$, e ogni utente $u$ con un vettore $p_u \in \mathbb{R}^d$. Per un dato oggetto $i$, gli elementi di $q_i$ indicano la misura in cui l'oggetto possiede quei fattori, positivi o negativi. Per un dato utente $u$, gli elementi di $p_u$ indicato l'entità dell'interesse che l'utente ha per le varie caratteristiche rappresentate dai fattori latenti, positivi o negativi. Il prodotto scalare $q_i^Tp_u$ indica l'interesse dell'utente $u$ per le caratteristiche dell'oggetto $i$ \cite{matrix-factorization}. Quindi il rating $r_{ui}$ può essere approssimato come
 
 \begin{equation} \label{eq:dot_product}
 r_{ui} = q_i^Tp_u
 \end{equation}
 Il problema principale è calcolare il mapping di ogni oggetto e utente in vettori $q_i, p_u \in \mathbb{R}^d$. Una volta che il recommender system ha completato il mapping, può facilmente stimare il rating che un utente darà a qualsiasi oggetto utilizzando l'equazione \ref{eq:dot_product}. 
-
-In \autoref{fig:matrix_factorization} è mostrato come la matrice dei rating $A \in \mathbb{R}^{m \times n}$, con $m$ numero di utenti e $n$ numero di oggetti, viene decomposta in due matrici di dimensionalità minore:
-
-\begin{itemize}
-	\item Una matrice di fattori latenti per gli utenti $P \in \mathbb{R}^{m \times d}$, in cui la riga $i$ contiene i fattori latenti dell'utente $i$.
-	\item Una matrice di fattori latenti per gli oggetti $Q \in \mathbb{R}^{n \times d}$, in cui la riga $j$ contiene i fattori latenti dell'oggetto $j$.
-\end{itemize}
-Le due matrici di fattori latenti $P$ e $Q$ sono imparate in modo tale che il prodotto $PQ^T$ sia una buona approssimazione della matrice dei rating $A$ \cite{mf-google}.
 
 \begin{figure}
   \centering
@@ -79,26 +71,34 @@ Le due matrici di fattori latenti $P$ e $Q$ sono imparate in modo tale che il pr
   \label{fig:matrix_factorization}
 \end{figure}
 
+In \autoref{fig:matrix_factorization} è mostrato come la matrice dei rating $A \in \mathbb{R}^{m \times n}$, con $m$ numero di utenti e $n$ numero di oggetti, viene decomposta in due matrici di dimensionalità molto minore:
+
+\begin{itemize}
+	\item Una matrice di fattori latenti per gli utenti $P \in \mathbb{R}^{m \times d}$, in cui la riga $i$ contiene i fattori latenti dell'utente $i$.
+	\item Una matrice di fattori latenti per gli oggetti $Q \in \mathbb{R}^{n \times d}$, in cui la riga $j$ contiene i fattori latenti dell'oggetto $j$.
+\end{itemize}
+Le due matrici di fattori latenti $P$ e $Q$ sono imparate in modo tale che il prodotto $PQ^T$ sia una buona approssimazione della matrice dei rating $A$ \cite{mf-google}. %citare algoritmi di matrix factorization
+
 \section{Content-based recommender system}
-Nei recommender system content-based (CB), gli attributi descrittivi degli oggetti sono usati per produrre raccomandazioni. Il termine ``content" indica queste descrizioni. Nei metodi content-based i rating degli utenti sono combinati con le informazioni disponibili sugli oggetti, per poi essere usati come training data per creare un modello di classificazione o regressione specifico per l'utente. Questo modello specifico per l'utente viene utilizzato per prevedere se alla persona corrispondente piacerà un articolo per il quale la sua valutazione è ancora sconosciuta \cite{recsys-book}.
+Nei recommender system content-based (CB), gli attributi descrittivi degli oggetti sono usati per produrre raccomandazioni. Il termine ``content" indica che il processo di raccomandazione si focalizza sui contenuti piuttosto che sulle interazioni utente - oggetto. Nei metodi content-based i rating degli utenti sono combinati con le informazioni disponibili sugli oggetti, per poi essere usati come training data per creare un modello di classificazione o regressione  specifico per l'utente. Nei problemi di classificazione si prevede se ad un utente può piacere un oggetto; nei problemi di regressione si prevede il rating dato da un utente ad un oggetto la cui valutazione è ancora sconosciuta \cite{recsys-book}.
 
 Mentre nei CF la similarità tra due oggetti (o due utenti) è calcolato come la correlazione o la similarità tra i rating forniti dagli altri utenti, i recommender system content-based sono progettati per consigliare oggetti simili a quelli che l'utente ha preferito in passato. Non considerando gli altri utenti, la lista di raccomandazioni può essere generata anche se c'è un solo utente nel sistema.
 
-\subsection{Vantaggi e svantaggi}
+\subsection{Vantaggi e svantaggi dell'approccio CB}
 \textbf{Vantaggi:}
 \begin{itemize}
- \item \textit{Consigliare nuovi oggetti:} Questi modelli hanno la capacità di consigliare nuovi oggetti anche se non ci sono valutazioni fornite dagli utenti, a differenza dei modelli collaborative filtering \cite{recsys-principle-methods-evaluation}.
+ \item \textit{Consigliare nuovi oggetti:} questi modelli hanno la capacità di consigliare nuovi oggetti anche se non ci sono valutazioni fornite dagli utenti, a differenza dei modelli collaborative filtering \cite{recsys-principle-methods-evaluation}.
  
- \item \textit{Trasparenza:} Le spiegazioni su come funziona il sistema di raccomandazione possono essere fornite elencando esplicitamente le caratteristiche del contenuto che hanno causato la presenza di un oggetto nell'elenco delle raccomandazioni \cite{transparency}. 
+ \item \textit{Trasparenza:} le spiegazioni su come funziona il sistema di raccomandazione possono essere fornite elencando esplicitamente le caratteristiche del contenuto che hanno causato la presenza di un oggetto nell'elenco delle raccomandazioni \cite{transparency}. 
 \end{itemize}
 
 \noindent \textbf{Svantaggi:}
 \begin{itemize}
  \item \textit{Feature degli oggetti:} la precisione del modello dipende dall'insieme delle feature che descrivono gli oggetti. Identificare le feature più rilevanti non è semplice e dipende molto dall'applicazione specifica \cite{survey-mattia}.
  
- \item \textit{Content overspecialization:} Dato che i metodi CB si affidano solo alle caratteristiche degli oggetti già valutati dall'utente corrente, egli riceverà solo raccomandazioni simili ad altri oggetti già definiti nel suo profilo \cite{recsys-principle-methods-evaluation}.
+ \item \textit{Content overspecialization:} dato che i metodi CB si affidano solo alle caratteristiche degli oggetti già valutati dall'utente corrente, egli riceverà solo raccomandazioni simili ad altri oggetti già definiti nel suo profilo \cite{recsys-principle-methods-evaluation}.
  
- \item \textit{Dimensione training set:} Allo scopo di consentire a un RS content-based di imparare le preferenze di un utente, egli dovrà valutare un numero sufficiente di oggetti. In caso contrario, il RS non avrà sufficienti informazioni per imparare un modello accurato e fallirà nel raccomandare oggetti a utenti con pochi o nessun rating.
+ \item \textit{Raccomandazioni multi-domain:} è difficile creare RS multi-domain con un approccio content-based. Questo perché è complicato definire un insieme di feature che valgano per contenuti di natura diversa.
 \end{itemize}
 
 \section{Hybrid recommender system}
@@ -106,20 +106,23 @@ I modelli ibridi combinano tipi diversi di sistemi di raccomandazione per formar
 
 \begin{enumerate}
  \item \textit{Ensemble design:} Con questo metodo i risultati degli algoritmi base sono combinati in un output singolo più robusto. Il principio fondamentale è molto simile ai metodi di ensemble usati in molte applicazioni di data mining come clustering, classificazione e analisi degli outlier. 
-Gli ensemble design possono essere formalizzati nel modo seguente. Sia $R^k$ una matrice $m \times n$ contenente le predizioni di $m$ utenti per $n$ oggetti dell'algoritmo $k$-esimo, con $k \in \{1, \dots ,q\}$. Pertanto, un totale di $q$ algoritmi diversi sono usati per ottenere queste predizioni. L'elemento $(u,j)$-esimo di $R^k$ contiene il rating predetto per l'utente $u$ sull'oggetto $j$ dall'algoritmo $k$-esimo. Gli elementi della matrice originale $R$ sono replicati in ogni $R^k$, e solo gli elementi non presenti in $R$ variano nei differenti $R^k$ a causa dei diversi risultati degli algoritmi. Il risultato finale è ottenuto combinando le predizioni $R^1, \dots, R^q$ in un singolo output. La combinazione può essere fatta in vari modi, ad esempio calcolando la media pesata delle varie predizioni. Le caratteristiche comuni di questi algoritmi sono: (i) usare sistemi di raccomandazione già esistenti, (ii) produrre uno score/ranking unico.
+Gli ensemble design possono essere formalizzati nel modo seguente. Sia $R^k$ una matrice $m \times n$ contenente le predizioni di $m$ utenti per $n$ oggetti dell'algoritmo $k$-esimo, con $k \in \{1, \dots ,q\}$. Pertanto, un totale di $q$ algoritmi diversi sono usati per ottenere queste predizioni. L'elemento $(u,j)$-esimo di $R^k$ contiene il rating predetto per l'utente $u$ sull'oggetto $j$ dall'algoritmo $k$-esimo. Gli elementi della matrice originale $R$ sono replicati in ogni $R^k$, e solo gli elementi non presenti in $R$ variano nei differenti $R^k$ a causa dei diversi risultati degli algoritmi. Il risultato finale è ottenuto combinando le predizioni $R^1, \dots, R^q$ in un singolo output. La combinazione può essere fatta in vari modi, ad esempio calcolando la media pesata delle varie predizioni. Le caratteristiche comuni di questi algoritmi sono: (i) usare sistemi di raccomandazione già esistenti, (ii) produrre uno score/ranking unico. Il problema di questo approccio è la complessità della soluzione: il risultato è ottenuto con l'esecuzione di $q$ algoritmi di raccomandazione diversi.
+
  \item \textit{Monolithic design:} In questo caso, viene creato un algoritmo di raccomandazione integrato utilizzando vari tipi di dati. A volte non esiste una chiara distinzione tra le varie parti (es. content-based e collaborative filtering) dell'algoritmo. In altri casi, potrebbe essere necessario modificare algoritmi di raccomandazione esistenti per essere usati all'interno dell'approccio generale, anche quando c'è una chiara distinzione tra gli algoritmi utilizzati.  Pertanto, questo metodo tende a integrare più strettamente le varie fonti di dati e non è possibile visualizzare facilmente i singoli componenti come black-box separate.
+ 
  \item \textit{Mixed system:}  Come per gli ensemble, questi sistemi usano diversi algoritmi di raccomandazione come black-box, ma gli oggetti raccomandati dai vari sistemi sono presentati insieme senza essere combinati.
 \end{enumerate} 
 
 \section{Context-aware recommender system}
-I recommender system context-aware (CARS) producono le loro raccomandazioni utilizzando informazioni addizionali che definiscono la situazione di un utente. Queste informazioni addizionali sono chiamate \textit{contesto}.
+La maggior parte degli approcci esistenti per sviluppare sistemi di raccomandazione si concentra sul raccomandare gli oggetti più rilevanti ai singoli utenti senza considerare informazioni aggiuntive come il tempo, il luogo, etc. In altre parole, i sistemi di raccomandazione tradizionalmente si occupano di applicazioni che hanno solo due tipi di entità, utenti ed oggetti, e non li inseriscono in un contesto quando forniscono raccomandazioni. Tuttavia, in molte applicazioni potrebbe non essere sufficiente considerare solo utenti ed oggetti, ma è anche importante incorporare informazioni contestuali nel processo di raccomandazione al fine di consigliare oggetti agli utenti in determinate circostanze. I sistemi di raccomandazione che producono le loro raccomandazioni utilizzando il contesto sono chiamati recommender system context-aware (CARS). Alcuni esempi di contesto sono:
 
-\noindent Alcuni esempi di contesto sono:
 \begin{enumerate}
  \item \textit{Data e ora:} Dalle informazioni di data e ora è possibile estrarre diverse feature contestuali come il momento della giornata, il giorno della settimana, week-end, vacanze, stagioni ed altro ancora. Una raccomandazione potrebbe essere rilevante la mattina ma non il pomeriggio, e viceversa. Le raccomandazioni sui vestiti invernali o estivi possono essere molto diverse.
  \item \textit{Posizione:} Con la crescente popolarità del GPS disponibile ormai su qualunque telefono, le raccomandazioni sensibili alla posizione dell'utente hanno guadagnato importanza. Per esempio, un viaggiatore potrebbe desiderare raccomandazioni su ristoranti vicini alla propria posizione. Questo può essere fatto aggiungendo la posizione come contesto nel recommender system.
- \item \textit{Informazioni sociali:} Il contesto sociale è spesso importante per un sistema di raccomandazione. Le informazioni su amici, tag e cerchie sociali di un utente possono avere un impatto sul processo di raccomandazione. Per esempio un ragazzo potrebbe scegliere di guardare un film diverso a seconda che lo guardi con i suoi genitori o con i suoi amici.
+ \item \textit{Informazioni sociali:} Il contesto sociale è spesso importante per un sistema di raccomandazione. Le informazioni su amici, tag e relazioni sociali di un utente possono avere un impatto sul processo di raccomandazione. Per esempio un ragazzo potrebbe scegliere di guardare un film diverso a seconda che lo guardi con i suoi genitori o con i suoi amici.
 \end{enumerate} 
+
+% aggiungere esempi di CARS in letteratura
 
 \noindent Il contesto può essere ottenuto in vari modi \cite{recsys-handbook} che includono:
 \begin{enumerate}
@@ -169,6 +172,7 @@ Il contesto può essere applicato nelle varie fasi del processo di raccomandazio
 Alternating least square (ALS) \cite{als} è un algoritmo di matrix factorization stato dell'arte per quanto riguarda i feedback impliciti. ALS è un processo di ottimizzazione iterativo in cui ad ogni iterazione si cerca di arrivare il più vicino possibile a una rappresentazione fattorizzata dei dati originali \cite{als-medium}. 
 
 \subsection{Feedback impliciti}
+I feedback impliciti sono più semplici da collezionare rispetto ai feedback espliciti. Infatti, mentre i feedback espliciti sono ottenuti da valutazioni che l'utente lascia intenzionalmente sugli oggetti (es. valutazione da 1 a 10 di un film); i feedback impliciti sono collezionati automaticamente osservando il comportamento di un utente (es. 1 se l'utente ha guardato un film, 0 altrimenti).
 I feedback impliciti hanno alcune importanti caratteristiche che li distinguono dai feedback espliciti, e impediscono di usare direttamente algoritmi progettati con i feedback espliciti in mente \cite{als}:
 \begin{enumerate}
  \item \textit{Non ci sono feedback negativi.} Osservando il comportamento di un utente, è possibile inferire quali oggetti gli interessano e che quindi ha scelto di consumare. \'E difficile però capire in modo affidabile quali oggetti l'utente non apprezza. Per esempio, un utente che non ha guardato una serie tv potrebbe non averlo fatto perchè non interessato a quella serie, oppure perché non la conosceva. Questa asimmetria non esiste nei feedback espliciti in cui un utente si esprime su cosa gli piace e cosa non gli piace. Anche i dati mancanti sono un problema: nei feedback espliciti si conosce quali rating non sono stati espressi dall'utente, nei feedback impliciti no.
@@ -221,11 +225,12 @@ Viene quindi proposto di usare le reti neurali che sono considerate approssimato
   \label{fig:mf-limits}
 \end{figure}
 
+\subsection{Framework generale}
+Per permettere un trattamento neurale di collaborative filtering, viene adottata una rappresentazione multi-layer per modellare le interazioni utente-oggetto $y_{ui}$, in cui l'output di un layer è l'input per il layer successivo. Il layer di input consiste di due vettori $v_u^U$ e $v_i^I$ che descrivono rispettivamente l'utente $u$ e l'oggetto $i$. Dato che l'input nei modelli collaborative filtering è composto dagli ID univoci di $u$ e $i$, essi devono essere convertiti con one-hot encoding in vettori binari sparsi. One-hot encoding è un processo che converte una variabile categorica in un vettore di uno e zero. La lunghezza del vettore in questo caso è pari al numero di utenti o oggetti, ed ogni elemento nel vettore rappresenta un utente/oggetto. Tutti gli elementi del vettore sono posti a zero, tranne l'elemento corrispondente all'utente/oggetto corrente che è posto ad uno. Sopra al layer di input c'è il layer di embedding; è un layer fully connected che proietta la rappresentazione sparsa in un vettore denso. Gli embedding di utenti e oggetti ottenuti possono essere visti come i vettori latenti di utenti e oggetti nel contesto dei modelli a fattori latenti come matrix factorization. I vettori di embedding di user e item sono dati in input a un architettura neurale multi-layer, i cui livelli sono chiamati neural collaborative filtering layer, e infine al layer di output per calcolare lo score predetto $y_{ui}$. Questo framework generale è chiamato \textit{neural collaborative filtering} (NCF), ed è mostrato in \autoref{fig:ncf}.
+
 \subsection{Multi-layer perceptron}
-Il primo modello proposto è una rete neurale multi-layer che modella le interazioni utente-oggetto $y_{ui}$. Il layer di input consiste di due vettori $v_u^U$ e $v_i^I$ che descrivono rispettivamente l'utente $u$ e l'oggetto $i$. Dato che l'input nei modelli collaborative filtering è composto dagli ID univoci di $u$ e $i$, essi devono essere convertiti con one-hot encoding in vettori binari sparsi.
-Sopra al layer di input c'è il layer di embedding; è un layer fully connected che proietta la rappresentazione sparsa in un vettore denso.
-Gli embedding di utenti e oggetti ottenuti possono essere visti come i vettori latenti di utenti e oggetti nel contesto dei modelli a fattori latenti come matrix factorization.
-I vettori di embedding di user e item sono dati in input a un architettura neurale multi-layer, i cui livelli sono chiamati neural collaborative filtering layer, e infine al layer di output per calcolare lo score predetto $y_{ui}$. In \autoref{fig:ncf} è rappresentata l'architettura del MLP con $X$ neural CF layer.
+In questa istanza di NCF, sopra al layer di embedding sono aggiunti dei layer nascosti, in modo da usare un multi-layer perceptron (MLP) standard per imparare le interazioni tra le feature latenti di utenti e oggetti. In questo caso, il modello impara una funzione non-lineare per le interazioni tra $p_u$ e $q_i$, al posto che imparare un prodotto elemento per elemento come GMF.
+
 
 \begin{figure}
   \centering
