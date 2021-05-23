@@ -5,7 +5,7 @@ La \textit{rating matrix} è definita come:
 $$
 R_M: U \times I \rightarrow R
 $$
-dove $U = \{u_1, \dots, u_m\}$ rappresenta l'insieme degli utenti, $I = \{i_1,\dots, i_n\}$ rappresenta l'insieme degli oggetti, e $R = \{r_1, \dots, r_k\}$ rappresenta l'insieme dei possibili rating che un utente ha espresso riguardo a degli oggetti \cite{survey-mattia}. Un valore mancante nella rating matrix può avere due significati: l'utente non vuole esprimere un'opinione su un oggetto specifico, oppure l'utente -- non conoscendo ancora l'oggetto -- non può averlo valutato.
+dove $U = \{u_1, \dots, u_m\}$ rappresenta l'insieme degli utenti, $I = \{i_1,\dots, i_n\}$ rappresenta l'insieme degli oggetti, e $R = \{r_1, \dots, r_k\}$ rappresenta l'insieme dei possibili rating che un utente ha espresso riguardo a degli oggetti \cite{survey-mattia}. Un valore mancante nella rating matrix può avere due significati: l'utente non vuole esprimere un'opinione su un oggetto specifico, oppure l'utente -- non conoscendo ancora l'oggetto -- non può averlo valutato. La matrice dei rating è tipicamente molto sparsa: il numero di oggetti valutati da un utente è molto minore rispetto al numero totale di oggetti presenti nel database. Lo scopo di un RS è quello di predire i rating mancanti per tutte le coppie utente - oggetto.
 
 \vspace{5mm}
 \noindent I recommender system si dividono principalmente in quattro categorie:
@@ -37,7 +37,7 @@ Il presupposto alla base di CF è che le persone con preferenze simili valuteran
 \textbf{Vantaggi:}
 \begin{itemize}
 
- \item \textit{Nessuna conoscenza del dominio necessaria:} il modello può funzionare in domini in cui non c'è molto contenuto associato agli oggetti, e in cui il contenuto è difficile da analizzare per un sistema informatico (come opinioni e ideali) \cite{recsys-principle-methods-evaluation}.
+ \item \textit{Nessuna conoscenza del dominio necessaria:} basandosi solo su interazioni utente - oggetto, il modello può funzionare in domini in cui non c'è nessun contenuto associato agli oggetti \cite{recsys-principle-methods-evaluation}. Questo permette di impiegarlo facilmente per realizzare RS multi-domain, che raccomandano oggetti di natura diversa (audio, film, testo, etc.).
  
  \item \textit{Serendipity:} il modello ha la capacità di fornire consigli fortuiti, il che significa che può consigliare elementi pertinenti per l'utente senza che il contenuto si trovi nel profilo dell'utente, permettendo così all'utente di scoprire nuovi interessi \cite{recsys-principle-methods-evaluation} \cite{cf-advantages-google}.
 \end{itemize}
@@ -54,20 +54,20 @@ Il presupposto alla base di CF è che le persone con preferenze simili valuteran
 
 % invertire l'ordine di questa sezione con quella dei vantaggi/svantaggi
 \subsection{Matrix factorization} \label{ssec:mf}
-Gli algoritmi basati su matrix factorization (MF) caratterizzano sia utenti sia oggetti mediante dei vettori di fattori estratti dai pattern sui rating. Una corrispondenza alta tra i fattori di un utente e un oggetto porta ad una raccomandazione. Questi metodi sono diventati popolari negli ultimi anni perchè combinano scalabilità e accuratezza.
+Gli algoritmi basati su matrix factorization (MF) caratterizzano utenti e oggetti mediante dei vettori di fattori estratti dai pattern sui rating. Questi vettori, chiamati fattori latenti, sono delle feature nascoste che descrivono utenti e oggetti. Una corrispondenza alta tra i fattori di un utente e un oggetto porta ad una raccomandazione. Questi metodi sono diventati popolari negli ultimi anni perchè combinano scalabilità e accuratezza. % esempi di utilizzo
 
-Più formalmente, i modelli basati su matrix factorization mappano utenti e oggetti in uno spazio di fattori latenti di dimensionalità $f$, tale che le interazioni tra utenti e oggetti sono modellate come prodotti in quello spazio. Di conseguenza, ogni oggetto $i$ è associato con un vettore $q_i \in \mathbb{R}^f$, e ogni utente $u$ con un vettore $p_u \in \mathbb{R}^f$. Per un dato oggetto $i$, gli elementi di $q_i$ indicano la misura in cui l'oggetto possiede quei fattori, positivi o negativi. Per un dato utente $u$, gli elementi di $p_u$ indicato l'entità dell'interesse che l'utente ha per gli oggetti che hanno un valore alto sui fattori corrispondenti, positivi o negativi. Il prodotto scalare $q_i^Tp_u$ indica l'interesse dell'utente $u$ per le caratteristiche dell'oggetto $i$ \cite{matrix-factorization}. Quindi il rating $r_{ui}$ può essere approssimato come
+Più formalmente, i modelli basati su matrix factorization mappano utenti e oggetti in uno spazio di fattori latenti di dimensionalità $d$, tale che le interazioni tra utenti e oggetti sono modellate come prodotti in quello spazio. Di conseguenza, ogni oggetto $i$ è associato con un vettore $q_i \in \mathbb{R}^d$, e ogni utente $u$ con un vettore $p_u \in \mathbb{R}^d$. Per un dato oggetto $i$, gli elementi di $q_i$ indicano la misura in cui l'oggetto possiede quei fattori, positivi o negativi. Per un dato utente $u$, gli elementi di $p_u$ indicato l'entità dell'interesse che l'utente ha per gli oggetti che hanno un valore alto sui fattori corrispondenti, positivi o negativi. Il prodotto scalare $q_i^Tp_u$ indica l'interesse dell'utente $u$ per le caratteristiche dell'oggetto $i$ \cite{matrix-factorization}. Quindi il rating $r_{ui}$ può essere approssimato come
 
 \begin{equation} \label{eq:dot_product}
 r_{ui} = q_i^Tp_u
 \end{equation}
-Il problema principale è calcolare il mapping di ogni oggetto e utente in vettori $q_i, p_u \in \mathbb{R}^f$. Una volta che il recommender system ha completato il mapping, può facilmente stimare il rating che un utente darà a qualsiasi oggetto utilizzando l'equazione \ref{eq:dot_product}. 
+Il problema principale è calcolare il mapping di ogni oggetto e utente in vettori $q_i, p_u \in \mathbb{R}^d$. Una volta che il recommender system ha completato il mapping, può facilmente stimare il rating che un utente darà a qualsiasi oggetto utilizzando l'equazione \ref{eq:dot_product}. 
 
 In \autoref{fig:matrix_factorization} è mostrato come la matrice dei rating $A \in \mathbb{R}^{m \times n}$, con $m$ numero di utenti e $n$ numero di oggetti, viene decomposta in due matrici di dimensionalità minore:
 
 \begin{itemize}
-	\item Una matrice di fattori latenti per gli utenti $P \in \mathbb{R}^{m \times f}$, in cui la riga $i$ contiene i fattori latenti dell'utente $i$.
-	\item Una matrice di fattori latenti per gli oggetti $Q \in \mathbb{R}^{n \times f}$, in cui la riga $j$ contiene i fattori latenti dell'oggetto $j$.
+	\item Una matrice di fattori latenti per gli utenti $P \in \mathbb{R}^{m \times d}$, in cui la riga $i$ contiene i fattori latenti dell'utente $i$.
+	\item Una matrice di fattori latenti per gli oggetti $Q \in \mathbb{R}^{n \times d}$, in cui la riga $j$ contiene i fattori latenti dell'oggetto $j$.
 \end{itemize}
 Le due matrici di fattori latenti $P$ e $Q$ sono imparate in modo tale che il prodotto $PQ^T$ sia una buona approssimazione della matrice dei rating $A$ \cite{mf-google}.
 
