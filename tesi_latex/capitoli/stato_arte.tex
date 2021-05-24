@@ -10,10 +10,10 @@ dove $U = \{u_1, \dots, u_m\}$ rappresenta l'insieme degli utenti, $I = \{i_1,\d
 \vspace{5mm}
 \noindent I recommender system si dividono principalmente in quattro categorie:
 \begin{itemize}
-	\item collaborative filtering
-	\item content-based
-	\item ibridi
-	\item context-aware
+	\item Collaborative filtering
+	\item Content-based
+	\item Ibridi
+	\item Context-aware
 \end{itemize}
 
 \noindent In \autoref{fig:cb-cf} è schematizzato il modo diverso in cui operano i metodi collaborative filtering rispetto a quelli content-based. Le quattro categorie sono descritte in dettaglio nelle sezioni successive.
@@ -31,26 +31,7 @@ dove $U = \{u_1, \dots, u_m\}$ rappresenta l'insieme degli utenti, $I = \{i_1,\d
 Collaborative filtering (CF) è la tecnica di raccomandazione più popolare e ampiamente utilizzata nei RS. % inserire riferimenti bibliografici
 Il presupposto alla base di CF è che le persone con preferenze simili valuteranno gli stessi oggetti con rating simili. CF quindi sfrutta le informazioni sul comportamento passato o le opinioni di una comunità di utenti esistente per prevedere quali elementi potranno piacere o saranno interessanti per l'utente corrente del sistema \cite{recsys-intro}. Gli approcci CF puri non sfruttano né richiedono alcuna conoscenza degli oggetti stessi ma solo dei feedback degli utenti. In letteratura sono stati proposti diversi modelli CF come matrix factorization \cite{matrix-factorization}, tensor factorization \cite{tensor-factorization}, factorization machines \cite{factorization-machines}, e più recentemente approcci basati sul deep learning \cite{deep-learning-survey} \cite{NCF}.
 
-\subsection{Vantaggi e svantaggi dell'approccio CF} \label{ssec:pros-cons-cf}
-\textbf{Vantaggi:}
-\begin{itemize}
 
- \item \textit{Nessuna conoscenza del dominio necessaria:} basandosi solo su interazioni utente - oggetto, il modello può funzionare in domini in cui non c'è nessun contenuto associato agli oggetti \cite{recsys-principle-methods-evaluation}. Questo permette di impiegarlo facilmente per realizzare RS multi-domain, che raccomandano oggetti di natura diversa (audio, film, testo, etc.).
- 
- \item \textit{Serendipity:} il modello ha la capacità di fornire consigli fortuiti, il che significa che può consigliare elementi pertinenti per l'utente senza che il contenuto si trovi nel profilo dell'utente, permettendo così all'utente di scoprire nuovi interessi \cite{recsys-principle-methods-evaluation} \cite{cf-advantages-google}.
-\end{itemize}
-
-\noindent \textbf{Svantaggi:}
-\begin{itemize}
- \item \textit{Problema del cold-start:} si riferisce alla situazione in cui il sistema di raccomandazione non ha abbastanza informazioni su un utente od un oggetto per poter fare previsioni rilevanti. Un nuovo oggetto inserito nel RS di solito non ha voti, ed è quindi improbabile che venga raccomandato. Un oggetto non consigliato passa inosservato a gran parte della community. Il problema è presente anche per i nuovi utenti: gli utenti che hanno espresso nessuna o poche valutazioni non ricevono raccomandazioni affidabili \cite{cold-start}.   
- 
- \item  \textit{Problema di data sparsity:} questo è il problema che si verifica a causa della mancanza di informazioni sufficienti, cioè quando solo pochi rispetto al numero totale di oggetti disponibili in un database sono valutati dagli utenti. Ciò porta ad una rating matrix sparsa, e raccomandazioni poco efficaci \cite{recsys-principle-methods-evaluation}.
- 
- \item \textit{Scalabilità:} questo è un altro problema associato agli algoritmi di raccomandazione perché il tempo di computazione cresce linearmente sia con il numero di utenti, sia con il numero di oggetti. Un sistema di raccomandazione efficiente con un dataset limitato potrebbe non esserlo con un dataset di dimensioni maggiori \cite{recsys-principle-methods-evaluation}.
-\end{itemize}
-
-
-% invertire l'ordine di questa sezione con quella dei vantaggi/svantaggi
 \subsection{Matrix factorization} \label{ssec:mf}
 Gli algoritmi basati su matrix factorization (MF) caratterizzano utenti e oggetti mediante dei vettori di fattori estratti dai pattern sui rating. Questi vettori, chiamati fattori latenti, sono delle feature nascoste che descrivono utenti e oggetti. Una corrispondenza alta tra i fattori di un utente e un oggetto porta ad una raccomandazione. Questi metodi sono diventati popolari negli ultimi anni perchè combinano scalabilità e accuratezza. % esempi di utilizzo
 
@@ -76,6 +57,120 @@ In \autoref{fig:matrix_factorization} è mostrato come la matrice dei rating $A 
 	\item Una matrice di fattori latenti per gli oggetti $Q \in \mathbb{R}^{n \times d}$, in cui la riga $j$ contiene i fattori latenti dell'oggetto $j$.
 \end{itemize}
 Le due matrici di fattori latenti $P$ e $Q$ sono imparate in modo tale che il prodotto $PQ^T$ sia una buona approssimazione della matrice dei rating $A$ \cite{mf-google}. In letteratura sono stati proposti diversi algoritmi per calcolare i fattori latenti di utenti e oggetti. Il primo algoritmo proposto è stato FunkSVD \cite{funk-mf} che supporta unicamente feedback espliciti, SVD++ \cite{svd++} aggiunge il bias di utenti e oggetti e il supporto a feedback impliciti; ALS \cite{als} e logistic MF \cite{logistic-mf} sono invece algoritmi progettati con i feedback impliciti in mente.
+
+
+\subsection{Alternating least square}
+Alternating least square (ALS) \cite{als} è un algoritmo di matrix factorization stato dell'arte per quanto riguarda i feedback impliciti. ALS è un processo di ottimizzazione iterativo in cui ad ogni iterazione si cerca di arrivare il più vicino possibile a una rappresentazione fattorizzata dei dati originali \cite{als-medium}. 
+
+\subsubsection{Feedback impliciti}
+I feedback impliciti sono più semplici da collezionare rispetto ai feedback espliciti. Infatti, mentre i feedback espliciti sono ottenuti da valutazioni che l'utente lascia intenzionalmente sugli oggetti (es. valutazione da 1 a 10 di un film); i feedback impliciti sono collezionati automaticamente osservando il comportamento di un utente (es. 1 se l'utente ha guardato un film, 0 altrimenti).
+I feedback impliciti hanno alcune importanti caratteristiche che li distinguono dai feedback espliciti, e impediscono di usare direttamente algoritmi progettati con i feedback espliciti in mente \cite{als}:
+\begin{enumerate}
+ \item \textit{Non ci sono feedback negativi.} Osservando il comportamento di un utente, è possibile inferire quali oggetti gli interessano e che quindi ha scelto di consumare. \'E difficile però capire in modo affidabile quali oggetti l'utente non apprezza. Per esempio, un utente che non ha guardato una serie tv potrebbe non averlo fatto perchè non interessato a quella serie, oppure perché non la conosceva. Questa asimmetria non esiste nei feedback espliciti in cui un utente si esprime su cosa gli piace e cosa non gli piace. Anche i dati mancanti sono un problema: nei feedback espliciti si conosce quali rating non sono stati espressi dall'utente, nei feedback impliciti no.
+ 
+ \item \textit{I feedback impliciti sono intrinsicamente rumorosi.} Tenendo traccia passivamente dei comportamenti degli utenti è difficile distinguere il caso in cui un utente ha consumato un oggetto perchè davvero interessato o per altri motivi.
+ 
+ \item Il valore numerico dei feedback espliciti indica la \textit{preferenza}, mentre il valore numerico dei feedback impliciti indica la \textit{confidenza}. I sistemi basati sui feedback espliciti permettono all'utente di impostare il loro livello di preferenza su un oggetto, ad esempio con un voto da 1 a 5. I feedback impliciti invece descrivono la frequenza di un'azione, ma un valore più alto  non indica per forza una preferenza maggiore
+\end{enumerate}
+
+\subsubsection{Il modello}
+Per prima cosa vanno formalizzati i concetti di preferenza e confidenza. La preferenza di un utente $u$ per un item $i$ è indicata con un valore binario $p_{ui}$:
+$$
+p_{ui} =     \begin{cases}
+				1 \;\;\; r_{ui} > 0 \\
+				0 \;\;\; r_{ui} = 0
+              \end{cases}
+$$
+In pratica, se un utente $u$ ha consumato un oggetto $i$ ($r_{ui} > 0$), allora si ha un'indicazione che $u$ è interessato a $i$. Diversamente, se $u$ non ha mai consumato $i$ la preferenza è uguale a 0. Inoltre, con l'aumento del valore di $r_{ui}$ si ha un indicazione più forte che l'utente sia davvero interessato all'oggetto. Di conseguenza, si può indicare con $c_{ui}$ la confidenza nell'osservare $p_{ui}$. Una possibile scelta è
+$$
+c_{ui} = 1 + \alpha r_{ui}
+$$
+In questo modo, si ha una confidenza minima su $p_{ui}$ per ogni coppia utente-oggetto, ma osservando più preferenze positive la confidenza su $p_{ui} = 1$ aumenta. La velocità di incremento è controllata dalla costante $\alpha$.
+
+Come spiegato nella \autoref{ssec:mf}, l'obiettivo è trovare un vettore $x_u \in R^f$ per ogni utente $u$, ed un vettore $y_i \in R^f$ per ogni oggetto $i$ che fattorizzano le preferenze degli utenti. Le preferenze possono essere poi calcolate come $p_{ui} = x_u^Ty_i$. I vettori latenti in ALS sono calcolati minimizzando la funzione obbiettivo:	
+$$
+\min_{x_*,y_*} \sum_{u,i} c_{ui} (p_{ui} - x_u^Ty_i)^2 + 
+\lambda \left( \sum_u ||x_u||^2 + \sum_i ||y_i||^2 \right)
+$$
+Il termine $\lambda \left( \sum_u ||x_u||^2 + \sum_i ||y_i||^2 \right)$ è necessario per regolarizzare il modello ed evitare l'overfitting durante il training. Il valore esatto di $\lambda$ dipende dai dati e si determina tramite cross validation. 
+Quando il vettore latente degli utenti o degli oggetti rimane fissato, la funzione obbiettivo diventa quadratica e si può calcolare un minimo globale. Questo porta ad un processo di ottimizzazione con il metodo dei minimi quadrati, in cui si alterna tra il ricalcolare il vettore degli utenti mantenendo fissato quello degli oggetti e viceversa. Ad ogni step il valore della funzione di costo diminuisce.
+
+\subsection{Neural collaborative filtering} \label{sec:ncf}
+Gli algoritmi basati su matrix factorization sono sicuramente i più popolari nell'ambito dei sistemi di raccomandazione collaborative filtering. Nonostante l'efficacia di questi modelli, le loro performance  posso variare in base alla scelta della funzione di interazione. Ad esempio, per quanto riguarda il task di rating prediction su feedback espliciti, è noto che le performance di MF possono essere migliorate incorporando il bias di utenti e oggetti nella funzione di interazione. Anche se si tratta solo di una piccola modifica, dimostra l'effetto positivo di progettare una funzione migliore per modellare l'interazione delle feature latenti di utenti e oggetti. 
+Secondo gli autori di \cite{NCF} il prodotto scalare, che combina la moltiplicazione delle feature latenti in modo lineare, potrebbe non essere sufficiente per catturare la complessa struttura dei dati che rappresentano le interazioni dell'utente. 
+
+La \autoref{fig:mf-limits} mostra come il prodotto scalare può limitare l'espressività di MF. La similarità tra due utenti può essere misurata con il prodotto scalare tra i loro vettori latenti, o in modo equivalente con il coseno dell'angolo tra i loro vettori latenti. Dalla matrice utenti-oggetti, in \autoref{fig:mf-limits} indicata con (a), l'utente $u_4$ è più simile a $u_1$, seguito da $u_3$, e in ultimo da $u_2$. Tuttavia, nello spazio latente indicato con (b), posizionare $p_4$ più vicino a $p_1$ rende $p_4$ più vicino a $p_2$ e non a $p_3$.
+
+Viene quindi proposto di usare le reti neurali che sono considerate approssimatori universali \cite{NN-universal-approx} per imparare le interazioni utente-oggetto. In particolare sono proposti tre modelli basati su deep neural networks:
+\begin{enumerate}
+ \item Multi-Layer Perceptron (MLP)
+ \item Generalized Matrix Factorization (GMF)
+ \item Neural Matrix Factorization (NeuMF)
+\end{enumerate}
+
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.50]{immagini/user_item_vectors.png}
+  \caption{Limitazioni di matrix factorization}
+  \cite{NCF}
+  \label{fig:mf-limits}
+\end{figure}
+
+\subsubsection{Framework generale}
+Per permettere un trattamento neurale di collaborative filtering, viene adottata una rappresentazione multi-layer per modellare le interazioni utente-oggetto $y_{ui}$, in cui l'output di un layer è l'input per il layer successivo. Il layer di input consiste di due vettori $v_u^U$ e $v_i^I$ che descrivono rispettivamente l'utente $u$ e l'oggetto $i$. Dato che l'input nei modelli collaborative filtering è composto dagli ID univoci di $u$ e $i$, essi devono essere convertiti con one-hot encoding in vettori binari sparsi. One-hot encoding è un processo che converte una variabile categorica in un vettore di uno e zero. La lunghezza del vettore in questo caso è pari al numero di utenti o oggetti, ed ogni elemento nel vettore rappresenta un utente/oggetto. Tutti gli elementi del vettore sono posti a zero, tranne l'elemento corrispondente all'utente/oggetto corrente che è posto ad uno. Sopra al layer di input c'è il layer di embedding; è un layer fully connected che proietta la rappresentazione sparsa in un vettore denso. Gli embedding di utenti e oggetti ottenuti possono essere visti come i vettori latenti di utenti e oggetti nel contesto dei modelli a fattori latenti come matrix factorization. I vettori di embedding di user e item sono dati in input a un architettura neurale multi-layer, i cui livelli sono chiamati neural collaborative filtering layer, e infine al layer di output per calcolare lo score predetto $y_{ui}$. Questo framework generale è chiamato \textit{neural collaborative filtering} (NCF), ed è mostrato in \autoref{fig:ncf}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{immagini/ncf.png}
+  \caption{Framework neural collaborative filtering}
+  \cite{NCF}
+  \label{fig:ncf}
+\end{figure}
+
+\subsubsection{Generalized matrix factorization}
+In \cite{NCF} viene mostrato come la famiglia di metodi basata su matrix factorization possa essere considerato un caso particolare del framework NCF. Come detto prima, i vettori di embedding possono essere visti come i vettori latenti di utenti e oggetti imparati dagli algoritmi di MF. Siano $p_u$ il vettore latente degli utenti e $q_i$ il vettore latente degli oggetti. Si può ridefinire la funzione del primo neural CF layer per eseguire la moltiplicazione tra i due vettori di embedding:
+$$
+\phi(p_u, q_1) = p_u \odot q_i
+$$
+in cui $\odot$ è il prodotto elemento per elemento dei vettori. Si proietta poi il vettore risultato sul layer di output:
+$$
+y_{ui} = a_{out}(h^T(p_u \odot q_i))
+$$
+dove $a_{out}$ e $h$ sono rispettivamente la funzione di attivazione e  i pesi del layer di output.  Se si usa una funzione identità per $a_{out}$ e si impone che $h$ sia un vettore uniforme di 1, si può ricostruire esattamente il modello MF. Questo modello è chiamato generalized matrix factorization (GMF).
+
+\subsubsection{Multi-layer perceptron}
+In questa istanza di NCF, i vettori di embedding di utenti e oggetti, ottenuti dai layer di embedding, sono concatenati. Sopra il layer di concatenazione sono aggiunti dei layer nascosti, in modo da usare un multi-layer perceptron (MLP) standard per imparare le interazioni tra le feature latenti di utenti e oggetti. In questo caso, il modello impara una funzione non-lineare per le interazioni tra $p_u$ e $q_i$, al posto che imparare un prodotto elemento per elemento come GMF. 
+
+\subsubsection{Neural matrix factorization}
+A questo punto si hanno due diverse implementazioni del framework NCF: GMF che applica un funzione lineare per imparare le interazioni delle feature latenti, e MLP che invece applica un funzione non lineare. Le due reti possono essere combinate per modellare in modo più preciso le complesse interazioni utente-oggetto. Una soluzione semplice è permettere a GMF e MLP di condividere lo stesso layer di embedding; questo approccio però può limitare le performance del modello perchè GMF e MLP devono usare embedding della stessa dimensione. Per fornire più flessibilità al modello fuso, GMF e MLP imparano vettori di embedding separati, e i due modelli sono combinati concatenando l'output del loro ultimo layer nascosto. L'architettura del modello fuso chiamata neural matrix factorization (NeuMF) è mostrata in \autoref{fig:neumf}. A sinistra è rappresentata la rete GMF, a destra il MLP.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{immagini/neumf.png}
+  \caption{Neural matrix factorization}
+  \cite{NCF}
+  \label{fig:neumf}
+\end{figure}
+
+
+\subsection{Vantaggi e svantaggi dell'approccio CF} \label{ssec:pros-cons-cf}
+\textbf{Vantaggi:}
+\begin{itemize}
+
+ \item \textit{Nessuna conoscenza del dominio necessaria:} basandosi solo su interazioni utente - oggetto, il modello può funzionare in domini in cui non c'è nessun contenuto associato agli oggetti \cite{recsys-principle-methods-evaluation}. Questo permette di impiegarlo facilmente per realizzare RS multi-domain, che raccomandano oggetti di natura diversa (audio, film, testo, etc.).
+ 
+ \item \textit{Serendipity:} il modello ha la capacità di fornire consigli fortuiti, il che significa che può consigliare elementi pertinenti per l'utente senza che il contenuto si trovi nel profilo dell'utente, permettendo così all'utente di scoprire nuovi interessi \cite{recsys-principle-methods-evaluation} \cite{cf-advantages-google}.
+\end{itemize}
+
+\noindent \textbf{Svantaggi:}
+\begin{itemize}
+ \item \textit{Problema del cold-start:} si riferisce alla situazione in cui il sistema di raccomandazione non ha abbastanza informazioni su un utente od un oggetto per poter fare previsioni rilevanti. Un nuovo oggetto inserito nel RS di solito non ha voti, ed è quindi improbabile che venga raccomandato. Un oggetto non consigliato passa inosservato a gran parte della community. Il problema è presente anche per i nuovi utenti: gli utenti che hanno espresso nessuna o poche valutazioni non ricevono raccomandazioni affidabili \cite{cold-start}.   
+ 
+ \item  \textit{Problema di data sparsity:} questo è il problema che si verifica a causa della mancanza di informazioni sufficienti, cioè quando solo pochi rispetto al numero totale di oggetti disponibili in un database sono valutati dagli utenti. Ciò porta ad una rating matrix sparsa, e raccomandazioni poco efficaci \cite{recsys-principle-methods-evaluation}.
+ 
+ \item \textit{Scalabilità:} questo è un altro problema associato agli algoritmi di raccomandazione perché il tempo di computazione cresce linearmente sia con il numero di utenti, sia con il numero di oggetti. Un sistema di raccomandazione efficiente con un dataset limitato potrebbe non esserlo con un dataset di dimensioni maggiori \cite{recsys-principle-methods-evaluation}.
+\end{itemize}
+
 
 \section{Content-based recommender system}
 Nei recommender system content-based (CB), gli attributi descrittivi degli oggetti sono usati per produrre raccomandazioni. Il termine ``content" indica che il processo di raccomandazione si focalizza sui contenuti piuttosto che sulle interazioni utente - oggetto. Nei metodi content-based i rating degli utenti sono combinati con le informazioni disponibili sugli oggetti, per poi essere usati come training data per creare un modello di classificazione o regressione  specifico per l'utente. Nei problemi di classificazione si prevede se ad un utente può piacere un oggetto; nei problemi di regressione si prevede il rating dato da un utente ad un oggetto la cui valutazione è ancora sconosciuta \cite{recsys-book}.
@@ -167,108 +262,15 @@ Il contesto può essere applicato nelle varie fasi del processo di raccomandazio
   \label{fig:context-paradigm}
 \end{figure}
 
-\section{Alternating least square}
-Alternating least square (ALS) \cite{als} è un algoritmo di matrix factorization stato dell'arte per quanto riguarda i feedback impliciti. ALS è un processo di ottimizzazione iterativo in cui ad ogni iterazione si cerca di arrivare il più vicino possibile a una rappresentazione fattorizzata dei dati originali \cite{als-medium}. 
-
-\subsection{Feedback impliciti}
-I feedback impliciti sono più semplici da collezionare rispetto ai feedback espliciti. Infatti, mentre i feedback espliciti sono ottenuti da valutazioni che l'utente lascia intenzionalmente sugli oggetti (es. valutazione da 1 a 10 di un film); i feedback impliciti sono collezionati automaticamente osservando il comportamento di un utente (es. 1 se l'utente ha guardato un film, 0 altrimenti).
-I feedback impliciti hanno alcune importanti caratteristiche che li distinguono dai feedback espliciti, e impediscono di usare direttamente algoritmi progettati con i feedback espliciti in mente \cite{als}:
-\begin{enumerate}
- \item \textit{Non ci sono feedback negativi.} Osservando il comportamento di un utente, è possibile inferire quali oggetti gli interessano e che quindi ha scelto di consumare. \'E difficile però capire in modo affidabile quali oggetti l'utente non apprezza. Per esempio, un utente che non ha guardato una serie tv potrebbe non averlo fatto perchè non interessato a quella serie, oppure perché non la conosceva. Questa asimmetria non esiste nei feedback espliciti in cui un utente si esprime su cosa gli piace e cosa non gli piace. Anche i dati mancanti sono un problema: nei feedback espliciti si conosce quali rating non sono stati espressi dall'utente, nei feedback impliciti no.
- 
- \item \textit{I feedback impliciti sono intrinsicamente rumorosi.} Tenendo traccia passivamente dei comportamenti degli utenti è difficile distinguere il caso in cui un utente ha consumato un oggetto perchè davvero interessato o per altri motivi.
- 
- \item Il valore numerico dei feedback espliciti indica la \textit{preferenza}, mentre il valore numerico dei feedback impliciti indica la \textit{confidenza}. I sistemi basati sui feedback espliciti permettono all'utente di impostare il loro livello di preferenza su un oggetto, ad esempio con un voto da 1 a 5. I feedback impliciti invece descrivono la frequenza di un'azione, ma un valore più alto  non indica per forza una preferenza maggiore
-\end{enumerate}
-
-\subsection{Il modello}
-Per prima cosa vanno formalizzati i concetti di preferenza e confidenza. La preferenza di un utente $u$ per un item $i$ è indicata con un valore binario $p_{ui}$:
-$$
-p_{ui} =     \begin{cases}
-				1 \;\;\; r_{ui} > 0 \\
-				0 \;\;\; r_{ui} = 0
-              \end{cases}
-$$
-In pratica, se un utente $u$ ha consumato un oggetto $i$ ($r_{ui} > 0$), allora si ha un'indicazione che $u$ è interessato a $i$. Diversamente, se $u$ non ha mai consumato $i$ la preferenza è uguale a 0. Inoltre, con l'aumento del valore di $r_{ui}$ si ha un indicazione più forte che l'utente sia davvero interessato all'oggetto. Di conseguenza, si può indicare con $c_{ui}$ la confidenza nell'osservare $p_{ui}$. Una possibile scelta è
-$$
-c_{ui} = 1 + \alpha r_{ui}
-$$
-In questo modo, si ha una confidenza minima su $p_{ui}$ per ogni coppia utente-oggetto, ma osservando più preferenze positive la confidenza su $p_{ui} = 1$ aumenta. La velocità di incremento è controllata dalla costante $\alpha$.
-
-Come spiegato nella \autoref{ssec:mf}, l'obiettivo è trovare un vettore $x_u \in R^f$ per ogni utente $u$, ed un vettore $y_i \in R^f$ per ogni oggetto $i$ che fattorizzano le preferenze degli utenti. Le preferenze possono essere poi calcolate come $p_{ui} = x_u^Ty_i$. I vettori latenti in ALS sono calcolati minimizzando la funzione obbiettivo:	
-$$
-\min_{x_*,y_*} \sum_{u,i} c_{ui} (p_{ui} - x_u^Ty_i)^2 + 
-\lambda \left( \sum_u ||x_u||^2 + \sum_i ||y_i||^2 \right)
-$$
-Il termine $\lambda \left( \sum_u ||x_u||^2 + \sum_i ||y_i||^2 \right)$ è necessario per regolarizzare il modello ed evitare l'overfitting durante il training. Il valore esatto di $\lambda$ dipende dai dati e si determina tramite cross validation. 
-Quando il vettore latente degli utenti o degli oggetti rimane fissato, la funzione obbiettivo diventa quadratica e si può calcolare un minimo globale. Questo porta ad un processo di ottimizzazione con il metodo dei minimi quadrati, in cui si alterna tra il ricalcolare il vettore degli utenti mantenendo fissato quello degli oggetti e viceversa. Ad ogni step il valore della funzione di costo diminuisce.
-
-\section{Neural collaborative filtering} \label{sec:ncf}
-Gli algoritmi basati su matrix factorization sono sicuramente i più popolari nell'ambito dei sistemi di raccomandazione collaborative filtering. Nonostante l'efficacia di questi modelli, le loro performance  posso variare in base alla scelta della funzione di interazione. Ad esempio, per quanto riguarda il task di rating prediction su feedback espliciti, è noto che le performance di MF possono essere migliorate incorporando il bias di utenti e oggetti nella funzione di interazione. Anche se si tratta solo di una piccola modifica, dimostra l'effetto positivo di progettare una funzione migliore per modellare l'interazione delle feature latenti di utenti e oggetti. 
-Secondo gli autori di \cite{NCF} il prodotto scalare, che combina la moltiplicazione delle feature latenti in modo lineare, potrebbe non essere sufficiente per catturare la complessa struttura dei dati che rappresentano le interazioni dell'utente. 
-
-La \autoref{fig:mf-limits} mostra come il prodotto scalare può limitare l'espressività di MF. La similarità tra due utenti può essere misurata con il prodotto scalare tra i loro vettori latenti, o in modo equivalente con il coseno dell'angolo tra i loro vettori latenti. Dalla matrice utenti-oggetti, in \autoref{fig:mf-limits} indicata con (a), l'utente $u_4$ è più simile a $u_1$, seguito da $u_3$, e in ultimo da $u_2$. Tuttavia, nello spazio latente indicato con (b), posizionare $p_4$ più vicino a $p_1$ rende $p_4$ più vicino a $p_2$ e non a $p_3$.
-
-Viene quindi proposto di usare le reti neurali che sono considerate approssimatori universali \cite{NN-universal-approx} per imparare le interazioni utente-oggetto. In particolare sono proposti tre modelli basati su deep neural networks:
-\begin{enumerate}
- \item Multi-Layer Perceptron (MLP)
- \item Generalized Matrix Factorization (GMF)
- \item Neural Matrix Factorization (NeuMF)
-\end{enumerate}
-
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.50]{immagini/user_item_vectors.png}
-  \caption{Limitazioni di matrix factorization}
-  \cite{NCF}
-  \label{fig:mf-limits}
-\end{figure}
-
-\subsection{Framework generale}
-Per permettere un trattamento neurale di collaborative filtering, viene adottata una rappresentazione multi-layer per modellare le interazioni utente-oggetto $y_{ui}$, in cui l'output di un layer è l'input per il layer successivo. Il layer di input consiste di due vettori $v_u^U$ e $v_i^I$ che descrivono rispettivamente l'utente $u$ e l'oggetto $i$. Dato che l'input nei modelli collaborative filtering è composto dagli ID univoci di $u$ e $i$, essi devono essere convertiti con one-hot encoding in vettori binari sparsi. One-hot encoding è un processo che converte una variabile categorica in un vettore di uno e zero. La lunghezza del vettore in questo caso è pari al numero di utenti o oggetti, ed ogni elemento nel vettore rappresenta un utente/oggetto. Tutti gli elementi del vettore sono posti a zero, tranne l'elemento corrispondente all'utente/oggetto corrente che è posto ad uno. Sopra al layer di input c'è il layer di embedding; è un layer fully connected che proietta la rappresentazione sparsa in un vettore denso. Gli embedding di utenti e oggetti ottenuti possono essere visti come i vettori latenti di utenti e oggetti nel contesto dei modelli a fattori latenti come matrix factorization. I vettori di embedding di user e item sono dati in input a un architettura neurale multi-layer, i cui livelli sono chiamati neural collaborative filtering layer, e infine al layer di output per calcolare lo score predetto $y_{ui}$. Questo framework generale è chiamato \textit{neural collaborative filtering} (NCF), ed è mostrato in \autoref{fig:ncf}.
-
-\begin{figure}
-  \centering
-  \includegraphics[width=\linewidth]{immagini/ncf.png}
-  \caption{Framework neural collaborative filtering}
-  \cite{NCF}
-  \label{fig:ncf}
-\end{figure}
-
-\subsection{Generalized matrix factorization}
-In \cite{NCF} viene mostrato come la famiglia di metodi basata su matrix factorization possa essere considerato un caso particolare del framework NCF. Come detto prima, i vettori di embedding possono essere visti come i vettori latenti di utenti e oggetti imparati dagli algoritmi di MF. Siano $p_u$ il vettore latente degli utenti e $q_i$ il vettore latente degli oggetti. Si può ridefinire la funzione del primo neural CF layer per eseguire la moltiplicazione tra i due vettori di embedding:
-$$
-\phi(p_u, q_1) = p_u \odot q_i
-$$
-in cui $\odot$ è il prodotto elemento per elemento dei vettori. Si proietta poi il vettore risultato sul layer di output:
-$$
-y_{ui} = a_{out}(h^T(p_u \odot q_i))
-$$
-dove $a_{out}$ e $h$ sono rispettivamente la funzione di attivazione e  i pesi del layer di output.  Se si usa una funzione identità per $a_{out}$ e si impone che $h$ sia un vettore uniforme di 1, si può ricostruire esattamente il modello MF. Questo modello è chiamato generalized matrix factorization (GMF).
-
-\subsection{Multi-layer perceptron}
-In questa istanza di NCF, i vettori di embedding di utenti e oggetti, ottenuti dai layer di embedding, sono concatenati. Sopra il layer di concatenazione sono aggiunti dei layer nascosti, in modo da usare un multi-layer perceptron (MLP) standard per imparare le interazioni tra le feature latenti di utenti e oggetti. In questo caso, il modello impara una funzione non-lineare per le interazioni tra $p_u$ e $q_i$, al posto che imparare un prodotto elemento per elemento come GMF. 
-
-\subsection{Neural matrix factorization}
-A questo punto si hanno due diverse implementazioni del framework NCF: GMF che applica un funzione lineare per imparare le interazioni delle feature latenti, e MLP che invece applica un funzione non lineare. Le due reti possono essere combinate per modellare in modo più preciso le complesse interazioni utente-oggetto. Una soluzione semplice è permettere a GMF e MLP di condividere lo stesso layer di embedding; questo approccio però può limitare le performance del modello perchè GMF e MLP devono usare embedding della stessa dimensione. Per fornire più flessibilità al modello fuso, GMF e MLP imparano vettori di embedding separati, e i due modelli sono combinati concatenando l'output del loro ultimo layer nascosto. L'architettura del modello fuso chiamata neural matrix factorization (NeuMF) è mostrata in \autoref{fig:neumf}. A sinistra è rappresentata la rete GMF, a destra il MLP.
-
-\begin{figure}
-  \centering
-  \includegraphics[width=\linewidth]{immagini/neumf.png}
-  \caption{Neural matrix factorization}
-  \cite{NCF}
-  \label{fig:neumf}
-\end{figure}
-
 %spostare in context aware
-\section{Raccomandazioni context-aware con modelli di deep learning}
+\subsection{Raccomandazioni context-aware con modelli di deep learning}
 I sistemi di raccomandazione context-aware tradizionali come matrix factorization \cite{mf-context-aware} o tensor factorization \cite{tensor-context-aware}, usano principalmente un insieme selezionato di informazioni contestuali. Il contesto specifico descrive le circostanze in cui le informazioni sono state raccolte, quali ad esempio il meteo (soleggiato, nuvoloso, etc.), o il tempo (giorno della settimana, ora, etc.). Il vantaggio principale è la bassa dimensionalità del contesto che permette di integrarlo facilmente nei sistemi di raccomandazione esistenti \cite{context-aware-deep-learning}. Infatti un dataset con molte feature porta naturalmente ad uno spazio multidimensionale e quindi a sparsità.
 
 Tuttavia, i CARS tradizionali  hanno le seguenti limitazioni: (1) la selezione del contesto specifico è un task che richiede tempo essendo fatto a mano da esperti di dominio, (2) il contesto selezionato potrebbe non rappresentare l'insieme di feature contestuali più efficace per il recommender system in questione; (3) l'utilizzo di contesti espliciti, come la posizione dell'utente, può sollevare problemi di privacy  \cite{context-aware-deep-learning}. La limitazione sul numero di feature contestuali potrebbe essere un problema in quegli ambienti in cui il contesto è complesso e dinamico. Ad esempio, sfruttando i numerosi sensori presenti sugli smartphone come accelerometro, campo magnetico, GPS, e sensore di luminosità, possono essere raccolte informazioni di contesto ad alta dimensionalità. Queste informazioni sono poi utilizzate per inferire il contesto e il comportamento dell'utente; dall'accelerometro si può capire l'attività dell'utente (es. camminare, stare seduto, correre), mentre con il GPS si può inferire la posizione (es. a casa, al lavoro, all'aperto).
 
 Per risolvere i problemi legati all'utilizzo del contesto multidimensionale, viene proposto in letteratura di ridurre la dimensionalità del contesto con autoencoder o PCA \cite{latent-context} \cite{context-autoencoder}, di costruire una rappresentazione gerarchica del contesto \cite{hierarchical-context}, e di usare dei modelli di deep learning in grado di supportare molte feature di contesto\cite{context-aware-deep-learning}.
 
-\subsection{Estrazione del contesto latente} 
+\subsubsection{Estrazione del contesto latente} 
 \label{ssec:latent-context}
 \begin{figure}
  \centering
@@ -312,7 +314,7 @@ Extraction for a new data sample $t$:
 
 Nonostante la rappresentazione compressa del contesto può portare a delle raccomandazioni più precise, l'applicazione di questa tecnica non è consigliabile in ambiente mobile. Il problema in ambiente mobile è che il dataset $S$ è in continua evoluzione, e nuovi campioni $t$ sono aggiunti al dataset quando un utente interagisce con altri dispositivi tramite comunicazione D2D. Questo significa che il contesto latente calcolato con la matrice $W$ ottenuta dall'autoencoder con training sul dataset $S$, dovrà essere aggiornato nel momento in cui sono ottenuti nuovi campioni $t$ di contesto. Aggiornare il contesto latente significa continuare il training dell'autoencoder sull'insieme dei nuovi campioni $S^1$, ricavare la matrice $W$ dei pesi a training finito, e calcolare il contesto latente per i campioni vecchi e nuovi. Questo processo aggiunge una complessità indesiderabile che non giustifica il miglioramento nelle prestazioni del RS.
 
-\subsection{Rappresentazione gerarchica del contesto}
+\subsubsection{Rappresentazione gerarchica del contesto}
 \label{ssec:hierarchical}
 Il metodo per ridurre la dimensionalità del contesto descritto nella \autoref{ssec:latent-context} modella le informazioni contestuali in vettori a dimensionalità minore, ignorando però la struttura delle variabili latenti di contesto. In particolare, questi metodi, mentre riducono la dimensionalità dello spazio contestuale, non tengono conto della struttura delle variabili latenti di contesto e delle relazioni semantiche tra queste variabili. In \cite{hierarchical-context} viene proposta una nuova rappresentazione strutturata del contesto latente organizzata in maniera gerarchica che include gruppi di contesti latenti simili chiamati \textit{situazioni contestuali}. Per esempio, se un vettore latente del contesto rappresenta le variabili di contesto ``mattina", ``rumoroso", ``fermo" e la posizione è ``università", allora queste variabili di contesto collettivamente rappresentano la situazione di uno studente che segue una lezione in università. Le situazioni contestuali possono poi essere organizzate in una struttura gerarchica aggregando i vettori latenti del contesto in una rappresentazione ad alto livello. Per esempio, ``seguire una lezione in università" e ``pranzare in università" possono essere aggregati in una situazione contestuale più ad alto livello come ``essere situati in università".
 
@@ -328,7 +330,7 @@ Il processo di costruzione del modello gerarchico è svolto raggruppando l'insie
 
 L'estrazione del contesto gerarchico è un'operazione irrealizzabile su dispositivo mobile. Infatti come è sottolineato in \cite{hierarchical-context}, il training di un autoencoder su $n$ vettori di contesto per comprimere le feature di contesto originali da $l$ a $r$ dimensioni, ha una complessità di $O(n \cdot l \cdot r)$. Per estrarre il contesto gerarchico dai vettori di contesto latente viene applicato agglomerative hierarchical clustering che ha complessità $O(n^2)$ per $n$ osservazioni. AHC richiede inoltre $O(n^2)$ memoria, che è un requisito troppo alto per dispositivi mobili. 
 
-\subsection{Modelli CARS deep learning}
+\subsubsection{Modelli CARS deep learning}
 In \cite{context-aware-deep-learning} viene proposto di estendere il modello NeuMF \cite{NCF} descritto nella \autoref{sec:ncf} aggiungendo un nuovo componente di informazioni contestuali: un vettore di contesto denotato come "Context ($c$)". Il vettore del contesto $c$ è concatenato ai vettori di embedding degli utenti $u$ e degli oggetti $i$ per imparare una nuova funzione tra i tre componenti (utenti, oggetti, e contesto). In questo modo, la dimensione del contesto viene considerata all'interno del framework neurale e la rete apprende automaticamente la sua influenza sul valore di output. Il contesto è concatenato solo agli embedding del multi-layer perceptron, mentre la parte della rete denominata come generalized matrix factorization e i suoi embedding rimangono invariati. \`E importante notare che il vettore di contesto può avere un alta dimensionalità, infatti questo modello non soffre del problema di curse of dimensionality che affligge i CARS tradizionali.
 \begin{figure}
   \centering
@@ -348,9 +350,9 @@ In \autoref{fig:context-neumf} è schematizzato il modello NeuMF  esteso per sup
 
 
 \section{Problemi RS client-server}
-\textcolor{red}{[Forse è da mettere nell'introduzione?]}
-In questo capitolo viene descritta l'implementazione di un algoritmo di raccomandazione pensato per dispositivi mobili e pervasivi inserito in un ambiente totalmente distribuito come quello delle reti opportunistiche.
-In queste reti, di solito, un dispositivo mobile dovrebbe essere in grado di condividere informazioni con altri dispositivi in prossimità in modo da scoprire contenuti utili per il suo proprietario. Un sistema di raccomandazione può essere utile per filtrare i contenuti più adatti ad un utente tra quelli scoperti nelle vicinanze. Non è però semplice estendere le soluzioni esistenti per adattarle alla limitazioni imposte da questo nuovo scenario. I recommender system tradizionali si appoggiano su un modello client/server centralizzato, in cui il sistema di raccomandazione esegue sul server, e processa le richieste in arrivo dai client che possono essere dispositivi mobili o fissi. Oltre a questo, il task di raccomandazione per un RS pervasivo è diverso rispetto a quello di un RS client/server. Tipicamente un RS deve imparare a prevedere i rating sulle coppie utente-oggetto per poter riempire i valori mancanti nella matrice dei rating. Questa matrice può essere vista come la conoscenza globale del sistema su tutti gli utenti e gli oggetti disponibili, e sulle valutazioni che gli utenti hanno dato agli oggetti. Nel caso dei RS collaborative-filtering il recommandation engine impara un modello singolo che sarà usato per fare raccomandazione su tutti gli utenti del sistema, mentre nel caso dei RS content-based sarà istanziato un modello per ogni utente che comunque ha una conoscienza globale di tutti gli oggetti del sistema. Al contrario nelle reti opportunistiche ogni dispositivo potrebbe essere a conoscenza solo di una piccola parte dell'informazione globale. Questa conoscenza è inizialmente circoscritta alle sole informazioni sull'utente locale, per poi allargarsi con lo scambio di informazioni tramite comunicazione device-to-device (D2D) con altri utenti o dispositivi di altra natura. Di conseguenza, un RS implementato in un ambiente distribuito impara un modello di raccomandazione basato unicamente sulle informazioni raccolte dal suo utente locale.
+\textcolor{red}{[probabilmente da spostare nell'introduzione]}
+
+In un ambiente pervasivo, di solito, un dispositivo mobile dovrebbe essere in grado di condividere informazioni con altri dispositivi in prossimità in modo da scoprire contenuti utili per il suo proprietario. Un sistema di raccomandazione può essere utile per filtrare i contenuti più adatti ad un utente tra quelli scoperti nelle vicinanze. Non è però semplice estendere le soluzioni esistenti per adattarle alla limitazioni imposte da questo nuovo scenario. I recommender system tradizionali si appoggiano su un modello client/server centralizzato, in cui il sistema di raccomandazione esegue sul server, e processa le richieste in arrivo dai client che possono essere dispositivi mobili o fissi. Oltre a questo, il task di raccomandazione per un RS pervasivo è diverso rispetto a quello di un RS client/server. Tipicamente un RS deve imparare a prevedere i rating sulle coppie utente-oggetto per poter riempire i valori mancanti nella matrice dei rating. Questa matrice può essere vista come la conoscenza globale del sistema su tutti gli utenti e gli oggetti disponibili, e sulle valutazioni che gli utenti hanno dato agli oggetti. Nel caso dei RS collaborative-filtering il recommandation engine impara un modello singolo che sarà usato per fare raccomandazione su tutti gli utenti del sistema, mentre nel caso dei RS content-based sarà istanziato un modello per ogni utente che comunque ha una conoscienza globale di tutti gli oggetti del sistema. Al contrario nelle reti opportunistiche ogni dispositivo potrebbe essere a conoscenza solo di una piccola parte dell'informazione globale. Questa conoscenza è inizialmente circoscritta alle sole informazioni sull'utente locale, per poi allargarsi con lo scambio di informazioni tramite comunicazione device-to-device (D2D) con altri utenti o dispositivi di altra natura. Di conseguenza, un RS implementato in un ambiente distribuito impara un modello di raccomandazione basato unicamente sulle informazioni raccolte dal suo utente locale.
 
 Un'altra caratteristica importante per un sistema di raccomandazione per dispositivi mobili è il supporto per il contesto utente. Sfruttando i numerosi sensori presenti sui dispositivi degli utenti è possibile generare un contesto ad alta dimensionalità che caratterizza in modo accurato la situazione dell'utente e permette raccomandazioni più accurate. Al contesto fisico estratto dai sensori o altre fonti, si può aggiungere il contesto sociale che descrive quali tipologie di persone l'utente ha intorno a se (amici, colleghi, sconosciuti, etc.) e da che tipo di persone ha ricevuto le raccomandazioni in passato, dando più peso ad esempio a raccomandazioni ricevute da amici e conoscenti piuttosto che da sconosciuti.
 
