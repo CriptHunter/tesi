@@ -130,34 +130,49 @@ Organizzazione tesi...
 
 \chapter{RS per dispositivi mobili e pervasivi}
 \label{chap:classificatore}
+La maggior parte dei RS producono le loro raccomandazioni usando unicamente informazioni su utenti, oggetti, e le valutazioni che gli utenti hanno dato agli oggetti (rating). Meno comuni sono invece i sistemi di raccomandazioni context-aware, che considerano nel processo di raccomandazione anche il contesto in cui un rating è stato generato. La maggior parte dei CARS sfruttano un insieme limitato di feature di contesto selezionate manualmente, in modo da evitare di dover gestire matrici dei rating con dimensionalità elevate. Recentemente sono stati proposti i primi sistemi di raccomandazioni context-aware che integrano nel processo di raccomandazione un alto numero di feature contestuali, come può essere quello estratto dai sensori di un dispositivo mobile. Come spiegato in conclusione al \autoref{chap:stato_arte}, le soluzioni proposte non sono adatte per essere implementate direttamente su dipositivo mobile, anche se dimostrano come un approccio deep learning possa essere un'ottima soluzione per gestire la dimensionalità del contesto. Per questi motivi in questo capitolo è descritto un nuovo sistema di raccomandazione context-aware basato su deep learning per sistemi mobili e pervasivi. Il sistema di raccomandazione è stato pensato per eseguire le fasi di training e inferenza su dispositivo mobile, e poter supportare un grande numero di feature di contesto. Per le caratterstiche appena elencate questo nuovo RS è chiamato \textit{PerMobCARS} (pervasive mobile context aware recommender system).
 
-
-\section{Introduzione}
-In questo capitolo è descritto un sistema di raccomandazione context-aware per sistemi mobili e pervasivi deep learning che è in grado di generare raccomandazioni direttamente dal device dell'utente. Il RS è inserito all'interno di un architettura più complessa che permette sempre da device utente di raccogliere e processare le feature di contesto sociale e fisico. L'architettura ad alto livello è composta da tre componenti:
-\begin{enumerate}
- \item \textit{Sensing manager.} Il primo componente interagisce con il sistema operativo per raccogliere continuamente dati raw di contesto (come GPS e accelerometro), e dati che rappresentano informazioni più astratte relative allo stato del dispositivo come lo stato del display e il livello di batteria.
- \item \textit{Context modeling.} I dati raw dei sensori devono essere processati ulteriormente per inferire una rappresentazione più astratta del contesto dell'utente. A questo scopo, il componente context modeling (CM) raccoglie periodicamente gli ultimi dati disponibili del SM. Queste osservazioni sono processate per estrarre feature numeriche e categoriche che caratterizzano il contesto dell'utente locale. Esempi di queste feature sono ad esempio le statistiche ottenute dai dati dei sensori fisici o la posizione dell'utente. Di queste feature eterogenee viene fatto l'encoding e vengono combinate in un singolo vettore di feature che rappresenta una fotografia del contesto corrente di un utente. L'insieme di feature che compongono il contesto fisico e sociale dell'utente sono descritte nella \autoref{sec:context-info}.
- \item \textit{Sistema di raccomandazione.} Le feature di contesto $c$ sono concatenate alle feature degli utenti $u$ e degli oggetti $i$ in un unico vettore. Questo vettore è dato in input ha una rete neurale che restituisce valore 1, se per l'utente con feature $u$, l'oggetto con feature $i$ è rilevante nel contesto $c$, 0 altrimenti. L'input, la struttura e l'output della rete sono descritti nella sezione \autoref{sec:ffnet}.
-\end{enumerate}
+% pMobRS
+%
 
 \begin{figure}
   \centering
-  \includegraphics[scale=0.90]{immagini/full_RS.pdf}
+  \includegraphics[width=\linewidth]{immagini/full_RS.pdf}
   \caption{Architettura ad alto livello del sistema di raccomandazione}
   \label{fig:full_RS}
 \end{figure}
 
+\section{Architettura generale}
+Generare raccomandazioni sul dispositivo mobile però non è sufficiente per realizzare un RS che non dipenda da un server centralizzato.  \`E importante spostare anche le fasi di raccolta ed elaborazione dei dati su dispositivo mobile. Per questo motivo il modello pMob CARS è inserito in un architettura più complessa, che si occupa di generare i dati che saranno input per il RS.
+L'architettura ad alto livello è composta da quattro componenti:
+\begin{enumerate}
+ \item \textit{Sensing manager.} Il primo componente interagisce con il sistema operativo per raccogliere continuamente dati di contesto (come GPS e accelerometro), e dati che rappresentano informazioni sull'hardware e il software del dispositivo come lo stato del display e il livello di batteria. Tutte queste informazioni sono chiamati dati raw, perchè non sono ancora state processate.
+ 
+ \item \textit{Context modeling.} I dati raw prodotti dal sensing manager devono processati per inferire una rappresentazione più astratta del contesto dell'utente. A questo scopo, il componente context modeling (CM) raccoglie periodicamente gli ultimi dati disponibili del SM. Queste osservazioni sono processate per estrarre feature numeriche e categoriche che caratterizzano il contesto dell'utente locale. Esempi di queste feature sono ad esempio l'attività dell'utente, il tipo di luogo in cui si trova l'utente, la temperatura esterna etc. Il contesto è diviso in contesto fisico e sociale. Il contesto fisico è ottenuto  dai sensori dello smartphone dell'utente e da informazioni addizionali del dispositivo, mentre il contesto sociale è ottenuto considerando gli altri individui in prossimità dell'utente. Dell'insieme di feature eterogenee generate viene fatto l'encoding e vengono combinate in un singolo vettore di feature che rappresenta una fotografia del contesto corrente dell' utente. L'insieme di feature che compongono il contesto fisico e sociale dell'utente sono descritte nel dettaglio \autoref{sec:context-info}.
+ 
+ \item  \textit{Database.} Interagendo con altri dispositivi tramite comunicazione D2D, il device dell'utente scopre nuovi utenti e oggetti che vengono identificati con delle feature che li caratterizzano. Oltre a questo il dispositivo riceve anche i feedback che questi utenti hanno generato sugli oggetti in un certo contesto. Tutte queste informazioni sono usate durante la fase di apprendimento del sistema di raccomandazione. Le feature di utenti e oggetti a training terminato sono utilizzate per inferire se un oggetto è rilevante per un utente. Maggiori dettagli su training e inferenza sono descritti nella \autoref{}.
+ 
+ \item \textit{Sistema di raccomandazione.} Le feature di contesto $c$ sono concatenate alle feature degli utenti $u$ e degli oggetti $i$ in un unico vettore. Questo vettore è dato in input ad una rete neurale, che restituisce valore 1 se per l'utente con feature $u$, l'oggetto con feature $i$ è rilevante nel contesto $c$, 0 altrimenti. L'input, la struttura e l'output della rete sono descritti nella sezione \autoref{sec:ffnet}.
+\end{enumerate}
+
+
 \section{Sistema di raccomandazione} \label{sec:ffnet}
-In questa sezione è descritto il sistema di raccomandazione vero e proprio. Nella prima parte è descritto l'input, e in che modo si differenzia dai sistemi di raccomandazione collaborative filtering e content-base. Nella seconda parte invece è descritta nel dettaglio la struttura della rete neurale che genera le raccomandazioni context-aware.
+In questa sezione è descritto il sistema di raccomandazione pMob CARS. Nella prima parte è descritto l'input, e in che modo si differenzia dai sistemi di raccomandazione collaborative filtering e content-based. Nella seconda parte invece è descritta nel dettaglio la struttura della rete neurale che genera le raccomandazioni context-aware.
 
 \subsection{Input}
-Solitamente l'input dei modelli collaborative filtering context-aware è composto da tuple \texttt{(user\_ID, item\_ID, rating, context)}, in cui \texttt{user\_ID} è l'utente che ha valutato l'oggetto \texttt{item\_ID} con una valutazione \texttt{rating} in una situazione descritta dal contesto \texttt{context}. Al posto che identificare l'oggetto con un valore numerico intero \texttt{item\_ID}, si possono usare delle feature che caratterizzano l'oggetto, esattamente nello stesso modo in cui sono solitamente descritti gli oggetti nei sistemi di raccomandazione content-based. Ad esempio, se si sta sviluppando un RS per consigliare ristoranti agli utenti, si può sostituire il valore \texttt{item\_ID} che identifica il ristorante con delle feature che lo caratterizzano nel dettaglio come il tipo di cibo servito, il prezzo medio, l'atmosfera, se ha sedute all'aperto, etc. Allo stesso modo si può sostituire il valore \texttt{user\_ID} con delle feature che descrivono l'utente. Queste possono essere feature molto generiche come età o sesso, o feature specifiche per l'ambiente in cui il RS è implementato. Tornando all'esempio dei ristoranti, si potrebbe chiedere all'utente (es. attraverso un'applicazione mobile) quanto è disposto a spendere per mangiare fuori e il tipo di cucina preferita. A feature di utente e oggetto si aggiungono le feature del contesto fisico e sociale generate dal modulo di Context modeling. Un'istanza di rating per il modello proposto in questa tesi è quindi una tupla \texttt{(user\_features, item\_features, physical\_context, social\_context)}.
+Solitamente l'input dei modelli collaborative filtering context-aware è composto da tuple \texttt{(user\_ID, item\_ID, rating, context)}, in cui \texttt{user\_ID} è l'utente che ha valutato l'oggetto \texttt{item\_ID} con una valutazione \texttt{rating} in una situazione descritta dal contesto \texttt{context}. Al posto che identificare l'oggetto con un valore numerico intero \texttt{item\_ID}, si possono usare delle feature che caratterizzano l'oggetto, esattamente nello stesso modo in cui sono solitamente descritti gli oggetti nei sistemi di raccomandazione content-based. Ad esempio, se si sta sviluppando un RS per consigliare ristoranti agli utenti, si può sostituire il valore \texttt{item\_ID} che identifica il ristorante con delle feature che lo caratterizzano nel dettaglio come il tipo di cibo servito, il prezzo medio, l'atmosfera, se ha sedute all'aperto, etc. Allo stesso modo si può sostituire il valore \texttt{user\_ID} con delle feature che descrivono l'utente. Queste possono essere feature molto generiche come età o genere, o feature specifiche per l'ambiente in cui il RS è implementato. Tornando all'esempio dei ristoranti, si potrebbe chiedere all'utente (es. attraverso un'applicazione mobile) quanto è disposto a spendere per mangiare fuori e il tipo di cucina preferita. A feature di utente e oggetto si aggiungono le feature del contesto fisico e sociale generate dal modulo di Context modeling. Un'istanza di rating per il modello proposto in questa tesi è quindi una tupla \texttt{(user\_features, item\_features, physical\_context, social\_context)}.
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{immagini/ffnet_schema.png}
+  \caption{Schema di nome modello}
+  \label{fig:ffnet}
+\end{figure}
 
 \subsection{Struttura della rete neurale}
 Il vettore di feature appena descritto è dato in input ad una rete neurale che deve prevedere se l'utente caratterizzato da \texttt{user\_feature} è interessato all'oggetto caratterizzato da \texttt{item\_feature} nei contesti fisici e sociali \texttt{physical\_context} e \texttt{social\_context}. Si tratta quindi di un problema di classificazione binaria. Nei problemi di classificazione, l'obbiettivo è prevedere il valore di una variabile che può assumere diversi valori discreti. I problemi di classificazione in cui una variabile può assumere solo due valori possibili (come 0 o 1) sono chiamati problemi di classificazione binaria \cite{hands-on-ml}.
 
 \paragraph{Layer e neuroni}
-La rete rientra nella categoria feed-forward fully connected. Una rete feed-forward non contiene cicli nel suo grafo \cite{Goodfellow-et-al-2016}, fully connected indica che ogni neurone del layer $i$ è connesso a tutti i neuroni del layer $i+1$. La rete ha un layer di input, un layer di output e $l$ layer nascosti. Il layer di input ha un numero di neuroni pari alle feature in ingresso (sommando user, item e context feature), il layer di output ha sempre un neurone, mentre il numero di neuroni nei layer nascosti $l$, e il numero di layer nascosti è calcolato facendo il tuning della rete tramite grid search, scegliendo la combinazione che ottiene i risultati migliori. In questa tesi è stato utilizzato lo stesso numero di neuroni in ogni layer nascosto, ma si può ad esempio adottare un design a torre in cui i layer più profondi contengono meno neuroni rispetto ai layer meno profondi.
+La rete nuerale rientra nella categoria feed-forward fully connected. Una rete feed-forward non contiene cicli nel suo grafo \cite{Goodfellow-et-al-2016}, fully connected indica che ogni neurone del layer $i$ è connesso a tutti i neuroni del layer $i+1$. La rete ha un layer di input, un layer di output e $l$ layer nascosti. Il layer di input ha un numero di neuroni pari alle feature in ingresso (sommando user, item e context feature), il layer di output ha sempre un neurone, mentre il numero di neuroni nei layer nascosti $l$, e il numero di layer nascosti è calcolato facendo il tuning della rete tramite grid search, scegliendo la combinazione che ottiene i risultati migliori. In questa tesi è stato utilizzato lo stesso numero di neuroni in ogni layer nascosto, ma si può ad esempio adottare un design a torre in cui i layer più profondi contengono meno neuroni rispetto ai layer meno profondi.
 
 \paragraph{Funzione di attivazione}
 Una funzione di attivazione di un neurone definisce l'output di quel neurone in base all'insieme dei suoi input. Come funzione di attivazione del layer di input e dei layer nascosti ho scelto la funzione rectified linear unit (ReLU) definita come $f(x) = max\{0, x\}$. La funzione ReLU è consigliata per la maggior parte delle reti feed-forward \cite{Goodfellow-et-al-2016} e ha diversi vantaggi rispetto a funzioni di attivazione come sigmoide e tanh: è più plausibile biologicamente, non viene saturata (a differenza di tanh e sigmoide che hanno un output massimo uguale a 1), e incoraggiando l'attivazione sparsa dei neuroni rende più difficile che si verifichi l'overfitting del modello durante il training \cite{relu}. Come funzione di attivazione del layer di output ho scelto la funzione sigmoide definita come 
@@ -174,19 +189,13 @@ $$
 dove $y$ è il valore reale del feedback di un utente su un oggetto (0 oppure 1), $p(y)$ è la probabilità predetta dalla rete che $y$ abbia valore 1, e $1-p(y_i)$ è la probabilità che $y$ abbia valore 0 \cite{cross-entropy}.
 
 \paragraph{Ottimizzatore}
-Un ottimizzatore è un algoritmo che modifica i pesi del modello in modo da minimizzare la funzione di loss e rendere le previsioni più corrette possibile. Come ottimizzatore ho scelto Adam, nel paper in cui viene introdotto viene dimostrato empiricamente di essere generalmente migliore rispetto ad altri algoritmi di ottimizzazione stocastici e di risolvere in modo efficiente problemi di deep learning \cite{adam}. Adam ha diversi parametri configurabili, il più importante è il learning rate (chiamato $\alpha$ in Adam) che viene deciso tramite grid search, gli altri parametri ($\beta_1, \beta_2, \varepsilon$) sono lasciati al valore di default della libreria Keras.\footnote{\url{https://keras.io/api/optimizers/adam/}}. 
+Un ottimizzatore è un algoritmo che modifica i pesi del modello in modo da minimizzare la funzione di loss e rendere le previsioni della rete più accurate possibile. Come ottimizzatore ho scelto Adam, nel paper in cui viene introdotto viene dimostrato empiricamente di essere generalmente migliore rispetto ad altri algoritmi di ottimizzazione stocastici e di risolvere in modo efficiente problemi di deep learning \cite{adam}. Adam ha diversi iperparametri configurabili, il più importante è il learning rate (chiamato $\alpha$ in Adam) che regola la velocità con cui il modello è adattato al problema. Gli altri parametri ($\beta_1, \beta_2, \varepsilon$) sono lasciati al valore di default della libreria Keras.\footnote{\url{https://keras.io/api/optimizers/adam/}}. 
 
 \paragraph{Epoche e batch size}
-Epoche e batch size sono due parametri molto importanti da ottimizzare, il numero di epoche e la dimensione della batch size ideali sono trovate tramite grid search nel \autoref{chap:risultati}. La batch size è il numero di campioni processati prima di aggiornare i parametri del modello. Il numero di epoche indica quante volte viene presentato alla rete il training set.
+Epoche e batch size sono due parametri molto importanti da ottimizzare, il numero di epoche e la dimensione della batch size ideali sono calcolate tramite grid search nel \autoref{chap:risultati}. La batch size corrisponde al numero di campioni processati prima di aggiornare i parametri del modello. Il numero di epoche indica quante volte viene presentato alla rete il training set.
 
 \bigskip
 In \autoref{fig:ffnet} è rappresentata la struttura della rete neurale. In questo caso il modello ha due layer nascosti ed ogni layer contiene 10 neuroni tranne il layer di output che contiene un solo neurone.
-
-\begin{figure}
-  \includegraphics[width=\linewidth]{immagini/ffnet_schema.png}
-  \caption{Schema di nome modello}
-  \label{fig:ffnet}
-\end{figure}
 
 \section{Informazioni di contesto} \label{sec:context-info}
 In questa sezione sono descritte le informazioni di contesto fisico e sociale che vengono date in input al sistema di raccomandazione mobile. Tutte le feature sono raccolte e processate direttamente sul device dell'utente.
@@ -239,7 +248,16 @@ dove $P$ è l'insieme delle sorgenti fisiche considerate, e $I_p(e,a)$ rappresen
 	\omega_s(e,a) = \lambda \cdot \omega_{osn}(e,a) + (1 - \lambda)
 	\cdot \omega_{phy}(e,a)
 \end{equation}
-con il parametro $\lambda$ che regola l'importanza delle interazioni sociali e fisiche. Per ogni alter, solo l'ultimo peso calcolato è mantenuto in memoria, e viene aggiornato quando nuove interazioni sociali sono identificate. I link sociali tra l'utente locale e le altre persone sono raggruppate in base al peso calcolato nell'\autoref{eqn:final-weights}. L'output finale è un array di valori in cui ogni elemento rappresenta la percentuale di utenti attivi in ogni cerchio della ego network di un utente.
+con il parametro $\lambda$ che regola l'importanza delle interazioni sociali e fisiche. Per ogni alter, solo l'ultimo peso calcolato è mantenuto in memoria, e viene aggiornato quando nuove interazioni sociali sono identificate. I link sociali tra l'utente locale e le altre persone sono raggruppate in base al peso calcolato nell'\autoref{eqn:final-weights}. L'output finale è un array di valori in cui ogni elemento rappresenta la percentuale di utenti attivi in ogni cerchio della ego network di un utente. 
+
+La \autoref{fig:ego-array} mostra un esempio del processo di riconoscimento del contesto. Basandosi sui dati raccolti dal Sensing Manager, viene riconosciuta la rilevanza degli alter per l'utente locale, in base a livello in cui essi sono posizionati nella ego network. L'output caratterizza il contesto sociale dell'utente, indicando chiaramente che sta interagendo con tre persone diverse che si trovano nel secondo, terzo e quarto layer rispettivamente.
+
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.80]{immagini/ego-array.png}
+  \caption{Riconoscimento del contesto sociale di un utente}
+  \label{fig:ego-array}
+\end{figure}
 
 % 
 %			CAPITOLO 4: Datasets
