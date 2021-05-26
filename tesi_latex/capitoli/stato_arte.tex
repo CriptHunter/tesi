@@ -349,13 +349,14 @@ In \autoref{fig:context-neumf} è schematizzato il modello NeuMF  esteso per sup
 
 
 \section{Problemi RS client-server}
-In letteratura la stragrande maggioranza dei RS proposti si basano su un'architettura client-server. Il RS che esegue sul server ha una conoscenza completa di utenti, oggetti e rating. Il client, fisso o mobile, esegue delle query al RS per ricevere raccomandazioni. I problemi nell'eseguire il RS sul device locale dell'utente sono principalmente due:
+In letteratura la stragrande maggioranza dei RS proposti si basano su un'architettura client-server. Il RS che esegue sul server ha una conoscenza completa di utenti, oggetti e rating. Il client, fisso o mobile, esegue delle query al RS per ricevere raccomandazioni. I problemi nel realizzare un RS context-aware che esegue sul dispositivo locale dell'utente sono principalmente due:
 \begin{enumerate}
  \item I sistemi di raccomandazione mobile hanno una conoscenza solo parziale di utenti, oggetti, e dei feedback che gli utenti hanno lasciato sugli oggetti. Questo è dovuto al fatto che il RS inizialmente è a conoscenza solo dei feedback dell'utente locale, e ne scopre di nuovi tramite comunicazione D2D con altri dispositivi. 
  
  \item \`E difficile integrare le numerose informazioni di contesto fisico generate dai dispositivi mobili, e le informazioni di contesto sociale che caratterizzano la situazione dell'utente.
 \end{enumerate}
 Più nel dettaglio per gli algoritmi visti in questo capitolo:
+
 
 \myparagraph{ALS}
 Alternating least square (\autoref{subsec:als}) è un algoritmo di matrix factorization per feedback impliciti. L'input di ALS è una matrice $R$ di dimensione $u \times i$ con $u$ numero di utenti, e $i$ numero di oggetti. Un elemento $r_{ui}$ della matrice $R$, indica quante volte l'utente $u$ ha consumato l'oggetto $i$. In ambiente mobile inizialmente la matrice $R$ è vuota perché l'utente non ha espresso nessuna valutazione e non ha incontrato altri utenti. Ogni volta che un nuovo utente o un nuovo oggetto viene scoperto, si aggiunge una nuova riga/colonna alla matrice $R$. Il primo problema di questo algoritmo, e più in generale degli algoritmi di matrix factorization, è l'aggiunta di un nuovo utente/oggetto che comporta un cambiamento nella dimensione della matrice $R$. L'algoritmo deve essere addestrato nuovamente da zero sulla nuova matrice $R$ per poter raccomandare i nuovi oggetti, e tenere conto delle valutazioni dei nuovi utenti. Il secondo problema di MF è l'aggiunta del contesto. Come detto nella \autoref{subsec:multidim}, ogni feature di contesto è una dimensione aggiunta alla matrice dei rating $R$. Per mantenere una complessità computazionale bassa, per i modelli MF context-aware si seleziona un insieme molti limitato di feature contestuali, che potrebbero non rappresentare pienamente il contesto corrente dell'utente.
