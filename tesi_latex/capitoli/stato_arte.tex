@@ -58,7 +58,7 @@ In \autoref{fig:matrix_factorization} è mostrato come la matrice dei rating $A 
 Le due matrici di fattori latenti $P$ e $Q$ sono imparate in modo tale che il prodotto $PQ^T$ sia una buona approssimazione della matrice dei rating $A$ \cite{mf-google}. In letteratura esistono diversi algoritmi per calcolare i fattori latenti di utenti e oggetti. Il primo algoritmo proposto è stato FunkSVD \cite{funk-mf} che supporta unicamente feedback espliciti, SVD++ \cite{svd++} aggiunge il bias di utenti e oggetti e il supporto a feedback impliciti; ALS \cite{als} e logistic MF \cite{logistic-mf} sono invece algoritmi progettati con i feedback impliciti in mente.
 
 
-\subsection{Alternating least square}
+\subsection{Alternating least square} \label{subsec:als}
 Alternating least square (ALS) \cite{als} è un algoritmo di matrix factorization stato dell'arte per quanto riguarda i feedback impliciti. ALS è un processo di ottimizzazione iterativo in cui ad ogni iterazione si cerca di arrivare il più vicino possibile a una rappresentazione fattorizzata dei dati originali \cite{als-medium}. 
 
 \subsubsection{Feedback impliciti}
@@ -94,7 +94,7 @@ $$
 Il termine $\lambda \left( \sum_u ||x_u||^2 + \sum_i ||y_i||^2 \right)$ è necessario per regolarizzare il modello ed evitare l'overfitting durante il training. Il valore esatto di $\lambda$ dipende dai dati e si determina tramite cross validation. 
 Quando il vettore latente degli utenti o degli oggetti rimane fissato, la funzione obbiettivo diventa quadratica e si può calcolare un minimo globale. Questo porta ad un processo di ottimizzazione con il metodo dei minimi quadrati, in cui si alterna tra il ricalcolare il vettore degli utenti mantenendo fissato quello degli oggetti e viceversa. Ad ogni step il valore della funzione di costo diminuisce.
 
-\subsection{Neural collaborative filtering} \label{sec:ncf}
+\subsection{Neural collaborative filtering} \label{subsec:ncf}
 Gli algoritmi basati su matrix factorization sono sicuramente i più popolari nell'ambito dei sistemi di raccomandazione collaborative filtering. Nonostante l'efficacia di questi modelli, le loro performance  posso variare in base alla scelta della funzione di interazione. Ad esempio, per quanto riguarda il task di rating prediction su feedback espliciti, è noto che le performance di MF possono essere migliorate incorporando il bias di utenti e oggetti nella funzione di interazione. Anche se si tratta solo di una piccola modifica, dimostra l'effetto positivo di progettare una funzione migliore per modellare l'interazione delle feature latenti di utenti e oggetti. 
 Secondo gli autori di \cite{NCF} il prodotto scalare, che combina la moltiplicazione delle feature latenti in modo lineare, potrebbe non essere sufficiente per catturare la complessa struttura dei dati che rappresentano le interazioni dell'utente. 
 
@@ -102,8 +102,8 @@ La \autoref{fig:mf-limits} mostra come il prodotto scalare può limitare l'espre
 
 Viene quindi proposto di usare le reti neurali che sono considerate approssimatori universali \cite{NN-universal-approx} per imparare le interazioni utente-oggetto. In particolare sono proposti tre modelli basati su deep neural networks:
 \begin{enumerate}
- \item Multi-Layer Perceptron (MLP)
  \item Generalized Matrix Factorization (GMF)
+ \item Multi-Layer Perceptron (MLP)
  \item Neural Matrix Factorization (NeuMF)
 \end{enumerate}
 
@@ -138,7 +138,7 @@ $$
 dove $a_{out}$ e $h$ sono rispettivamente la funzione di attivazione e  i pesi del layer di output.  Se si usa una funzione identità per $a_{out}$ e si impone che $h$ sia un vettore uniforme di 1, si può ricostruire esattamente il modello MF. Questo modello è chiamato generalized matrix factorization (GMF).
 
 \subsubsection{Multi-layer perceptron}
-In questa istanza di NCF, i vettori di embedding di utenti e oggetti, ottenuti dai layer di embedding, sono concatenati. Sopra il layer di concatenazione sono aggiunti dei layer nascosti, in modo da usare un multi-layer perceptron (MLP) standard per imparare le interazioni tra le feature latenti di utenti e oggetti. In questo caso, il modello impara una funzione non-lineare per le interazioni tra $p_u$ e $q_i$, al posto che imparare un prodotto elemento per elemento come GMF. 
+In questa istanza di NCF, i vettori di embedding di utenti e oggetti ottenuti dai layer di embedding, sono concatenati. Sopra al layer di concatenazione sono aggiunti dei layer nascosti, in modo da usare un multi-layer perceptron (MLP) standard per imparare le interazioni tra le feature latenti di utenti e oggetti. In questo caso, il modello impara una funzione non-lineare per le interazioni tra $p_u$ e $q_i$, al posto che imparare un prodotto elemento per elemento come GMF. 
 
 \subsubsection{Neural matrix factorization}
 A questo punto si hanno due diverse implementazioni del framework NCF: GMF che applica un funzione lineare per imparare le interazioni delle feature latenti, e MLP che invece applica un funzione non lineare. Le due reti possono essere combinate per modellare in modo più preciso le complesse interazioni utente-oggetto. Una soluzione semplice è permettere a GMF e MLP di condividere lo stesso layer di embedding; questo approccio però può limitare le performance del modello perchè GMF e MLP devono usare embedding della stessa dimensione. Per fornire più flessibilità al modello fuso, GMF e MLP imparano vettori di embedding separati, e i due modelli sono combinati concatenando l'output del loro ultimo layer nascosto. L'architettura del modello fuso chiamata neural matrix factorization (NeuMF) è mostrata in \autoref{fig:neumf}. A sinistra è rappresentata la rete GMF, a destra il MLP.
@@ -174,7 +174,7 @@ A questo punto si hanno due diverse implementazioni del framework NCF: GMF che a
 \section{Content-based recommender system}
 Nei recommender system content-based (CB), gli attributi descrittivi degli oggetti sono usati per produrre raccomandazioni. Il termine ``content" indica che il processo di raccomandazione si focalizza sui contenuti piuttosto che sulle interazioni utente - oggetto. Nei metodi content-based i rating degli utenti sono combinati con le informazioni disponibili sugli oggetti, per poi essere usati come training data per creare un modello di classificazione o regressione  specifico per l'utente. Nei problemi di classificazione si prevede se ad un utente può piacere un oggetto; nei problemi di regressione si prevede il rating dato da un utente ad un oggetto la cui valutazione è ancora sconosciuta \cite{recsys-book}.
 
-Mentre nei CF la similarità tra due oggetti (o due utenti) è calcolato come la correlazione o la similarità tra i rating forniti dagli altri utenti, i recommender system content-based sono progettati per consigliare oggetti simili a quelli che l'utente ha preferito in passato. Non considerando gli altri utenti, la lista di raccomandazioni può essere generata anche se c'è un solo utente nel sistema.
+Mentre nei CF la similarità tra due oggetti (o due utenti) è calcolata come la correlazione o la similarità tra i rating forniti dagli altri utenti, i recommender system content-based sono progettati per consigliare oggetti simili a quelli che l'utente ha preferito in passato. Non considerando gli altri utenti, la lista di raccomandazioni può essere generata anche se c'è un solo utente nel sistema.
 
 \subsection{Vantaggi e svantaggi dell'approccio CB}
 \textbf{Vantaggi:}
@@ -222,9 +222,9 @@ La maggior parte degli approcci esistenti per sviluppare sistemi di raccomandazi
  \item \textit{Implicitamente} dai dati o dall'ambiente, come il cambio di posizione rilevato da una compagnia di telefonia mobile. In questo caso non è necessario fare nulla in termini di interazione con l'utente perché l'informazione contestuale è acceduta direttamente e i dati sono estratti da essa.
  \item \textit{Per inferenza} usando metodi statistici o di data mining. 
 \end{enumerate}
-In letteratura sono stati proposti diversi sistemi di raccomandazione che integrano informazioni contestuali: in \cite{mf-context-aware} vengono ideati tre diversi metodi per consentire a MF di supportare informazioni di contesto, in \cite{tensor-context-aware} viene proposto un modello di tensor factorization context aware, in \cite{context-aware-deep-learning} è usato un approccio deep-learning per produrre raccomandazioni context-aware con una rete neurale.
+In letteratura sono stati proposti diversi sistemi di raccomandazione che integrano informazioni contestuali: in \cite{mf-context-aware} vengono ideati tre diversi metodi per consentire a MF di supportare informazioni di contesto, in \cite{tensor-context-aware} viene proposto un modello di tensor factorization context aware, in \cite{context-aware-deep-learning} è usato un approccio deep-learning per produrre raccomandazioni context-aware con una rete neurale. Per quanto riguarda le raccomandazioni in ambito mobile, in \cite{cars-music2} viene usato il contesto corrente dell'utente e i suoi ascolti passati per generare una playlist di canzoni. In \cite{cars-music} viene usato il contesto raccolto da uno smart device per raccomandazioni musicali, in \cite{cars-location} viene sfruttata la posizione dell'utente per fornire raccomandazioni su luoghi o eventi nelle vicinanze. Tutti questi sistemi producono raccomandazioni context-aware per dispositivi mobili, ma il RS non è implementato direttamente sul dispositivo dell'utente.
 
-\subsection{Approccio multidimensionale}
+\subsection{Approccio multidimensionale} \label{subsec:multidim}
 Il problema tradizionale di raccomandazione può essere visto come l'apprendimento di una funzione che associa le coppie utente-oggetto ai rating. La funzione corrispondente $f_R$ è definita come:
 
 $$
@@ -330,7 +330,7 @@ Il processo di costruzione del modello gerarchico è svolto raggruppando l'insie
 L'estrazione del contesto gerarchico è un'operazione irrealizzabile su dispositivo mobile. Infatti come è sottolineato in \cite{hierarchical-context}, il training di un autoencoder su $n$ vettori di contesto per comprimere le feature di contesto originali da $l$ a $r$ dimensioni, ha una complessità di $O(n \cdot l \cdot r)$. Per estrarre il contesto gerarchico dai vettori di contesto latente viene applicato agglomerative hierarchical clustering che ha complessità $O(n^2)$ per $n$ osservazioni. AHC richiede inoltre $O(n^2)$ memoria, che è un requisito troppo alto per dispositivi mobili. 
 
 \subsubsection{Modelli CARS deep learning}
-In \cite{context-aware-deep-learning} viene proposto di estendere il modello NeuMF \cite{NCF} descritto nella \autoref{sec:ncf} aggiungendo un nuovo componente di informazioni contestuali: un vettore di contesto denotato come "Context ($c$)". Il vettore del contesto $c$ è concatenato ai vettori di embedding degli utenti $u$ e degli oggetti $i$ per imparare una nuova funzione tra i tre componenti (utenti, oggetti, e contesto). In questo modo, la dimensione del contesto viene considerata all'interno del framework neurale e la rete apprende automaticamente la sua influenza sul valore di output. Il contesto è concatenato solo agli embedding del multi-layer perceptron, mentre la parte della rete denominata come generalized matrix factorization e i suoi embedding rimangono invariati. \`E importante notare che il vettore di contesto può avere un alta dimensionalità, infatti questo modello non soffre del problema di curse of dimensionality che affligge i CARS tradizionali.
+In \cite{context-aware-deep-learning} viene proposto di estendere il modello NeuMF \cite{NCF} descritto nella \autoref{subsec:ncf} aggiungendo un nuovo componente di informazioni contestuali: un vettore di contesto denotato come "Context ($c$)". Il vettore del contesto $c$ è concatenato ai vettori di embedding degli utenti $u$ e degli oggetti $i$ per imparare una nuova funzione tra i tre componenti (utenti, oggetti, e contesto). In questo modo, la dimensione del contesto viene considerata all'interno del framework neurale e la rete apprende automaticamente la sua influenza sul valore di output. Il contesto è concatenato solo agli embedding del multi-layer perceptron, mentre la parte della rete denominata come generalized matrix factorization e i suoi embedding rimangono invariati. \`E importante notare che il vettore di contesto può avere un alta dimensionalità, infatti questo modello non soffre del problema di curse of dimensionality che affligge i CARS tradizionali.
 \begin{figure}
   \centering
   \includegraphics[width=\linewidth]{immagini/cars-ncf.png}
@@ -349,31 +349,24 @@ In \autoref{fig:context-neumf} è schematizzato il modello NeuMF  esteso per sup
 
 
 \section{Problemi RS client-server}
-In letteratura la stragrande maggioranza dei RS proposti si basano su un architettura client-server. Questi sistemi sono infatti difficili da portare su dispositivo mobile, principalmente per due motivi:
+In letteratura la stragrande maggioranza dei RS proposti si basano su un'architettura client-server. Il RS che esegue sul server ha una conoscenza completa di utenti, oggetti e rating. Il client, fisso o mobile, esegue delle query al RS per ricevere raccomandazioni. I problemi nell'eseguire il RS sul device locale dell'utente sono principalmente due:
 \begin{enumerate}
  \item I sistemi di raccomandazione mobile hanno una conoscenza solo parziale di utenti, oggetti, e dei feedback che gli utenti hanno lasciato sugli oggetti. Questo è dovuto al fatto che il RS inizialmente è a conoscenza solo dei feedback dell'utente locale, e ne scopre di nuovi tramite comunicazione D2D con altri dispositivi. 
  
- \item \`E difficile integrare le numerose informazioni di contesto fisico generate dai dispositivi mobili e le informazioni di contesto sociale che caratterizzano la situazione dell'utente.
+ \item \`E difficile integrare le numerose informazioni di contesto fisico generate dai dispositivi mobili, e le informazioni di contesto sociale che caratterizzano la situazione dell'utente.
 \end{enumerate}
-
-Più nel dettaglio per gli algoritmi descritti nel dettaglio in questo capitolo.
+Più nel dettaglio per gli algoritmi visti in questo capitolo:
 
 \myparagraph{ALS}
-Alternating least square (descritto in ...) è un algoritmo di matrix factorization per feedback impliciti. L'input di ALS è una matrice $R$ di dimensione $u \times i$ con $u$ numero di utenti, e $i$ numero di oggetti. Un elemento $r_{ui}$ della matrice $R$ indica quante volte l'utente $u$ ha consumato l'oggetto $i$. In ambiente mobile inizialmente la matrice $R$ è vuota perché l'utente non ha espresso nessuna valutazione e non ha incontrato altri utenti. Ogni volta che un nuovo utente o un nuovo oggetto viene scoperto si aggiunge una nuova riga/colonna alla matrice $R$. Il primo problema di questo algoritmo, e più in generale degli algoritmi di matrix factorization è l'aggiunta di un nuovo utente/oggetto che comporta un cambiamento nella dimensione della matrice $R$. L'algoritmo deve essere addestrato nuovamente da zero sulla nuova matrice $R$ per poter raccomandare i nuovi oggetti e tenere conto delle valutazioni dei nuovi utenti. Il secondo problema di MF è l'aggiunta del contesto. Come detto in [sezione context-aware] ogni feature di contesto è una dimensione aggiunta alla matrice dei rating $R$. Con l'aumento delle dimensioni, lo spazio dimensionale aumenta in modo esponenziale \cite{curse-of-dim} mentre il numero dei punti nello spazio rimane sempre lo stesso. Questa crescita esponenziale porta un'alta sparsità dei dati, che impedisce al modello di generalizzare correttamente. La \autoref{fig:curse-dim}, mostra graficamente il problema. Nell'immagine a) lo spazio 1D è diviso in 4 regioni. In b) aggiungendo una dimensione lo spazio cresce esponenzialmente a 16 regioni. In c) aggiungendo una terza dimensione lo spazio è diviso in 64 regioni ma il numero di punti in ogni regione rispetto ad a) è molto minore.
-
-\begin{figure}
-  \includegraphics[width=\linewidth]{immagini/curse_of_dimensionality.png}
-  \caption{Curse of dimensionality}
-  \label{fig:curse-dim}
-\end{figure}
+Alternating least square (\autoref{subsec:als}) è un algoritmo di matrix factorization per feedback impliciti. L'input di ALS è una matrice $R$ di dimensione $u \times i$ con $u$ numero di utenti, e $i$ numero di oggetti. Un elemento $r_{ui}$ della matrice $R$, indica quante volte l'utente $u$ ha consumato l'oggetto $i$. In ambiente mobile inizialmente la matrice $R$ è vuota perché l'utente non ha espresso nessuna valutazione e non ha incontrato altri utenti. Ogni volta che un nuovo utente o un nuovo oggetto viene scoperto, si aggiunge una nuova riga/colonna alla matrice $R$. Il primo problema di questo algoritmo, e più in generale degli algoritmi di matrix factorization, è l'aggiunta di un nuovo utente/oggetto che comporta un cambiamento nella dimensione della matrice $R$. L'algoritmo deve essere addestrato nuovamente da zero sulla nuova matrice $R$ per poter raccomandare i nuovi oggetti, e tenere conto delle valutazioni dei nuovi utenti. Il secondo problema di MF è l'aggiunta del contesto. Come detto nella \autoref{subsec:multidim}, ogni feature di contesto è una dimensione aggiunta alla matrice dei rating $R$. Per mantenere una complessità computazionale bassa, per i modelli MF context-aware si seleziona un insieme molti limitato di feature contestuali, che potrebbero non rappresentare pienamente il contesto corrente dell'utente.
 
 \myparagraph{NeuMF}
-Neural matrix factorization (descritto...) implementa un RS
+Neural matrix factorization (\autoref{subsec:ncf}) implementa un RS
 collaborative-filtering con una deep neural network. L'input della 
-rete è un record formato da \texttt{[user\_id, item\_id, rating]}.
+rete è una tupla del tipo \texttt{(user\_id, item\_id, rating)}.
 Per essere correttamente processati dalla dalla rete neurale \texttt{user\_id} e \texttt{item\_id} sono convertiti da numeri interi in vettori binari con one-hot encoding. Questi vettori hanno lunghezza pari al numero di 
-user/item e hanno valore 1 solo in corrispondenza dell'elemento numero 
-\texttt{user\_id}/\texttt{item\_id}, il resto degli elementi ha valore 0. La dimensione dell'input della rete e di conseguenza la dimensione dell'input del layer di embedding è da definire a livello di compilazione della rete prima di eseguire il training. Una volta terminato il training, la rete è in grado di predirre il rating degli stessi utenti/oggetti già presenti durante il training. Questo perché l'input deve avere la stessa dimensione di quello definito a livello di compilazione, e quindi il numero di utenti e oggetti è lostesso definito a livello di compilazione. Come per ALS quindi aggiungere un nuovo utente od un nuovo oggetto significa dover compilare di nuovo il modello ed eseguire di nuovo il training da zero. Questo modello inoltre, come presentato nel paper originale \cite{NCF} non ha nessun supporto per le feature di contesto.
+user/item, e hanno valore 1 solo in corrispondenza dell'elemento  
+\texttt{user\_id}/\texttt{item\_id}. La dimensione dell'input della rete, e di conseguenza la dimensione dell'input del layer di embedding è da definire a livello di compilazione della rete prima di eseguire il training. Una volta terminato il training, la rete è in grado di predire i rating solo degli stessi utenti/oggetti già presenti durante il training. Questo perché l'input deve avere la stessa dimensione di quella definito a livello di compilazione, e di conseguenza il numero di utenti e oggetti è lo stesso definito a livello di compilazione. Come per ALS, aggiungere un nuovo utente od un nuovo oggetto significa dover compilare di nuovo il modello ed eseguire il training da zero. Questo modello inoltre, come presentato in \cite{NCF} non ha nessun supporto per le feature di contesto.
 
 \myparagraph{Context-aware NeuMF}
-Context-aware neural matrix factorization (descritto ...) è un estensione di NeuMF che supporta le feature di contesto. Questo modello essendo basato su reti neurali, è meno soggetto di matrix factorization al problema della curse of dimensionality. L'input della rete è un record formato da \texttt{[user\_id, item\_id, context, rating]}, in cui il vettore context può avere un'alta dimensionalità. Risolve quindi il problema dell'integrare le numerose feature di contesto fisico estratte dai sensori degli smartphone e le features sociali che descrivono il contesto sociale dell'utente. Rimangono le stesse limitazioni di NeuMF sull'input, dato che gli ID di utenti e oggetti sono dati in input come vettori in one-hot encoding con dimensione fissata.
+Context-aware neural matrix factorization è un estensione di NeuMF che supporta le feature di contesto. L'input della rete è una tupla del tipo \texttt{(user\_id, item\_id, context, rating)}. Questo modello essendo basato su reti neurali, permette di definire il contesto dell'utente usando un alto numero di feature contestuali, a differenza di MF. Rimangono le stesse limitazioni di NeuMF sull'input, dato che gli ID di utenti e oggetti sono dati in input come vettori in one-hot encoding con dimensione fissata.
