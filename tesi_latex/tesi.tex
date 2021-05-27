@@ -331,10 +331,10 @@ Le feature rimaste compongono il contesto, e sono daytime, weekday, isweekend, w
 Per quanto riguarda l'encoding, essendo tutte variabili categoriche sono codificate con one-hot encoding. Il vettore del contesto risultato contiene 24 features: 7 per daytime, 7 per weekday, 8 per weather e 2 per isweekend.
 
 \subsection{Feature di base}
-Qualsiasi dataset per sistemi di raccomandazione ha tre feature fondamentali: user, item, rating. User e item sono valori numerici che identificano univocamente user e item. Il rating in Frappe è il numero di volte in cui un oggetto (un'applicazione) è stata utilizzata da un utente in un determinato contesto. Ad esempio se una riga del dataset è composta da \texttt{(user:1, item:20, rating:50, daytime:morning, weekday:monday)}, significa che l'utente 1, ha utilizzato l'applicazione 20, il lunedì mattina 50 volte. Il numero di volte è ottenuto sommando tutti gli utilizzi durante il periodo di raccolta dei dati. Il valore minimo del rating è 1, il valore massimo 21262, e la media 88.26. Questi rating sono da convertire in feedback impliciti con valore 0 o 1, per poterli dare in input a moveRS. Considerando il valore medio dei rating, e cercando di avere un dataset bilanciato, ho deciso di convertire tutti i rating con valore maggiore di 4 in feedback con valore 1, mentre i rating con valore di 4 o minore in feedback con valore 0. Il risultato è un dataset con il 62\% di feedback con valore 1 (48604 righe).
+Qualsiasi dataset per sistemi di raccomandazione ha tre feature fondamentali: user, item, rating. User e item sono valori numerici che identificano univocamente user e item. Il rating in Frappe è il numero di volte in cui un oggetto (un'applicazione) è stata utilizzata da un utente in un determinato contesto. Ad esempio se una riga del dataset è composta da \texttt{(user:1, item:20, rating:50, daytime:morning, weekday:monday)}, significa che l'utente 1, ha utilizzato l'applicazione 20, il lunedì mattina 50 volte. Il numero di volte è ottenuto sommando tutti gli utilizzi durante il periodo di raccolta dei dati. Il valore minimo del rating è 1, il valore massimo 21262, e la media 88.26. Questi rating sono da convertire in feedback impliciti con valore 0 o 1, per poterli dare in input a moveCARS. Considerando il valore medio dei rating, e cercando di avere un dataset bilanciato, ho deciso di convertire tutti i rating con valore maggiore di 4 in feedback con valore 1, mentre i rating con valore di 4 o minore in feedback con valore 0. Il risultato è un dataset con il 62\% di feedback con valore 1 (48604 righe).
 
 \subsection{Feature degli oggetti}
-Le feature degli oggetti sono caratteristiche che descrivono le applicazioni usate dagli utenti di Frappe.
+Le feature degli oggetti sono caratteristiche che descrivono le applicazioni usate dagli utenti di Frappe. Il dataset contiene tre feature rilevanti per il task di classificazione: la categoria dell'applicazione, la lingua, e il costo.
 
 \paragraph{Category} Category è la categoria delle applicazioni ottenuta dal Google Play Store. In Frappe le applicazioni sono divise in 23 categorie che descrivono la loro funzionalità principale (es. videogiochi, notizie, social). Come si può vedere in \autoref{fig:frappe-categories}, ll numero di datasample per ogni categoria è molto sbilanciato: la categoria communication che comprende applicazioni di messaggistica come WhatsApp ha più di 20k data sample. La seconda categoria più popolare è social che comprende applicazioni come Facebook, Instagram, Twitter.
 \begin{figure}
@@ -344,7 +344,12 @@ Le feature degli oggetti sono caratteristiche che descrivono le applicazioni usa
   \label{fig:frappe-categories}
 \end{figure}
 
-\paragraph{Language} Language indica la lingua di un applicazione ottenuta dal Google Play Store. Dato che il 96\% dei data sample hanno applicazioni in lingua inglese, ho assegnato a tutte le altre lingue il valore \texttt{other}.
+\paragraph{Language} Language indica la lingua dell' applicazione ottenuta dal Google Play Store. Dato che il 96\% dei data sample hanno applicazioni in lingua inglese, ho assegnato a tutte le altre lingue il valore \texttt{other}.
+
+\paragraph{Cost} Cost indica se l'applicazione è gratuita o a pagamento.
+
+\bigskip \noindent
+Come per le feature di contesto, anche le feature degli oggetti sono variabili categoriche. Vengono codificate con one-hot encoding, che risulta in un vettore di 27 feature: 23 per la categoria, 2 per la lingua, e 2 per il costo.
 
 % 
 %			CAPITOLO 5: Risultati
