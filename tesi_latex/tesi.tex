@@ -122,7 +122,7 @@ Organizzazione tesi...
 \chapter{Stato dell'arte}
 \label{chap:stato_arte}
 
-\input{capitoli/stato_arte.tex}
+%\input{capitoli/stato_arte.tex}
 
 % 
 %			CAPITOLO 3: Lavoro svolto
@@ -185,7 +185,7 @@ $$
 dove $y$ è il valore reale del feedback di un utente su un oggetto (0 oppure 1), $p(y)$ è la probabilità predetta dalla rete che $y$ abbia valore 1, e $1-p(y_i)$ è la probabilità che $y$ abbia valore 0 \cite{cross-entropy}.
 
 \paragraph{Ottimizzatore}
-Un ottimizzatore è un algoritmo che modifica i pesi del modello in modo da minimizzare la funzione di loss e rendere le previsioni della rete più accurate possibile. Come ottimizzatore ho scelto Adam; nel paper in cui é introdotto viene dimostrato empiricamente di essere generalmente migliore rispetto ad altri algoritmi di ottimizzazione stocastici, e di risolvere in modo efficiente problemi di deep learning \cite{adam}. Adam ha diversi iperparametri configurabili, il più importante è il learning rate (chiamato $\alpha$ in Adam) che regola la velocità con cui il modello è adattato al problema. Gli altri parametri ($\beta_1, \beta_2, \varepsilon$) sono lasciati al valore di default della libreria Keras.\footnote{\url{https://keras.io/api/optimizers/adam/}}. 
+Un ottimizzatore è un algoritmo che modifica i pesi del modello in modo da minimizzare la funzione di loss e rendere le previsioni della rete più accurate possibile. Come ottimizzatore ho scelto Adam; nel paper in cui é introdotto viene dimostrato empiricamente di essere generalmente migliore rispetto ad altri algoritmi di ottimizzazione stocastici, e di risolvere in modo efficiente problemi di deep learning \cite{adam}. Adam ha diversi iperparametri configurabili, il più importante è il learning rate (chiamato $\alpha$ in Adam) che regola la velocità con cui il modello è adattato al problema. Gli altri parametri ($\beta_1, \beta_2, \varepsilon$) sono lasciati al valore di default della libreria Keras\footnote{\url{https://keras.io/api/optimizers/adam/}}. 
 
 \paragraph{Epoche e batch size}
 Epoche e batch size sono due parametri molto importanti da ottimizzare, il numero di epoche e la dimensione della batch size ideali sono calcolate tramite grid search nel \autoref{chap:risultati}. La batch size corrisponde al numero di campioni processati prima di aggiornare i parametri del modello. Il numero di epoche indica quante volte viene presentato alla rete il training set prima di concludere il training.
@@ -297,14 +297,60 @@ La \autoref{fig:ego-array} mostra un esempio del processo di riconoscimento del 
 %			CAPITOLO 4: Datasets
 % 
 
-\chapter{Capitolo 4} \label{chap:datasets}
+\chapter{Dataset} \label{chap:datasets}
+In questo capitolo sono descritti i dataset context-aware usati per valutare il modello moveCARS e confrontarlo con altre soluzioni stato dell'arte. Uno dei problemi dei CARS è la scarsità di dataset pubblici che contengono informazioni di contesto, e molti di questi contengono pochissime informazioni contestuali, spesso limitate unicamente al timestamp dei feedback. Questo timestamp spesso corrisponde al momento in cui l'utente ha recensito un oggetto, e non al momento effettivo in cui l'utente ha consumato un oggetto. Esempi di questi dataset sono Yelp\footnote{\url{https://www.yelp.com/dataset}}, nowplaying-rs \footnote{\url{https://zenodo.org/record/3247476\#.YK9FxqgzY2x}}. Per questo motivo ho selezionato due dataset context-aware, le cui informazioni sono state raccolte monitorando le applicazioni in esecuzione sui dispositivi Anroid di un insieme di utenti per un certo periodo di tempo:
 
+\begin{enumerate}
+\item Frappe\footnote{\url{https://www.baltrunas.info/context-aware}} 
+\item My Digital Footprint\footnote{\url{https://github.com/contextkit/MyDigitalFootprint}} (MDF)    
+\end{enumerate}
+
+\section{Frappe}
+Frappe \cite{frappe} è un dataset pubblicamente disponibile collezionato attraverso un sistema che consiglia agli utenti applicazioni Android. Il sistema monitora l'utilizzo delle applicazioni di 957 utenti che hanno utilizzato un totale di 4082 app. Queste informazioni descrivono la frequenza di utilizzo di un'applicazione da parte di un utente per un periodo di 2 mesi. Il numero totale di feedback presenti è 96203.
+
+\subsection{Feature di contesto}
+\paragraph{Daytime} Daytime è il momento della giornata in cui un'applicazione è stata utilizzata. La giornata è divisa in sette momenti diversi: morning, noon, afternoon, evening, sunset, sunrise, night.
+
+\paragraph{Weekday} Weekday è il giorno della settimana in cui un'applicazione è stata utilizzata. I possibili valori sono ovviamente i sette giorni della settimana.
+
+\paragraph{Isweekend} IsWeekend indica se è il fine settimana oppure un giorno lavorativo. Può assumere due valori diversi: weekend e workday.
+
+\paragraph{Homework} Homework indica se l'utente si trova al lavoro o a casa. Può assumere tre diversi valori: work, home, unknown.
+
+\paragraph{Weather} Weather descrive la situazione meteo in corso, nel momento in cui un'applicazione è stata utilizzata. Può assumere nove valori differenti: sunny, cloudy, foggy, stormy, rainy, snowy, drizzle, sleet, unknown.
+
+\paragraph{Country} Country indica la nazione in cui si trovava l'utente nel momento in cui ha utilizzato un'applicazione. Ci sono 80 stati diversi, ma il 55\% dei feedback sono stati generati da USA, spagna e regno unito.
+
+\paragraph{City} City è un valore numerico che rappresenta la città in cui si trovava l'utente nel momento in cui ha utilizzato un'applicazione. Ci sono 233 città diverse, ma per il 40\% dei feedback la città è sconosciuta.  
+
+\bigskip \noindent
+Delle feature di contesto appena descritte sono eliminate homework, country e city perché poco utili a definire il contesto dell'utente. In particolare city è stata eliminata perché contiene troppi valori sconosciuti, e inoltre anche eliminando le righe del dataset in cui la città è sconosciuta, si dovrebbe comunque codificare una variabile categorica con 232 valori diversi che non aiuta molto nel riconoscimento del contesto. Anche homework è stato eliminato perché il numero di feedback che hanno la feature homework con valore unknown è pari al 78\%. Country non viene considerata perché come City è una variabile categorica che può assumere troppi valori diversi, ed è poco utile per caratterizzare il contesto. Inoltre solo poche nazioni hanno un numero di feedback sufficiente associato.
+
+Le feature rimaste compongono il contesto, e sono daytime, weekday, isweekend, weather. L'unica di queste feature che può assumere valore unknown è weather. Le righe del dataset in cui weather è unknown sono eliminate. Il risultato è un dataset con 78335 righe, 857 utenti e 3180 feedback.
+
+Per quanto riguarda l'encoding, essendo tutte variabili categoriche sono codificate con one-hot encoding. Il vettore del contesto risultato contiene 24 features: 7 per daytime, 7 per weekday, 8 per weather e 2 per isweekend.
+
+\subsection{Feature di base}
+Qualsiasi dataset per sistemi di raccomandazione ha tre feature fondamentali: user, item, rating. User e item sono valori numerici che identificano univocamente user e item. Il rating in Frappe è il numero di volte in cui un oggetto (un'applicazione) è stata utilizzata da un utente in un determinato contesto. Ad esempio se una riga del dataset è composta da \texttt{(user:1, item:20, rating:50, daytime:morning, weekday:monday)}, significa che l'utente 1, ha utilizzato l'applicazione 20, il lunedì mattina 50 volte. Il numero di volte è ottenuto sommando tutti gli utilizzi durante il periodo di raccolta dei dati. Il valore minimo del rating è 1, il valore massimo 21262, e la media 88.26. Questi rating sono da convertire in feedback impliciti con valore 0 o 1, per poterli dare in input a moveRS. Considerando il valore medio dei rating, e cercando di avere un dataset bilanciato, ho deciso di convertire tutti i rating con valore maggiore di 4 in feedback con valore 1, mentre i rating con valore di 4 o minore in feedback con valore 0. Il risultato è un dataset con il 62\% di feedback con valore 1 (48604 righe).
+
+\subsection{Feature degli oggetti}
+Le feature degli oggetti sono caratteristiche che descrivono le applicazioni usate dagli utenti di Frappe.
+
+\paragraph{Category} Category è la categoria delle applicazioni ottenuta dal Google Play Store. In Frappe le applicazioni sono divise in 23 categorie che descrivono la loro funzionalità principale (es. videogiochi, notizie, social). Come si può vedere in \autoref{fig:frappe-categories}, ll numero di datasample per ogni categoria è molto sbilanciato: la categoria communication che comprende applicazioni di messaggistica come WhatsApp ha più di 20k data sample. La seconda categoria più popolare è social che comprende applicazioni come Facebook, Instagram, Twitter.
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.85]{immagini/frappe-category.png}
+  \caption{Numero di data sample per ogni categoria di applicazioni nel dataset Frappe}
+  \label{fig:frappe-categories}
+\end{figure}
+
+\paragraph{Language} Language indica la lingua di un applicazione ottenuta dal Google Play Store. Dato che il 96\% dei data sample hanno applicazioni in lingua inglese, ho assegnato a tutte le altre lingue il valore \texttt{other}.
 
 % 
 %			CAPITOLO 5: Risultati
 % 
 
-\chapter{Capitolo 5} \label{chap:risultati}
+\chapter{Risultati} \label{chap:risultati}
 
 
 % 
