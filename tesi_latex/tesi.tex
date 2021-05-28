@@ -368,7 +368,33 @@ Come le feature di contesto e degli oggetti, anche le feature degli utenti sono 
 Ricapitolando, il dataset Frappe processato contiene 78335 data sample, 857 utenti e 3180 oggetti. Oltre alle colonne user, item e feedback, il dataset contiene 47 feature degli utenti, 22 feature degli oggetti, e 24 feature di contesto.
 
 \section{My Digital Footprint}
+My Digital Footprint (MDF) \cite{mdf} è un nuovo dataset composto dati di sensori di smartphone, informazioni di prossimità fisica, e interazioni sugli online social network. Il dataset include le misurazioni e le informazioni collezionate dai dispositivi personali di 31 volontari, nel loro ambiente naturale, senza limitare il loro comportamento usuale. Tutte queste informazioni compongono un insieme di informazioni completo per descrivere il contesto utente in ambiente mobile.
 
+\subsection{Feature di contesto}
+Il dataset MDF contiene numerose dati estratti dai sensori che compongono le feature di contesto. Di seguito sono elencate solo le feature selezionate e il loro encoding.
+
+\paragraph{Attività utente}  L'attività utente riconosciuta da
+ Android Activity Recognition system\footnote{\url{https://developers.google.com/location-context/activity-recognition}};
+Include sia movimenti a piedi che su mezzi di trasporto. Le attività
+possibili sono in vehicle, on bicycle, on foot, running, still,
+tilting, walking, unknown. Ogni feature rappresenta la probabilità da 0 a 100 che l'utente stia facendo quell'attività specifica. La probabilità è normalizzata nel range 0 1.
+
+\paragraph{Audio} 
+\subparagraph{Ringer mode} indica se la modalità audio del telefono è impostata su silenzioso, vibrazione o suono, identificati dai valori 0, 1, 2.
+\subparagraph{Volume} Alarm volume, music volume, notification volume e ring volume, sono quattro feature con valore tra 0 e 1 che indicano il livello audio della sveglia, della musica, delle notifiche e della suoneria.
+\subparagraph{Music} Music active è un valore booleano che indica se il dispositivo sta riproducendo della musica. Se la musica è riprodotta dallo speaker del telefono o dalle cuffie è identificato dalle feature speaker on, e headset connected.
+
+\paragraph{Batteria} Associate alla batteria ci sono due feature: level è un valore tra 0 e 1 che indica la carica della batteria, charging è un valore booleano che indica se la batteria è in carica oppure no.
+
+\paragraph{Schermo} Associate al display ci sono due feature: state ha valori 1, 2, 3 che indicano se il display è spento, acceso, o se si sta per spegnere. Rotation indica se l'utente sta usando il telefono in verticale o in orizzontale.
+
+\paragraph{Meteo} Il meteo è composto da diversi parametri: temperatura, umidità, pressione, velocità del vento, nuvole, se ha piovuto nelle ultime tre ore. Tutti queste feature sono descritti da valori reali, tranne per la piogga nelle ultime tre ore che è booleana.
+
+
+
+%             'weather.csv': ['temp', 'humidity', 'pressure', 'wind_speed', 'wind_deg',  'clouds', 'rain_last3h'],
+%             'wifi_scans2.csv': ['connected'],
+%             'location.csv': ['label', 'place_type']}
 
 
 % 
