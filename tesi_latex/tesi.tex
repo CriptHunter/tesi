@@ -246,7 +246,7 @@ Il contesto fisico è composto da tutte quelle informazioni rilevanti che posson
 
 \paragraph{Data e ora} Dalla data si possono generare feature come il giorno della settimana, la stagione, comprendere se è il fine settimana o un periodo di vacanza, etc. Dall'orario invece si può capire il momento della giornata (mattina, pomeriggio, sera, notte).
 
-\subsection{Contesto sociale}
+\subsection{Contesto sociale} \label{subsec:social-context}
 Il contesto sociale si riferisce all'insieme di persone con cui l'utente ha interazioni sociali durante la vita giornaliera, come lavorare con i colleghi o messaggiare con gli amici. \'E stato provato in letteratura che esiste una forte correlazione tra le attività umane e i dati sociali \cite{ego-net}. Questo implica che modellare una rete specifica per l'utente di relazioni sociali può contribuire a sottolineare le differenze tra i vari contesti in cui è coinvolto.
 
 \begin{figure}
@@ -326,13 +326,13 @@ Le feature rimaste compongono il contesto: daytime, weekday, isweekend, weather.
 
 Per quanto riguarda l'encoding, essendo tutte variabili categoriche sono codificate con one-hot encoding. Il vettore del contesto risultato contiene 24 features: 7 per daytime, 7 per weekday, 8 per weather e 2 per isweekend.
 
-\subsection{Utenti, oggetti e feedback}
+\subsection{Feedback}
 Qualsiasi dataset per sistemi di raccomandazione ha tre feature fondamentali: user, item, rating. User e item sono valori numerici che identificano univocamente gli utenti e gli oggetti. Il rating in Frappe è il numero di volte in cui un oggetto (un'applicazione) è stata utilizzata da un utente in un determinato contesto. Ad esempio, se una riga del dataset è composta da \texttt{(user:1, item:20, rating:50, daytime:morning, weekday:monday)}, significa che l'utente 1, ha utilizzato l'applicazione 20, il lunedì mattina, 50 volte. Il numero di volte è ottenuto sommando tutti gli utilizzi durante il periodo di raccolta dei dati. Il valore minimo dei rating è 1, il valore massimo 21262, e la media 88.26. Questi rating vanno convertiti in feedback impliciti con valore 0 o 1 per essere compatibili con moveCARS, come spiegato nella \autoref{subsec:input}. Considerando il valore medio dei rating, e cercando di avere un dataset bilanciato, ho deciso di convertire tutti i rating con valore maggiore di 4 in feedback con valore 1, mentre i rating con valore 4 o minore in feedback negativi. Il risultato è un dataset con il 62\% di feedback positivi (48604 data sample).
 
 \subsection{Feature degli oggetti}
 Le feature degli oggetti sono caratteristiche che descrivono le applicazioni usate dagli utenti di Frappe. Il dataset contiene tre feature rilevanti per il task di classificazione: la categoria dell'applicazione, la lingua, e il costo.
 
-\paragraph{Category} è la categoria delle applicazioni ottenuta dal Google Play Store. In Frappe le applicazioni sono divise in 23 categorie che descrivono la loro funzionalità principale (es. videogiochi, notizie, social). Come si può vedere in \autoref{fig:frappe-categories}, il numero di data sample per ogni categoria è molto sbilanciato: la categoria communication che comprende applicazioni di messaggistica come WhatsApp ha più di 20k data sample. La seconda categoria più popolare è social che comprende applicazioni come Facebook, Instagram e Twitter.
+\paragraph{Category} è la categoria delle applicazioni ottenuta dal Google Play Store. In Frappe le applicazioni sono divise in 23 categorie che descrivono la loro funzionalità principale (es. videogiochi, notizie, social). Come si può vedere in \autoref{fig:frappe-categories}, il numero di data sample per ogni categoria è molto sbilanciato: la categoria communication che comprende applicazioni di messaggistica come WhatsApp e Telegram ha più di 20k data sample. La seconda categoria più popolare è social che comprende applicazioni come Facebook, Instagram e Twitter.
 \begin{figure}
   \centering
   \includegraphics[width=\linewidth]{immagini/frappe-category.png}
@@ -370,33 +370,88 @@ Ricapitolando, il dataset Frappe processato contiene 78335 data sample, 857 uten
 \section{My Digital Footprint}
 My Digital Footprint (MDF) \cite{mdf} è un nuovo dataset composto dati di sensori di smartphone, informazioni di prossimità fisica, e interazioni sugli online social network. Il dataset include le misurazioni e le informazioni collezionate dai dispositivi personali di 31 volontari, nel loro ambiente naturale, senza limitare il loro comportamento usuale. Tutte queste informazioni compongono un insieme di informazioni completo per descrivere il contesto utente in ambiente mobile.
 
+\subsection{Negative sampling}
+MDF contiene l'utilizzo di applicazioni Android sul dispositivo utente per un periodo di due mesi. Per questo motivo esistono solo campioni positivi che indicano che un'applicazione è in esecuzione. Per eseguire il training di una rete neurale sono però necessari degli esempi negativi, i quali indicano che un'applicazione non era in uso da parte di un utente in una specifica situazione contestuale. Ogni data sample ha associata una label, che definisce il contesto dell'utente ad alto livello con i seguenti valori: \texttt{home, school, workplace, external school} (dove gli autori del dataset incontravano i volontari), \texttt{Free Time}, e \texttt{holiday}. Questa etichetta non è usata come feature di contesto, ma per fare negative sampling del dataset. 
+L'algoritmo \ref{alg:neg-sampling} mostra il procedimento: per ogni sample $d$ nel dataset $D$ vengono identificate le label in cui $d.item$ non è mai stato utilizzato (riga 2). Per ogni label $n$ viene scelto in modo casuale un sample $\in D$ con label = $n$ (riga 3). Di questo sample viene mantenuto solo il contesto $context_{neg}$ scartando user, item e feedback. Il sample negativo $d_{neg }$ è ottenuto concatenando user e item di $d$, con 0 (il feedback negativo) e $context_{neg}$ (riga 6).  $d_{neg}$ è aggiunto al dataset $D_{neg}$ che contiene solo sample negativi. In ultimo il dataset $D_{neg}$ è unito al dataset $D$ ed è eliminata la colonna corrispondente alle label.
+
+\begin{algorithm}
+\floatname{algorithm}{Algoritmo}
+\caption{Negative sampling di MDF}
+\label{alg:neg-sampling}
+ \hspace*{\algorithmicindent} \textbf{Input:} $D$ - dataset \\
+ \hspace*{\algorithmicindent} \textbf{Output:} $D_{neg}$ - dataset 
+$D$ with negative samples \\ 
+\begin{algorithmic}[1]
+
+\FORALL{$d \in D$} 
+	\STATE $labels_{neg} \leftarrow$ labels where $d.item$ was never used
+	\FORALL{$n \in labels_{neg}$}
+		\STATE $context_{neg} \leftarrow$ context of a random data sample  $\in D$ with label = $n$
+		\STATE $feedback \leftarrow$ 0
+		\STATE $d_{neg} \leftarrow$ concatenate $d.user$, $d.item$, $feedback$ and $context_{neg}$
+		\STATE $D_{neg} \leftarrow$ $D_{neg} \cup d_{neg}$ 
+		
+	\ENDFOR
+\ENDFOR
+
+\STATE $D_{neg} \leftarrow$ $D \cup D_{neg}$
+\STATE $D_{neg} \leftarrow$ $D_{neg}$ with label column dropped
+\STATE Return $D_{neg}$
+
+\end{algorithmic}
+\end{algorithm}
+
+
 \subsection{Feature di contesto}
-Il dataset MDF contiene numerose dati estratti dai sensori che compongono le feature di contesto. Di seguito sono elencate solo le feature selezionate e il loro encoding.
+Il dataset MDF contiene numerosi dati estratti dai sensori degli smartphone dell'utente. Dato che le feature sono davvero molte, di seguito sono elencate solo quelle selezionate che compongono il dataset finale.
 
 \paragraph{Attività utente}  L'attività utente riconosciuta da
  Android Activity Recognition system\footnote{\url{https://developers.google.com/location-context/activity-recognition}};
-Include sia movimenti a piedi che su mezzi di trasporto. Le attività
-possibili sono in vehicle, on bicycle, on foot, running, still,
-tilting, walking, unknown. Ogni feature rappresenta la probabilità da 0 a 100 che l'utente stia facendo quell'attività specifica. La probabilità è normalizzata nel range 0 1.
+include sia movimenti a piedi che su mezzi di trasporto. Le attività
+possibili sono \texttt{in vehicle, on bicycle, on foot, running, still,
+tilting, walking, unknown}. Ogni feature rappresenta la probabilità da 0 a 100 che l'utente stia facendo quell'attività specifica.
 
-\paragraph{Audio} 
-\subparagraph{Ringer mode} indica se la modalità audio del telefono è impostata su silenzioso, vibrazione o suono, identificati dai valori 0, 1, 2.
-\subparagraph{Volume} Alarm volume, music volume, notification volume e ring volume, sono quattro feature con valore tra 0 e 1 che indicano il livello audio della sveglia, della musica, delle notifiche e della suoneria.
-\subparagraph{Music} Music active è un valore booleano che indica se il dispositivo sta riproducendo della musica. Se la musica è riprodotta dallo speaker del telefono o dalle cuffie è identificato dalle feature speaker on, e headset connected.
+\paragraph{Modalità audio} indica se la modalità audio del telefono è impostata su silenzioso, vibrazione o suono.
 
-\paragraph{Batteria} Associate alla batteria ci sono due feature: level è un valore tra 0 e 1 che indica la carica della batteria, charging è un valore booleano che indica se la batteria è in carica oppure no.
+\paragraph{Volume} \texttt{Alarm volume, music volume, notification volume} e \texttt{ring volume}, sono quattro feature con valore tra 0 e 1 che indicano il livello audio della sveglia, della musica, delle notifiche e della suoneria.
 
-\paragraph{Schermo} Associate al display ci sono due feature: state ha valori 1, 2, 3 che indicano se il display è spento, acceso, o se si sta per spegnere. Rotation indica se l'utente sta usando il telefono in verticale o in orizzontale.
+\paragraph{Musica} \texttt{music active} è un valore booleano che indica se il dispositivo sta riproducendo della musica. Se la musica è riprodotta dallo speaker del telefono o dalle cuffie è identificato dalle feature \texttt{speaker on}, e \texttt{headset connected}.
 
-\paragraph{Meteo} Il meteo è composto da diversi parametri: temperatura, umidità, pressione, velocità del vento, nuvole, se ha piovuto nelle ultime tre ore. Tutti queste feature sono descritti da valori reali, tranne per la piogga nelle ultime tre ore che è booleana.
+\paragraph{Batteria} Associate alla batteria ci sono due feature: \texttt{level} indica la carica della batteria (molto bassa, bassa, media, alta, carica) \texttt{charging} è un valore booleano che indica se la batteria si sta ricaricando oppure no.
 
+\paragraph{Schermo} Associate al display ci sono due feature: \texttt{state} indica se il display è spento, acceso, o se si sta per spegnere. \texttt{Rotation} indica se l'utente sta usando il telefono in verticale o in orizzontale.
 
+\paragraph{Meteo} Il meteo è descritto da sei variabili diverse: temperatura, umidità, pressione atmosferica, velocità del vento, nuvole, e se ha piovuto nelle ultime tre ore.
 
-%             'weather.csv': ['temp', 'humidity', 'pressure', 'wind_speed', 'wind_deg',  'clouds', 'rain_last3h'],
-%             'wifi_scans2.csv': ['connected'],
-%             'location.csv': ['label', 'place_type']}
+\paragraph{Wifi} La feature \texttt{connected} indica se il dispositivo dell'utente è connesso oppure no ad una rete Wi-Fi
 
+\paragraph{Data e ora} Dai timestamp dei feedback in formato \texttt{YYYY-MM-DD HH:MM:SS} sono calcolate come per il dataset Frappe le feature daytime (mattina, pomeriggio, sera, e notte) weekday e isweekend. Oltre a queste, con la libreria Python Holidays\footnote{\url{https://pypi.org/project/holidays/}}, è calcolato se è un giorno di vacanza o no, in base al calendario delle festività italiano.
 
+\paragraph{Feature sociali} Le feature sociali sono ottenute dall'ego network descritta nella \autoref{subsec:social-context}. Ci sono quattro feature \texttt{social\_c1, social\_c2, social\_c3} che corrispondono alle cerchie sociali della ego network, e indicano la percentuale di alter vicino all'utente nel momento in cui ha utilizzato un'applicazione. Il secondo gruppo di feature chiamate \texttt{layer\_1, layer\_2, layer\_3, layer\_4} indicano il layer dell'utente da cui è stata ricevuta la raccomandazione. Questo presuppone un dataset diverso per ogni utente, dato che l'ego network è personale per ogni utente (es. uno sconosciuto per l'utente 1, potrebbe essere un amico per l'utente 2).
+
+\bigskip \noindent
+Le feature categoriche sono codificate con one-hot encoding, mentre le feature numeriche sono normalizzate. Il risultato è un vettore che contiene 63 feature che descrivono il contesto fisico dell'utente, e 8 feature che descrivono il contesto sociale dell'utente.
+
+\subsection{Feature degli oggetti}
+
+\paragraph{Category}
+è la categoria delle applicazioni ottenuta dal Google Play Store. In
+MDF le applicazioni sono divise in 26 categorie che descrivono la loro funzionalità principale (es. videogiochi, notizie, social). Come si può vedere dalla \autoref{fig:mdf-categories}, anche in MDF il numero di data sample per ogni categoria è molto sbilanciato: la categoria communication che comprende applicazioni di messaggistica come Whatsapp e Telegram ha più di
+20k data sample. La seconda categoria più popolare è social che comprende applicazioni come Facebook, Instagram e Twitter. La categoria è codificata con one-hot encoding.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{immagini/mdf-category.png}
+  \caption{Numero di data sample per ogni categoria di applicazioni nel dataset My Digital Footprint}
+  \label{fig:mdf-categories}
+\end{figure}
+
+\subsection{Feature degli utenti}
+Come per Frappe, il dataset MDF non contiene nessuna informazione sugli utenti. Per questo motivo ho generato 4 feature utente dalle feature di contesto e degli utenti.
+\paragraph{User category}
+\paragraph{User daytime}
+\paragraph{User weekday}
+\paragraph{User weekend}
 % 
 %			CAPITOLO 5: Risultati
 % 
