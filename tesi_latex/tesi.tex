@@ -301,7 +301,7 @@ La \autoref{fig:ego-array} mostra un esempio del processo di riconoscimento del 
 In questo capitolo sono descritti i dataset context-aware usati per valutare il modello moveCARS, e nel \autoref{chap:risultati}, confrontarlo con altre soluzioni stato dell'arte. Uno dei problemi nella valutazione dei CARS, è la scarsità di dataset pubblici che contengono informazioni di contesto ad alta dimensionalità. Molti dataset infatti hanno informazioni di contesto limitate unicamente al timestamp dei feedback come Yelp\footnote{\url{https://www.yelp.com/dataset}} e nowplaying-rs\footnote{\url{https://zenodo.org/record/3247476\#.YK9FxqgzY2x}}. In generale è difficile trovare dataset che caratterizzano il contesto fisico e sociale dell'utente con una grande quantità di feature. Dato che il modello moveCARS si inserisce in un ambiente mobile e pervasivo, ho selezionato due dataset context-aware, in cui i feedback dell'utente corrispondono alle applicazioni in esecuzione sui dispositivi Android degli utenti: (i) My Digital Footprint\footnote{\url{https://github.com/contextkit/MyDigitalFootprint}}, (ii) Frappe\footnote{\url{https://www.baltrunas.info/context-aware}}.
 
 \section{Frappe}
-Frappe \cite{frappe} è un dataset di feedback impliciti pubblicamente disponibile collezionato da un sistema di raccomandazione context-aware di applicazioni Android. L'applicazione che monitora l'utilizzo degli smartphone, è stata installata da 957 utenti che hanno utilizzato un totale di 4082 applicazioni. Le informazioni raccolte descrivono la frequenza di utilizzo di un'applicazione da parte di un utente per un periodo di 2 mesi. Il numero totale di feedback presenti è 96203.
+Frappe \cite{frappe} è un dataset di feedback impliciti pubblicamente disponibile collezionato da un sistema di raccomandazione context-aware di applicazioni Android. L'applicazione che monitora l'utilizzo degli smartphone, è stata installata da 957 utenti che hanno utilizzato un totale di 4082 applicazioni. Le informazioni raccolte descrivono la frequenza di utilizzo di un'applicazione da parte di un utente per un periodo di 2 mesi. Il numero totale di feedback presenti è 96203. Il task per un recommender system su questo dataset è prevedere se un'applicazione Android è rilevante per un utente in un determinato contesto.
 
 \subsection{Feature di contesto}
 Le feature di contesto descrivono la situazione dell'utente nel momento in cui ha utilizzato un'applicazione Android. Frappe può essere considerato un dataset con un contesto a bassa dimensionalità, e non contiene informazioni raccolte dai sensori dei dispositivi Android. Di seguito sono descritte tutte le feature di contesto presenti nel dataset.
@@ -368,11 +368,11 @@ Come le feature di contesto e degli oggetti, anche le feature degli utenti sono 
 Ricapitolando, il dataset Frappe processato contiene 78335 data sample, 857 utenti e 3180 oggetti. Oltre alle colonne user, item e feedback, il dataset contiene 47 feature degli utenti, 22 feature degli oggetti, e 24 feature di contesto.
 
 \section{My Digital Footprint}
-My Digital Footprint (MDF) \cite{mdf} è un nuovo dataset composto dati di sensori di smartphone, informazioni di prossimità fisica, e interazioni sugli online social network. Il dataset include le misurazioni e le informazioni collezionate dai dispositivi personali di 31 volontari, nel loro ambiente naturale, senza limitare il loro comportamento usuale. Tutte queste informazioni compongono un insieme di informazioni completo per descrivere il contesto utente in ambiente mobile.
+My Digital Footprint (MDF) \cite{mdf} è un nuovo dataset composto da dati di sensori di smartphone, informazioni di prossimità fisica, e interazioni sugli online social network. Il dataset include due mesi di misurazioni e informazioni collezionate dai dispositivi personali di 31 volontari, nel loro ambiente naturale, senza limitare il loro comportamento usuale. I dati raccolti costituiscono un insieme completo di informazioni per descrivere il contesto utente in ambiente mobile. 
 
 \subsection{Negative sampling}
-MDF contiene l'utilizzo di applicazioni Android sul dispositivo utente per un periodo di due mesi. Per questo motivo esistono solo campioni positivi che indicano che un'applicazione è in esecuzione. Per eseguire il training di una rete neurale sono però necessari degli esempi negativi, i quali indicano che un'applicazione non era in uso da parte di un utente in una specifica situazione contestuale. Ogni data sample ha associata una label, che definisce il contesto dell'utente ad alto livello con i seguenti valori: \texttt{home, school, workplace, external school} (dove gli autori del dataset incontravano i volontari), \texttt{Free Time}, e \texttt{holiday}. Questa etichetta non è usata come feature di contesto, ma per fare negative sampling del dataset. 
-L'algoritmo \ref{alg:neg-sampling} mostra il procedimento: per ogni sample $d$ nel dataset $D$ vengono identificate le label in cui $d.item$ non è mai stato utilizzato (riga 2). Per ogni label $n$ viene scelto in modo casuale un sample $\in D$ con label = $n$ (riga 3). Di questo sample viene mantenuto solo il contesto $context_{neg}$ scartando user, item e feedback. Il sample negativo $d_{neg }$ è ottenuto concatenando user e item di $d$, con 0 (il feedback negativo) e $context_{neg}$ (riga 6).  $d_{neg}$ è aggiunto al dataset $D_{neg}$ che contiene solo sample negativi. In ultimo il dataset $D_{neg}$ è unito al dataset $D$ ed è eliminata la colonna corrispondente alle label.
+Il task per un recommender system su questo dataset è prevedere se un'applicazione Android è rilevante per un utente in un determinato contesto. In MDF sono presenti solo i log indicanti che un'applicazione era in esecuzione sul dispositivo dell'utente, ad un certo timestamp $t$, in una situazione contestuale $c$. Per eseguire il training di una rete neurale sono però necessari degli esempi negativi, i quali indicano che un'applicazione non era in uso da parte di un utente, al tempo $t$ in una specifica situazione contestuale. Ogni data sample ha associata una label, che definisce il contesto dell'utente ad alto livello con i seguenti valori: \texttt{home, school, workplace, external school} (dove gli autori del dataset incontravano i volontari), \texttt{free Time}, e \texttt{holiday}. Questa etichetta non è usata come feature di contesto, ma per fare negative sampling del dataset. 
+L'algoritmo \ref{alg:neg-sampling} mostra il procedimento: per ogni sample $d$ nel dataset $D$ con struttura $(user, item, feedback, context, label)$, vengono identificate le label in cui $d.item$ non è mai stato utilizzato (riga 2). Per ogni label $n$ viene scelto in modo casuale un sample $\in D$ con label = $n$ (riga 4). Di questo sample viene mantenuto solo il contesto $context_{neg}$ scartando user, item e feedback. Il sample negativo $d_{neg}$ è ottenuto concatenando $d.user$ e $d.item$, con 0 (il feedback negativo) e $context_{neg}$ (riga 6).  $d_{neg}$ è aggiunto al dataset $D_{neg}$ che contiene solo sample negativi (riga 7). In ultimo il dataset $D_{neg}$ è unito al dataset $D$ ed è eliminata la colonna corrispondente alle label (righe 10 e 11). Il risultato è una dataset con 31 utenti, 338 oggetti, e 73176 feedback, di cui il 66\% con valore 1.
 
 \begin{algorithm}
 \floatname{algorithm}{Algoritmo}
@@ -386,7 +386,7 @@ $D$ with negative samples \\
 \FORALL{$d \in D$} 
 	\STATE $labels_{neg} \leftarrow$ labels where $d.item$ was never used
 	\FORALL{$n \in labels_{neg}$}
-		\STATE $context_{neg} \leftarrow$ context of a random data sample  $\in D$ with label = $n$
+		\STATE $context_{neg} \leftarrow$ context of a random data sample  $\in D$ with $label = n$
 		\STATE $feedback \leftarrow$ 0
 		\STATE $d_{neg} \leftarrow$ concatenate $d.user$, $d.item$, $feedback$ and $context_{neg}$
 		\STATE $D_{neg} \leftarrow$ $D_{neg} \cup d_{neg}$ 
@@ -395,7 +395,7 @@ $D$ with negative samples \\
 \ENDFOR
 
 \STATE $D_{neg} \leftarrow$ $D \cup D_{neg}$
-\STATE $D_{neg} \leftarrow$ $D_{neg}$ with label column dropped
+\STATE $D_{neg} \leftarrow$ drop all labels from samples $ \in D_{neg}$
 \STATE Return $D_{neg}$
 
 \end{algorithmic}
@@ -447,11 +447,22 @@ MDF le applicazioni sono divise in 26 categorie che descrivono la loro funzional
 \end{figure}
 
 \subsection{Feature degli utenti}
-Come per Frappe, il dataset MDF non contiene nessuna informazione sugli utenti. Per questo motivo ho generato 4 feature utente dalle feature di contesto e degli utenti.
-\paragraph{User category}
-\paragraph{User daytime}
-\paragraph{User weekday}
-\paragraph{User weekend}
+Come per Frappe, il dataset MDF non contiene nessuna informazione sugli utenti. Per questo motivo ho generato quattro feature utente dalle feature di contesto e degli oggetti.
+
+\paragraph{User category} indica la categoria di applicazioni più utilizzata dall'utente. Anche in questo caso le categorie più popolari sono Communication e Social.
+
+\paragraph{User weekday} indica il giorno della settimana in cui l'utente ha generato il maggior numero di feedback. I giorni più popolari sono giovedì e venerdì.
+
+\paragraph{User daytime} indica il momento della giornata in cui l'utente ha generato il maggior numero di feedback. Il momento della giornata più popolare è la mattina.
+
+\paragraph{User weekend} indica se l'utente ha generato più feedback in settimana o nel weekend. La maggior parte degli utenti (98\%), ha generato più feedback in settimana.
+
+\bigskip \noindent
+Come le feature degli oggetti, anche le feature degli utenti sono tutte variabili categoriche. Vengono codificate con one-hot encoding in un vettore di 27 feature: 14 per user category, 7 per user weekday, 4 per user daytime, 2 per User weekend.
+
+Ricapitolando, il dataset MDF processato contiene 73176 data sample, 31 utenti e 338 oggetti. Oltre alle colonne user, item e feedback, il dataset contiene  27 feature degli utenti, 26 feature degli oggetti, e 71 feature di contesto.
+
+
 % 
 %			CAPITOLO 5: Risultati
 % 
