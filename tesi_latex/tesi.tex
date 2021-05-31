@@ -4,11 +4,40 @@
 % pacchetti definiti da me
 \usepackage{algorithm} % box intorno agli algoritmi
 \usepackage{algorithmic} % per scrivere pseudocodice
-\usepackage{xcolor} 
 \setcounter{tocdepth}{3} % subsubsec nell'indice
 \setcounter{secnumdepth}{3}  % numerare subsubsec
 \newcommand{\myparagraph}[1]{\paragraph{#1}\mbox{}\\} % paragrafo che va a capo
 \usepackage[htt]{hyphenat} % manda a capo typewriter font
+
+\usepackage{dirtree} % per fare gerarchie delle cartelle
+
+% per colorare il codice
+\usepackage{listings}
+\usepackage{xcolor} % colori
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{gray}{0.93}
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{black},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
 %\usepackage[section]{placeins}
 
 %
@@ -124,7 +153,7 @@ Organizzazione tesi...
 \chapter{Stato dell'arte}
 \label{chap:stato_arte}
 
-%\input{capitoli/stato_arte.tex}
+\input{capitoli/stato_arte.tex}
 
 % 
 %			CAPITOLO 3: Lavoro svolto
@@ -300,7 +329,7 @@ La \autoref{fig:ego-array} mostra un esempio del processo di riconoscimento del 
 % 
 \chapter{Dataset} \label{chap:datasets}
 In questo capitolo sono descritti i dataset context-aware usati per valutare il modello moveCARS, e confrontarlo con altre soluzioni stato dell'arte. I risultati sono riportati nel \autoref{chap:risultati}. Uno dei problemi nella valutazione dei CARS, è la scarsità di dataset pubblici che contengono informazioni di contesto ad alta dimensionalità. Molti dataset pubblici infatti, hanno informazioni di contesto limitate unicamente al timestamp dei rating o alla posizione dell'utente, come ad esempio Yelp\footnote{\url{https://www.yelp.com/dataset}}, Nowplaying-RS\footnote{\url{https://zenodo.org/record/3247476\#.YK9FxqgzY2x}}, Travel TripAdvisor\footnote{\url{https://github.com/irecsys/CARSKit/blob/master/context-aware_data_sets/Travel_TripAdvisor_v1.zip}}. Esistono invece dataset privati come CARS \cite{context-aware-deep-learning} e Hearo \cite{latent-context}, che contengono i dati raccolti da esperimenti sul campo, in cui gli utenti interagivano con il proprio telefono con un RS che che raccomandava punti di interesse nelle vicinanze. I rating raccolti sono associati a numerose feature di contesto estratte da sensori mobile come accelerometro, microfono, giroscopio, etc.
-\`E difficile trovare dataset pubblici simili a Hearo e CARS, che caratterizzano il contesto fisico e sociale dell'utente con una grande quantità di feature. Dato che il modello moveCARS si inserisce in un ambiente mobile e pervasivo, ho selezionato due dataset context-aware, in cui i feedback dell'utente corrispondono alle applicazioni in esecuzione sui dispositivi Android degli utenti: (i) My Digital Footprint\footnote{\url{https://github.com/contextkit/MyDigitalFootprint}}, (ii) Frappe\footnote{\url{https://www.baltrunas.info/context-aware}}.
+\`E difficile trovare dataset pubblici simili a Hearo e CARS, che caratterizzano il contesto fisico e sociale dell'utente con una grande quantità di feature. Dato che il modello moveCARS si inserisce in un ambiente mobile e pervasivo, ho selezionato due dataset context-aware in cui i feedback impliciti dell'utente corrispondono alle applicazioni in esecuzione sui dispositivi Android degli utenti: (i) My Digital Footprint\footnote{\url{https://github.com/contextkit/MyDigitalFootprint}}, (ii) Frappe\footnote{\url{https://www.baltrunas.info/context-aware}}.
 
 \section{Frappe}
 Frappe \cite{frappe} è un dataset di feedback impliciti pubblicamente disponibile collezionato da un sistema di raccomandazione context-aware di applicazioni Android. L'applicazione che monitora l'utilizzo degli smartphone, è stata installata da 957 utenti che hanno utilizzato un totale di 4082 applicazioni. Le informazioni raccolte descrivono la frequenza di utilizzo di un'applicazione da parte di un utente per un periodo di 2 mesi. Il numero totale di feedback presenti è 96203. Il task per un recommender system su questo dataset è prevedere se un'applicazione Android è rilevante per un utente in un determinato contesto.
@@ -318,23 +347,23 @@ Le feature di contesto descrivono la situazione dell'utente nel momento in cui h
 
 \paragraph{Weather} descrive la situazione meteo nel momento in cui un'applicazione è stata utilizzata. Può assumere nove valori differenti: sunny, cloudy, foggy, stormy, rainy, snowy, drizzle, sleet, unknown.
 
-\paragraph{Country} indica la nazione in cui si trovava l'utente nel momento in cui ha utilizzato un'applicazione. Ci sono 80 stati diversi, ma il 55\% dei feedback sono stati generati da USA, spagna e regno unito.
+\paragraph{Country} indica la nazione in cui si trovava l'utente nel momento in cui ha utilizzato un'applicazione. Ci sono 80 stati diversi, ma il 55\% dei feedback sono stati generati da USA, Spagna e Regno Unito.
 
 \paragraph{City} è un valore numerico che rappresenta la città in cui si trovava l'utente nel momento in cui ha utilizzato un'applicazione. Ci sono 233 città diverse, ma per il 40\% dei feedback la città è sconosciuta.  
 
 \bigskip \noindent
-Delle feature di contesto appena descritte sono eliminate homework, country e city perché poco utili a definire il contesto dell'utente. In particolare city è stata eliminata perché contiene troppi valori sconosciuti, ed in corrispondenza di una città sconosciuta c'è spesso anche il valore della feature country sconosciuta. Anche homework è stato eliminato perché il numero di feedback che hanno la feature homework con valore unknown è pari al 78\%. Country non viene considerata perché la maggior parte dei feedback utente sono associati a poche nazioni, e ci sono un gran numero di nazioni a cui sono associati un numero non sufficiente di feedback.
-Le feature rimaste compongono il contesto: daytime, weekday, isweekend, weather. L'unica di queste feature che può assumere valore unknown è weather. Le righe del dataset in cui weather è unknown sono eliminate. Il risultato è un dataset con 78335 righe, 857 utenti e 3180 oggetti.
+Delle feature di contesto appena descritte sono eliminate \texttt{homework, country}, e \texttt{city}, perché poco utili a definire il contesto dell'utente. In particolare \texttt{city} è stata eliminata perché contiene troppi valori nulli, ed in corrispondenza di una città sconosciuta spesso anche il valore della feature \texttt{country} è sconosciuto. Anche \texttt{homework} è stato eliminato perché il numero di feedback che hanno la feature \texttt{homework} con valore unknown è pari al 78\%. \texttt{Country} non viene considerata perché la maggior parte dei feedback utente sono associati a poche nazioni, e ci sono un gran numero di nazioni a cui sono associati un numero non sufficiente di feedback.
+Le feature rimaste compongono il contesto: \texttt{daytime, weekday, isweekend, weather}. L'unica di queste feature che può assumere valore unknown è \texttt{weather}. Le righe del dataset in cui \texttt{weather} è unknown sono eliminate. Il risultato è un dataset con 78335 righe, 857 utenti e 3180 oggetti.
 
-Per quanto riguarda l'encoding, essendo tutte variabili categoriche sono codificate con one-hot encoding. Il vettore del contesto risultato contiene 24 features: 7 per daytime, 7 per weekday, 8 per weather e 2 per isweekend.
+Per quanto riguarda l'encoding, essendo tutte variabili categoriche sono codificate con one-hot encoding. Il vettore del contesto risultato contiene 24 feature: 7 per \texttt{daytime}, 7 per \texttt{weekday}, 8 per \texttt{weather} e 2 per \texttt{isweekend}.
 
 \subsection{Feedback}
-Qualsiasi dataset per sistemi di raccomandazione ha tre feature fondamentali: user, item, rating. User e item sono valori numerici che identificano univocamente gli utenti e gli oggetti. Il rating in Frappe è il numero di volte in cui un oggetto (un'applicazione) è stata utilizzata da un utente in un determinato contesto. Ad esempio, se una riga del dataset è composta da \texttt{(user:1, item:20, rating:50, daytime:morning, weekday:monday)}, significa che l'utente 1, ha utilizzato l'applicazione 20, il lunedì mattina, 50 volte. Il numero di volte è ottenuto sommando tutti gli utilizzi durante il periodo di raccolta dei dati. Il valore minimo dei rating è 1, il valore massimo 21262, e la media 88.26. Questi rating vanno convertiti in feedback impliciti con valore 0 o 1 per essere compatibili con moveCARS, come spiegato nella \autoref{subsec:input}. Considerando il valore medio dei rating, e cercando di avere un dataset bilanciato, ho deciso di convertire tutti i rating con valore maggiore di 4 in feedback con valore 1, mentre i rating con valore 4 o minore in feedback negativi. Il risultato è un dataset con il 62\% di feedback positivi (48604 data sample).
+Qualsiasi dataset per sistemi di raccomandazione ha tre feature fondamentali: user, item, rating. User e item sono valori numerici che identificano univocamente gli utenti e gli oggetti. Il rating in Frappe è il numero di volte in cui un oggetto (un'applicazione) è stato utilizzato da un utente in un determinato contesto. Ad esempio, se una riga del dataset è composta da \texttt{(user:1, item:20, rating:50, daytime:morning, weekday:monday)}, significa che l'utente 1, ha utilizzato l'applicazione 20, il lunedì mattina, 50 volte. Il numero di volte è ottenuto sommando tutti gli utilizzi durante il periodo di raccolta dei dati. Il valore minimo dei rating è 1, il valore massimo 21262, e la media 88.26. Questi rating vanno convertiti in feedback impliciti con valore 0 o 1 per essere compatibili con l'input di moveCARS, come spiegato nella \autoref{subsec:input}. Considerando il valore medio dei rating, e cercando di avere un dataset bilanciato, ho deciso di convertire tutti i rating con valore maggiore di 4 in feedback con valore 1, mentre i rating con valore 4 o minore in feedback negativi. Il risultato è un dataset con il 62\% di feedback positivi (48604 data sample).
 
 \subsection{Feature degli oggetti}
 Le feature degli oggetti sono caratteristiche che descrivono le applicazioni usate dagli utenti di Frappe. Il dataset contiene tre feature rilevanti per il task di classificazione: la categoria dell'applicazione, la lingua, e il costo.
 
-\paragraph{Category} è la categoria delle applicazioni ottenuta dal Google Play Store. In Frappe le applicazioni sono divise in 23 categorie che descrivono la loro funzionalità principale (es. videogiochi, notizie, social). Come si può vedere in \autoref{fig:frappe-categories}, il numero di data sample per ogni categoria è molto sbilanciato: la categoria communication che comprende applicazioni di messaggistica come WhatsApp e Telegram ha più di 20k data sample. La seconda categoria più popolare è social che comprende applicazioni come Facebook, Instagram e Twitter.
+\paragraph{Category} è la categoria delle applicazioni ottenuta dal Google Play Store. In Frappe le applicazioni sono divise in 23 categorie che descrivono la loro funzionalità principale (es. videogiochi, notizie, social). Come si può vedere in \autoref{fig:frappe-categories}, il numero di data sample per ogni categoria è molto sbilanciato: la categoria Communication che comprende applicazioni di messaggistica come WhatsApp e Telegram ha più di 20k data sample. La seconda categoria più popolare è Social che comprende applicazioni come Facebook, Instagram e Twitter.
 \begin{figure}
   \centering
   \includegraphics[width=\linewidth]{immagini/frappe-category.png}
@@ -347,7 +376,7 @@ Le feature degli oggetti sono caratteristiche che descrivono le applicazioni usa
 \paragraph{Cost} indica se l'applicazione è gratuita o a pagamento.
 
 \bigskip \noindent
-Come per le feature di contesto, anche le feature degli oggetti sono variabili categoriche. Vengono codificate con one-hot encoding; il risultato è un vettore di 27 feature: 23 per la categoria, 2 per la lingua, e 2 per il costo.
+Come per le feature di contesto, anche le feature degli oggetti sono variabili categoriche. Vengono codificate con one-hot encoding; il risultato è un vettore di 27 feature: 23 per \texttt{category}, 2 per \texttt{language}, e 2 per \texttt{cost}.
 
 \subsection{Feature degli utenti}
 Il dataset Frappe non contiene nessuna informazione associata agli utenti oltre all'ID dell'utente. Per questo motivo, ho generato le feature degli utenti a partire dalle feature degli oggetti e di contesto.
@@ -362,19 +391,42 @@ Il dataset Frappe non contiene nessuna informazione associata agli utenti oltre 
 
 \paragraph{User weekend} indica se l'utente ha generato più feedback in settimana o nel weekend. La maggior parte degli utenti (85\%), ha generato più feedback in settimana.
 
-\paragraph{Uses paid apps} indica se l'utente ha mai utilizzato un'applicazione a pagamento. Il 59\% degli utenti ha utilizzato almeno una volta un'applicazione a pagamento.
+\paragraph{User paid apps} indica se l'utente ha mai utilizzato un'applicazione a pagamento. Il 59\% degli utenti ha utilizzato almeno una volta un'applicazione a pagamento.
 
 \bigskip \noindent
-Come le feature di contesto e degli oggetti, anche le feature degli utenti sono tutte variabili categoriche. Vengono codificate con one-hot encoding in un vettore di 47 feature: 22 per user category, 7 per user weekday, 7 per daytime, 7 per user weather, 2 per user weekend, 2 per uses paid apps.
+Come le feature di contesto e degli oggetti, anche le feature degli utenti sono tutte variabili categoriche. Vengono codificate con one-hot encoding in un vettore di 47 feature: 22 per \texttt{user category}, 7 per \texttt{user weekday}, 7 per \texttt{user daytime}, 7 per \texttt{user weather}, 2 per \texttt{user weekend}, 2 per \texttt{user paid apps}.
 
 Ricapitolando, il dataset Frappe processato contiene 78335 data sample, 857 utenti e 3180 oggetti. Oltre alle colonne user, item e feedback, il dataset contiene 47 feature degli utenti, 22 feature degli oggetti, e 24 feature di contesto.
 
 \section{My Digital Footprint}
 My Digital Footprint (MDF) \cite{mdf} è un nuovo dataset composto da dati di sensori di smartphone, informazioni di prossimità fisica, e interazioni sugli online social network. Il dataset include due mesi di misurazioni e informazioni collezionate dai dispositivi personali di 31 volontari, nel loro ambiente naturale, senza limitare il loro comportamento usuale. I dati raccolti costituiscono un insieme completo di informazioni per descrivere il contesto utente in ambiente mobile. 
 
+Il dataset è organizzato in cartelle, una per ogni utente, che contengono diversi file csv, ognuno contenente misurazioni e informazioni di tipo diverso. Ogni sample in qualsiasi file csv contiene il timestamp in cui è stato acquisito. Alcuni sensori sono stati campionati molto frequentemente, mentre informazioni come il meteo sono state raccolte ogni ora.
+Di seguito è riportata la struttura delle cartelle:
+\dirtree{%
+.1 MDF.
+.2 user\_0.
+.3 activities.csv.
+.3 audio.csv.
+.3 running\_apps.csv.
+.3 wifi\_scans.csv.
+.3 $\dots$ .
+.2 user\_1.
+.3 activities.csv.
+.3 audio.csv.
+.3 running\_apps.csv.
+.3 wifi\_scans.csv.
+.3 $\dots$ .
+.2 $\dots$.
+}
+\noindent
+L'obiettivo è costruire un unico file csv, in cui ogni riga ha una struttura del tipo \texttt{(user\_ID, item\_ID, context)}, e contiene tutti gli utenti, e gli oggetti che gli utenti hanno consumato in un determinato contesto. Siccome il task di un recommender system su questo dataset è prevedere se un'applicazione Android è rilevante per un utente in un determinato contesto, il punto di partenza per costruire il dataset sono le applicazioni in esecuzione nel file \texttt{running\_apps.csv}. Qui sotto è riportato il codice Python per generare il dataset: 
+\lstinputlisting[language=Python]{codice/make_mdf.py}
+Per ogni cartella utente (riga 4), si legge il file \texttt{running\_apps.csv} (riga 7). Per ogni timestamp $t$ nel file (riga 15), e per ogni altro file csv nella cartella dell'utente corrente, si seleziona la riga con timestamp più vicino a $t$ (riga 21). Il risultato è una tupla \texttt{(user\_ID, item\_ID, context)} (riga 25), che viene concatenata al dataset finale (riga 26).
+
 \subsection{Negative sampling}
-Il task per un recommender system su questo dataset è prevedere se un'applicazione Android è rilevante per un utente in un determinato contesto. In MDF sono presenti solo i log indicanti che un'applicazione era in esecuzione sul dispositivo dell'utente, ad un certo timestamp $t$, in una situazione contestuale $c$. Per eseguire il training di una rete neurale sono però necessari degli esempi negativi, i quali indicano che un'applicazione non era in uso da parte di un utente al tempo $t'$ in una specifica situazione contestuale $c'$. Ad ogni data sample è associata una label, che riassume il contesto dell'utente ad alto livello con i seguenti valori: \texttt{home, school, workplace, externa\_lschool} (quando gli autori del dataset incontravano i volontari), \texttt{free\_time}, e \texttt{holiday}. Questa etichetta non è usata come feature di contesto, ma per fare negative sampling del dataset. 
-L'algoritmo \ref{alg:neg-sampling} mostra il procedimento: per ogni sample $d$ nel dataset $D$ con struttura $(user, item, feedback, context, label)$, vengono identificate le label in cui $d.item$ non è mai stato utilizzato (riga 2). Per ogni label $n$ viene scelto in modo casuale un sample $\in D$ con label = $n$ (riga 4). Di questo sample viene mantenuto solo il contesto $context_{neg}$ scartando user, item e feedback. Il sample negativo $d_{neg}$ è ottenuto concatenando $d.user$ e $d.item$, con 0 (il feedback negativo) e $context_{neg}$ (riga 6).  $d_{neg}$ è aggiunto al dataset $D_{neg}$ che contiene solo esempi negativi (riga 7). In ultimo, il dataset $D_{neg}$ è unito al dataset $D$ ed è eliminata la colonna corrispondente alle label (righe 10 e 11). Il risultato è una dataset con 31 utenti, 338 oggetti, e 73176 feedback, di cui il 66\% con valore 1.
+In MDF sono presenti solo i log indicanti che un'applicazione era in esecuzione sul dispositivo dell'utente, ad un certo timestamp $t$, in una situazione contestuale $c$. Per eseguire il training di una rete neurale sono però necessari degli esempi negativi, i quali indicano che un'applicazione non era in uso da parte di un utente al tempo $t'$ in una specifica situazione contestuale $c'$. Ad ogni data sample è associata una label, che riassume il contesto dell'utente ad alto livello con i seguenti valori: \texttt{home, school, workplace, external school} (quando gli autori del dataset incontravano i volontari), \texttt{free time}, e \texttt{holiday}. Questa etichetta non è usata come feature di contesto, ma per fare negative sampling del dataset. 
+L'algoritmo \ref{alg:neg-sampling} mostra il procedimento: per ogni sample $d$ nel dataset $D$ con struttura $(user, item, feedback, context, label)$, vengono identificate le label in cui $d.item$ non è mai stato utilizzato (riga 2). Per ogni label $n$ viene scelto in modo casuale un sample $\in D$ con label = $n$ (riga 4). Di questo sample viene mantenuto solo il contesto $context_{neg}$ scartando user, item e feedback. Il sample negativo $d_{neg}$ è ottenuto concatenando $d.user$ e $d.item$, con 0 (il feedback negativo) e $context_{neg}$ (riga 6).  $d_{neg}$ è aggiunto al dataset $D_{neg}$ che contiene solo esempi negativi (riga 7). In ultimo il dataset $D_{neg}$ è unito al dataset $D$, ed è eliminata la colonna corrispondente alle label (righe 10 e 11). Il risultato è una dataset con 31 utenti, 338 oggetti, e 73176 feedback, di cui il 66\% con valore 1.
 
 \begin{algorithm}
 \floatname{algorithm}{Algoritmo}
@@ -405,18 +457,18 @@ $D$ with negative samples \\
 
 
 \subsection{Feature di contesto}
-Il dataset MDF contiene numerosi dati estratti dai sensori e dal sistema operativo dei dispositivi personali degli utenti. Di seguito sono elencate le feature selezionate che compongono il contesto fisico e sociale dell'utente.
+Il dataset MDF contiene numerosi dati estratti dai sensori e dal sistema operativo dei dispositivi personali degli utenti. Di seguito sono elencate solo le feature selezionate che compongono il contesto fisico e sociale dell'utente.
 
-\paragraph{Attività utente}  L'attività utente riconosciuta da
- Android Activity Recognition system\footnote{\url{https://developers.google.com/location-context/activity-recognition}};
+\paragraph{Attività utente}  L'attività utente, riconosciuta da
+ Android Activity Recognition system\footnote{\url{https://developers.google.com/location-context/activity-recognition}},
 include sia movimenti a piedi che su mezzi di trasporto. Le attività
 possibili sono \texttt{in vehicle, on bicycle, on foot, running, still, tilting, walking, unknown}. Ogni feature rappresenta la probabilità da 0 a 100 che l'utente stia facendo quell'attività specifica.
 
-\paragraph{Modalità audio} \texttt{ringer mode} indica se la modalità audio del telefono è impostata su silenzioso, vibrazione o suono.
+\paragraph{Modalità audio} \texttt{Ringer mode} indica se la modalità audio del telefono è impostata su silenzioso, vibrazione o suono.
 
 \paragraph{Volume} \texttt{Alarm volume, music volume, notification volume} e \texttt{ring volume}, sono quattro feature con valore tra 0 e 1 che indicano il livello audio della sveglia, della musica, delle notifiche e della suoneria.
 
-\paragraph{Musica} \texttt{music active} è un valore booleano che indica se il dispositivo sta riproducendo della musica, \texttt{speaker on} specifica se è riprodotta dall'altoparlante del telefono, \texttt{headset connected} indica se sono collegate delle cuffie.
+\paragraph{Musica} \texttt{music active} è un valore booleano che indica se il dispositivo sta riproducendo della musica, \texttt{speaker on} specifica se è riprodotta dall'altoparlante del telefono; \texttt{headset connected} indica se sono collegate delle cuffie.
 
 \paragraph{Batteria} Alla batteria sono associate due feature: \texttt{level} indica la carica della batteria (molto bassa, bassa, media, alta, carica), \texttt{charging} è un valore booleano che indica se la batteria si sta ricaricando oppure no.
 
@@ -426,9 +478,9 @@ possibili sono \texttt{in vehicle, on bicycle, on foot, running, still, tilting,
 
 \paragraph{Wifi} La feature \texttt{connected} indica se il dispositivo dell'utente è connesso oppure no ad una rete Wi-Fi.
 
-\paragraph{Data e ora} Dai timestamp dei feedback in formato \texttt{YYYY-MM-DD HH:MM:SS}, sono estratte nuove feature: \texttt{daytime} (mattina, pomeriggio, sera, e notte) \texttt{weekday} e \texttt{is\_weekend}. Oltre a queste, con la libreria Python Holidays\footnote{\url{https://pypi.org/project/holidays/}}, è calcolato se è un giorno di vacanza o no, in base al calendario delle festività italiano.
+\paragraph{Data e ora} Dai timestamp dei feedback in formato \texttt{YYYY-MM-DD HH:MM:SS}, sono estratte nuove feature: \texttt{daytime} (mattina, pomeriggio, sera, e notte) \texttt{weekday} e \texttt{isweekend}. Oltre a queste, con la libreria Python Holidays\footnote{\url{https://pypi.org/project/holidays/}}, è calcolato se è un giorno di vacanza o no, in base al calendario delle festività italiano.
 
-\paragraph{Feature sociali} Le feature sociali sono ottenute dall'ego network descritta nella \autoref{subsec:social-context}. Ci sono quattro feature \texttt{social\_c1, social\_c2, social\_c3} che corrispondono alle cerchie sociali della ego network, e indicano la percentuale di alter vicini all'utente nel momento in cui ha utilizzato un'applicazione. La feature \texttt{layer} indica il posizionamento nella ego network dell'utente da cui è stata ricevuta una raccomandazione. Questo presuppone un dataset diverso per ogni utente perché l'ego network è personale per ogni utente (es. l'utente $u_1$ potrebbe essere uno sconosciuto per $u_2$, ma un amico per $u_3$, e quindi $u_1$ è posizionato su un layer della ego network di $u_2$ diverso dal layer della ego network $u_3$).
+\paragraph{Feature sociali} Le feature sociali sono ottenute dall'ego network descritta nella \autoref{subsec:social-context}. Ci sono quattro feature \texttt{social\_c1, social\_c2, social\_c3, social\_c4}, che corrispondono alle quattro cerchie sociali della ego network. I valori tra 0 e 1 di queste feature indicano la percentuale di alter in ogni cerchia sociale in prossimità dell'utente, nel momento in cui ha utilizzato un'applicazione. La feature \texttt{layer} indica il posizionamento nella ego network dell'utente da cui è stata ricevuta una raccomandazione. Questo presuppone un dataset diverso per ogni utente perché l'ego network è personale (es. l'utente $u_1$ potrebbe essere uno sconosciuto per $u_2$, ma un amico per $u_3$, e quindi $u_1$ è posizionato su un layer della ego network di $u_2$ diverso dal layer della ego network di $u_3$).
 
 \bigskip \noindent
 Le feature categoriche sono codificate con one-hot encoding, mentre le feature numeriche sono normalizzate. Il risultato è un vettore che contiene 63 feature che descrivono il contesto fisico dell'utente, e 8 feature che descrivono il contesto sociale dell'utente.
@@ -456,10 +508,10 @@ Come per Frappe, il dataset MDF non contiene nessuna informazione sugli utenti. 
 
 \paragraph{User daytime} indica il momento della giornata in cui l'utente ha generato il maggior numero di feedback. Il momento della giornata più popolare è la mattina.
 
-\paragraph{User weekend} indica se l'utente ha generato più feedback in settimana o nel weekend. La maggior parte degli utenti (98\%), ha generato più feedback in settimana.
+\paragraph{User weekend} indica se l'utente ha generato più feedback in settimana o nel weekend. La maggior parte degli utenti (97\%), ha generato più feedback in settimana.
 
 \bigskip \noindent
-Come le feature degli oggetti, anche le feature degli utenti sono tutte variabili categoriche. Vengono codificate con one-hot encoding in un vettore di 27 feature: 14 per user category, 7 per user weekday, 4 per user daytime, 2 per User weekend.
+Come le feature degli oggetti, anche le feature degli utenti sono tutte variabili categoriche. Vengono codificate con one-hot encoding in un vettore di 27 feature: 14 per \texttt{user category}, 7 per \texttt{user weekday}, 4 per \texttt{user daytime}, 2 per \texttt{user weekend}.
 
 Ricapitolando, il dataset MDF processato contiene 73176 data sample, 31 utenti e 338 oggetti. Oltre alle colonne user, item e feedback, il dataset contiene  27 feature degli utenti, 26 feature degli oggetti, e 71 feature di contesto.
 
