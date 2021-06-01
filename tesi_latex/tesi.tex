@@ -329,7 +329,7 @@ La \autoref{fig:ego-array} mostra un esempio del processo di riconoscimento del 
 % 
 \chapter{Dataset} \label{chap:datasets}
 In questo capitolo sono descritti i dataset context-aware usati per valutare il modello moveCARS, e confrontarlo con altre soluzioni stato dell'arte. I risultati sono riportati nel \autoref{chap:risultati}. Uno dei problemi nella valutazione dei CARS, è la scarsità di dataset pubblici che contengono informazioni di contesto ad alta dimensionalità. Molti dataset pubblici infatti, hanno informazioni di contesto limitate unicamente al timestamp dei rating o alla posizione dell'utente, come ad esempio Yelp\footnote{\url{https://www.yelp.com/dataset}}, Nowplaying-RS\footnote{\url{https://zenodo.org/record/3247476\#.YK9FxqgzY2x}}, Travel TripAdvisor\footnote{\url{https://github.com/irecsys/CARSKit/blob/master/context-aware_data_sets/Travel_TripAdvisor_v1.zip}}. Esistono invece dataset privati come CARS \cite{context-aware-deep-learning} e Hearo \cite{latent-context}, che contengono i dati raccolti da esperimenti sul campo, in cui gli utenti interagivano con il proprio telefono con un RS che che raccomandava punti di interesse nelle vicinanze. I rating raccolti sono associati a numerose feature di contesto estratte da sensori mobile come accelerometro, microfono, giroscopio, etc.
-\`E difficile trovare dataset pubblici simili a Hearo e CARS, che caratterizzano il contesto fisico e sociale dell'utente con una grande quantità di feature. Dato che il modello moveCARS si inserisce in un ambiente mobile e pervasivo, ho selezionato due dataset context-aware in cui i feedback impliciti dell'utente corrispondono alle applicazioni in esecuzione sui dispositivi Android degli utenti: (i) My Digital Footprint\footnote{\url{https://github.com/contextkit/MyDigitalFootprint}}, (ii) Frappe\footnote{\url{https://www.baltrunas.info/context-aware}}.
+\`E difficile trovare dataset pubblici simili a Hearo e CARS, che caratterizzano il contesto fisico e sociale dell'utente con una grande quantità di feature. Dato che il modello moveCARS si inserisce in un ambiente mobile e pervasivo, ho selezionato due dataset context-aware in cui i feedback impliciti corrispondono alle applicazioni in esecuzione sui dispositivi Android degli utenti: (i) My Digital Footprint\footnote{\url{https://github.com/contextkit/MyDigitalFootprint}}, (ii) Frappe\footnote{\url{https://www.baltrunas.info/context-aware}}.
 
 \section{Frappe}
 Frappe \cite{frappe} è un dataset di feedback impliciti pubblicamente disponibile collezionato da un sistema di raccomandazione context-aware di applicazioni Android. L'applicazione che monitora l'utilizzo degli smartphone, è stata installata da 957 utenti che hanno utilizzato un totale di 4082 applicazioni. Le informazioni raccolte descrivono la frequenza di utilizzo di un'applicazione da parte di un utente per un periodo di 2 mesi. Il numero totale di feedback presenti è 96203. Il task per un recommender system su questo dataset è prevedere se un'applicazione Android è rilevante per un utente in un determinato contesto.
@@ -337,7 +337,7 @@ Frappe \cite{frappe} è un dataset di feedback impliciti pubblicamente disponibi
 \subsection{Feature di contesto}
 Le feature di contesto descrivono la situazione dell'utente nel momento in cui ha utilizzato un'applicazione Android. Frappe può essere considerato un dataset con un contesto a bassa dimensionalità, e non contiene informazioni raccolte dai sensori dei dispositivi Android. Di seguito sono descritte tutte le feature di contesto presenti nel dataset.
 
-\paragraph{Daytime} è il momento della giornata in cui un'applicazione è stata utilizzata. La giornata è divisa in sette momenti diversi: morning, noon, afternoon, evening, sunset, sunrise, night.
+\paragraph{Daytime} è il momento della giornata in cui un'applicazione è stata utilizzata. La giornata è divisa in sette momenti diversi: mattina, mezzogiorno, pomeriggio, sera, tramonto, alba, notte.
 
 \paragraph{Weekday} è il giorno della settimana in cui un'applicazione è stata utilizzata. I possibili valori sono ovviamente i sette giorni della settimana.
 
@@ -345,15 +345,15 @@ Le feature di contesto descrivono la situazione dell'utente nel momento in cui h
 
 \paragraph{Homework} indica se l'utente si trova al lavoro o a casa. Può assumere tre diversi valori: work, home, unknown.
 
-\paragraph{Weather} descrive la situazione meteo nel momento in cui un'applicazione è stata utilizzata. Può assumere nove valori differenti: sunny, cloudy, foggy, stormy, rainy, snowy, drizzle, sleet, unknown.
+\paragraph{Weather} descrive la situazione meteo nel momento in cui un'applicazione è stata utilizzata. Può assumere nove valori differenti: soleggiato, nuvoloso, nebbioso, temporalesco, piovoso, nevoso, piovigginoso, nevischio, sconosciuto.
 
 \paragraph{Country} indica la nazione in cui si trovava l'utente nel momento in cui ha utilizzato un'applicazione. Ci sono 80 stati diversi, ma il 55\% dei feedback sono stati generati da USA, Spagna e Regno Unito.
 
 \paragraph{City} è un valore numerico che rappresenta la città in cui si trovava l'utente nel momento in cui ha utilizzato un'applicazione. Ci sono 233 città diverse, ma per il 40\% dei feedback la città è sconosciuta.  
 
 \bigskip \noindent
-Delle feature di contesto appena descritte sono eliminate \texttt{homework, country}, e \texttt{city}, perché poco utili a definire il contesto dell'utente. In particolare \texttt{city} è stata eliminata perché contiene troppi valori nulli, ed in corrispondenza di una città sconosciuta spesso anche il valore della feature \texttt{country} è sconosciuto. Anche \texttt{homework} è stato eliminato perché il numero di feedback che hanno la feature \texttt{homework} con valore unknown è pari al 78\%. \texttt{Country} non viene considerata perché la maggior parte dei feedback utente sono associati a poche nazioni, e ci sono un gran numero di nazioni a cui sono associati un numero non sufficiente di feedback.
-Le feature rimaste compongono il contesto: \texttt{daytime, weekday, isweekend, weather}. L'unica di queste feature che può assumere valore unknown è \texttt{weather}. Le righe del dataset in cui \texttt{weather} è unknown sono eliminate. Il risultato è un dataset con 78335 righe, 857 utenti e 3180 oggetti.
+Delle feature di contesto appena descritte sono eliminate \texttt{homework, country}, e \texttt{city} perché poco utili a definire il contesto dell'utente. In particolare \texttt{city} è stata eliminata perché contiene troppi valori nulli, ed in corrispondenza di una città sconosciuta spesso anche il valore della feature \texttt{country} è sconosciuto. Anche \texttt{homework} è stato eliminato perché il numero di feedback che hanno la feature \texttt{homework} con valore sconosciuto è pari al 78\%. \texttt{Country} non viene considerata perché la maggior parte dei feedback utente sono associati a poche nazioni, e ci sono un gran numero di nazioni a cui sono associati un numero non sufficiente di feedback.
+Le feature rimaste compongono il contesto: \texttt{daytime, weekday, isweekend, weather}. L'unica di queste feature che può assumere valore sconosciuto è \texttt{weather}. Le righe del dataset in cui \texttt{weather} è sconosciuto sono eliminate. Il risultato è un dataset con 78335 righe, 857 utenti e 3180 oggetti.
 
 Per quanto riguarda l'encoding, essendo tutte variabili categoriche sono codificate con one-hot encoding. Il vettore del contesto risultato contiene 24 feature: 7 per \texttt{daytime}, 7 per \texttt{weekday}, 8 per \texttt{weather} e 2 per \texttt{isweekend}.
 
@@ -371,7 +371,7 @@ Le feature degli oggetti sono caratteristiche che descrivono le applicazioni usa
   \label{fig:frappe-categories}
 \end{figure}
 
-\paragraph{Language} indica la lingua dell'applicazione ottenuta dal Google Play Store. Dato che il 96\% dei data sample hanno applicazioni in lingua inglese, ho assegnato a tutte le altre lingue il valore other.
+\paragraph{Language} indica la lingua dell'applicazione ottenuta dal Google Play Store. Dato che il 96\% dei campioni hanno applicazioni in lingua inglese, ho assegnato a tutte le altre lingue il valore other.
 
 \paragraph{Cost} indica se l'applicazione è gratuita o a pagamento.
 
@@ -381,7 +381,7 @@ Come per le feature di contesto, anche le feature degli oggetti sono variabili c
 \subsection{Feature degli utenti}
 Il dataset Frappe non contiene nessuna informazione associata agli utenti oltre all'ID dell'utente. Per questo motivo, ho generato le feature degli utenti a partire dalle feature degli oggetti e di contesto.
 
-\paragraph{User category} indica la categoria di applicazioni più utilizzata dall'utente. Come era prevedibile dalla distribuzione delle categorie mostrata in \autoref{fig:frappe-categories}, le categorie preferite dagli utenti sono communication e social.
+\paragraph{User category} indica la categoria di applicazioni più utilizzata dall'utente. Come era prevedibile dalla distribuzione delle categorie mostrata in \autoref{fig:frappe-categories}, le categorie preferite dagli utenti sono Communication e Social.
 
 \paragraph{User weekday} indica il giorno della settimana in cui l'utente ha generato il maggior numero di feedback. I giorni più popolari sono venerdì e sabato.
 
@@ -401,7 +401,7 @@ Ricapitolando, il dataset Frappe processato contiene 78335 data sample, 857 uten
 \section{My Digital Footprint}
 My Digital Footprint (MDF) \cite{mdf} è un nuovo dataset composto da dati di sensori di smartphone, informazioni di prossimità fisica, e interazioni sugli online social network. Il dataset include due mesi di misurazioni e informazioni collezionate dai dispositivi personali di 31 volontari, nel loro ambiente naturale, senza limitare il loro comportamento usuale. I dati raccolti costituiscono un insieme completo di informazioni per descrivere il contesto utente in ambiente mobile. 
 
-Il dataset è organizzato in cartelle, una per ogni utente, che contengono diversi file csv, ognuno contenente misurazioni e informazioni di tipo diverso. Ogni sample in qualsiasi file csv contiene il timestamp in cui è stato acquisito. Alcuni sensori sono stati campionati molto frequentemente, mentre informazioni come il meteo sono state raccolte ogni ora.
+Il dataset è organizzato in cartelle, una per ogni utente, che contengono diversi file csv, ognuno contenente misurazioni e informazioni di tipo diverso. Ogni campione in qualsiasi file csv contiene il timestamp in cui è stato acquisito. Alcuni sensori sono stati campionati molto frequentemente, mentre informazioni come il meteo sono state raccolte ogni ora.
 Di seguito è riportata la struttura delle cartelle:
 \dirtree{%
 .1 MDF.
@@ -420,12 +420,12 @@ Di seguito è riportata la struttura delle cartelle:
 .2 $\dots$.
 }
 \noindent
-L'obiettivo è costruire un unico file csv, in cui ogni riga ha una struttura del tipo \texttt{(user\_ID, item\_ID, context)}, e contiene tutti gli utenti, e gli oggetti che gli utenti hanno consumato in un determinato contesto. Siccome il task di un recommender system su questo dataset è prevedere se un'applicazione Android è rilevante per un utente in un determinato contesto, il punto di partenza per costruire il dataset sono le applicazioni in esecuzione nel file \texttt{running\_apps.csv}. Qui sotto è riportato il codice Python per generare il dataset: 
+L'obiettivo è costruire un unico file csv, in cui ogni riga ha una struttura del tipo \texttt{(user\_ID, item\_ID, context)}. Siccome il task di un recommender system su questo dataset è prevedere se un'applicazione Android è rilevante per un utente in un determinato contesto, il punto di partenza per costruire il dataset sono le applicazioni in esecuzione nel file \texttt{running\_apps.csv}. Qui sotto è riportato il codice Python per generare il dataset: 
 \lstinputlisting[language=Python]{codice/make_mdf.py}
-Per ogni cartella utente (riga 4), si legge il file \texttt{running\_apps.csv} (riga 7). Per ogni timestamp $t$ nel file (riga 15), e per ogni altro file csv nella cartella dell'utente corrente, si seleziona la riga con timestamp più vicino a $t$ (riga 21). Il risultato è una tupla \texttt{(user\_ID, item\_ID, context)} (riga 25), che viene concatenata al dataset finale (riga 26).
+Per ogni cartella utente (riga 4) si legge il file \texttt{running\_apps.csv} (riga 7). Per ogni elemento nel file con timestamp $t$ (riga 15), e per ogni altro file csv nella cartella dell'utente corrente, si seleziona la riga con timestamp più vicino a $t$ (riga 21). Il risultato è una tupla \texttt{(user\_ID, item\_ID, context)} (riga 25) che viene concatenata al dataset finale (riga 26).
 
 \subsection{Negative sampling}
-In MDF sono presenti solo i log indicanti che un'applicazione era in esecuzione sul dispositivo dell'utente, ad un certo timestamp $t$, in una situazione contestuale $c$. Per eseguire il training di una rete neurale sono però necessari degli esempi negativi, i quali indicano che un'applicazione non era in uso da parte di un utente al tempo $t'$ in una specifica situazione contestuale $c'$. Ad ogni data sample è associata una label, che riassume il contesto dell'utente ad alto livello con i seguenti valori: \texttt{home, school, workplace, external school} (quando gli autori del dataset incontravano i volontari), \texttt{free time}, e \texttt{holiday}. Questa etichetta non è usata come feature di contesto, ma per fare negative sampling del dataset. 
+In MDF sono presenti solo i log indicanti che un'applicazione era in esecuzione sul dispositivo dell'utente, ad un certo timestamp $t$, in una situazione contestuale $c$. Per eseguire il training di una rete neurale sono però necessari degli esempi negativi, i quali indicano che un'applicazione non era in uso da parte di un utente al tempo $t'$, in una specifica situazione contestuale $c'$. Ad ogni campione è associata una label, che riassume il contesto dell'utente ad alto livello con i seguenti valori: \texttt{home, school, workplace, external school} (quando gli autori del dataset incontravano i volontari), \texttt{free time}, e \texttt{holiday}. Questa etichetta non è usata come feature di contesto, ma per fare negative sampling del dataset. 
 L'algoritmo \ref{alg:neg-sampling} mostra il procedimento: per ogni sample $d$ nel dataset $D$ con struttura $(user, item, feedback, context, label)$, vengono identificate le label in cui $d.item$ non è mai stato utilizzato (riga 2). Per ogni label $n$ viene scelto in modo casuale un sample $\in D$ con label = $n$ (riga 4). Di questo sample viene mantenuto solo il contesto $context_{neg}$ scartando user, item e feedback. Il sample negativo $d_{neg}$ è ottenuto concatenando $d.user$ e $d.item$, con 0 (il feedback negativo) e $context_{neg}$ (riga 6).  $d_{neg}$ è aggiunto al dataset $D_{neg}$ che contiene solo esempi negativi (riga 7). In ultimo il dataset $D_{neg}$ è unito al dataset $D$, ed è eliminata la colonna corrispondente alle label (righe 10 e 11). Il risultato è una dataset con 31 utenti, 338 oggetti, e 73176 feedback, di cui il 66\% con valore 1.
 
 \begin{algorithm}
