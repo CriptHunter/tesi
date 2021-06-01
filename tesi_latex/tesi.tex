@@ -521,7 +521,18 @@ Ricapitolando, il dataset MDF processato contiene 73176 data sample, 31 utenti e
 % 
 
 \chapter{Risultati} \label{chap:risultati}
+In questo capitolo sono riportati i risultati sui dataset Frappe e MDF. Per prima cosa sono spiegati i modelli di confronto e il motivo per cui sono stati scelti, secondariamente è spiegata la scelta della metrica di confronto. Poi sono riportati i risultati dei dataset sui modelli con la metrica di confronto. In ultimo sono riportati i tempi di esecuzione su dispositivi mobili.
 
+\section{Modelli di confronto}
+Per valutare le prestazioni di moveCARS sono stati scelti alcuni dei modelli nello stato dell'arte, in particolare:
+\begin{enumerate}
+\item \textit{ALS}: Ho scelto questo modello per valutare la differenza di prestazioni su task di classificazione, tra un algoritmo di matrix factorization
+e i modelli basati su deep learning. Ho utilizzato l'algoritmo ALS della libreria Python Implicit\footnote{\url{https://github.com/benfred/implicit}}. Questo progetto fornisce le implementazioni di diversi algoritmi popolari per dataset con feedback impliciti, con supporto a multi-threading su CPU e kernel GPU. 
+\item \textit{NeuMF:} Ho scelto questo modello come algoritmo base di deep learning. Sarà utile per valutare la differenza di prestazioni con ALS, e per valutare l'importanza del contesto nella produzione di raccomandazioni. Questo è infatti l'unico algoritmo di deep learning senza nessuna informazione di contesto. Ho implementato il modello con la libreria Keras, seguendo il codice pubblicamente disponibile degli autori originali.
+\item \textit{ECAM NeuMF:} Delle tre varianti context-aware di NeuMF (ECAM NeuMF, UCAM NeuMF, HCAM NeuMF), ho scelto ECAM NeuMF che utilizza un vettore di contesto esplicito senza modifiche. Nonostante sia la versione meno performante delle tre varianti, è anche l'unica plausibile per essere implementata su dispositivi mobili. Questo modello servirà come confronto diretto con moveCARS dato che i due modelli potranno usare le stesse feature di contesto. Gli autori del modello non hanno rilasciato il codice sorgente o dettagli sull'implementazione. Per questo motivo ho implementato ECAM NeuMF in Keras, a partire da NeuMF.
+\end{enumerate}
+
+\section{AUC}
 
 % 
 %			CAPITOLO 6: Conclusioni e sviluppi futuri
