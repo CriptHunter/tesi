@@ -8,8 +8,9 @@
 \setcounter{secnumdepth}{3}  % numerare subsubsec
 \newcommand{\myparagraph}[1]{\paragraph{#1}\mbox{}\\} % paragrafo che va a capo
 \usepackage[htt]{hyphenat} % manda a capo typewriter font
-
 \usepackage{dirtree} % per fare gerarchie delle cartelle
+\usepackage{booktabs}
+\usepackage{multirow}
 
 % per colorare il codice
 \usepackage{listings}
@@ -153,7 +154,7 @@ Organizzazione tesi...
 \chapter{Stato dell'arte}
 \label{chap:stato_arte}
 
-\input{capitoli/stato_arte.tex}
+%\input{capitoli/stato_arte.tex}
 
 % 
 %			CAPITOLO 3: Lavoro svolto
@@ -523,16 +524,86 @@ Ricapitolando, il dataset MDF processato contiene 73176 data sample, 31 utenti e
 \chapter{Risultati} \label{chap:risultati}
 In questo capitolo sono riportati i risultati sui dataset Frappe e MDF. Per prima cosa sono spiegati i modelli di confronto e il motivo per cui sono stati scelti, secondariamente è spiegata la scelta della metrica di confronto. Poi sono riportati i risultati dei dataset sui modelli con la metrica di confronto. In ultimo sono riportati i tempi di esecuzione su dispositivi mobili.
 
-\section{Modelli di confronto}
-Per valutare le prestazioni di moveCARS sono stati scelti alcuni dei modelli nello stato dell'arte, in particolare:
+\section{Modelli di confronto} \label{sec:comp-model}
+Per valutare le prestazioni di moveCARS ho scelto tre modelli collaborative-filtering stato dell'arte:
 \begin{enumerate}
 \item \textit{ALS}: Ho scelto questo modello per valutare la differenza di prestazioni su task di classificazione, tra un algoritmo di matrix factorization
 e i modelli basati su deep learning. Ho utilizzato l'algoritmo ALS della libreria Python Implicit\footnote{\url{https://github.com/benfred/implicit}}. Questo progetto fornisce le implementazioni di diversi algoritmi popolari per dataset con feedback impliciti, con supporto a multi-threading su CPU e kernel GPU. 
-\item \textit{NeuMF:} Ho scelto questo modello come algoritmo base di deep learning. Sarà utile per valutare la differenza di prestazioni con ALS, e per valutare l'importanza del contesto nella produzione di raccomandazioni. Questo è infatti l'unico algoritmo di deep learning senza nessuna informazione di contesto. Ho implementato il modello con la libreria Keras, seguendo il codice pubblicamente disponibile degli autori originali.
-\item \textit{ECAM NeuMF:} Delle tre varianti context-aware di NeuMF (ECAM NeuMF, UCAM NeuMF, HCAM NeuMF), ho scelto ECAM NeuMF che utilizza un vettore di contesto esplicito senza modifiche. Nonostante sia la versione meno performante delle tre varianti, è anche l'unica plausibile per essere implementata su dispositivi mobili. Questo modello servirà come confronto diretto con moveCARS dato che i due modelli potranno usare le stesse feature di contesto. Gli autori del modello non hanno rilasciato il codice sorgente o dettagli sull'implementazione. Per questo motivo ho implementato ECAM NeuMF in Keras, a partire da NeuMF.
+\item \textit{NeuMF:} Ho scelto questo modello come algoritmo base di deep learning non context-aware. \`E stato utile 
+per valutare l'impatto del contesto nella produzione di raccomandazioni, confrontandolo con la sua variante context-aware ECAM NeuMF e con moveCARS. \`E infatti l'unico algoritmo di deep learning selezionato senza informazioni di contesto. Ho implementato il modello con la libreria Keras, seguendo il codice pubblicamente disponibile sul profilo GitHub\footnote{\url{https://github.com/hexiangnan/neural_collaborative_filtering}} di Xiangnan He, uno degli autori di \cite{NCF} in cui il modello è descritto.
+\item \textit{ECAM NeuMF:} Delle tre varianti context-aware di NeuMF (ECAM, UCAM, HCAM), ho scelto ECAM NeuMF che utilizza un vettore di contesto esplicito senza modifiche. Nonostante sia la versione meno performante delle tre varianti, è anche l'unica plausibile per essere implementata su dispositivi mobili. Questo modello è utile per un confronto diretto con moveCARS dato che i due modelli utilizzano lo stesso insieme di feature di contesto. Gli autori del modello non hanno rilasciato il codice sorgente o dettagli sull'implementazione. Per questo motivo ho implementato ECAM NeuMF in Keras, a partire da NeuMF.
 \end{enumerate}
 
 \section{AUC}
+Una curva ROC (receiver operating characteristic) è un grafico che mostra le prestazioni di un modello di classificazione binario a tutte le possibili soglie di classificazione. Questa curva traccia due parametri: (i) True Positive Rate (TPR), (ii) False Positive Rate (FPR). I due parametri sono definiti come:
+$$
+TPR = \frac{TP}{TP+FN}
+$$
+
+$$
+FPR = \frac{FP}{FP+TN}
+$$
+in cui $TP$ sono gli esempi positivi correttamente classificati come positivi, $TN$ sono gli esempi negativi correttamente classificati come negativi, $FP$ sono gli esempi negativi erroneamente classificati come positivi, $FN$ sono gli esempi positivi erroneamente classificati come negativi. Una curva ROC traccia $TPR$ e $FPR$ a diverse soglie di classificazione. Abbassando la soglia di classificazione il modello classifica più oggetti come positivi, aumentando di conseguenza i falsi positivi e i veri positivi. 
+
+AUC è l'area sottostante alla curva ROC. Quest'area è sempre rappresentata da un valore tra 0 e 1 (così come sia TPR che FPR possono variare tra 0 a 1), e l'idea è cercare di massimizzare l'area, in modo tale da avere il più alto $TPR$ possibile e il più basso $FPR$ possibile per una data soglia. Ne consegue che il classificatore binario peggiore possibile ha un AUC pari a zero, ciò significa che fa predizioni al contrario. Un classificatore con AUC pari a 0.5 risponde in modo casuale, mentre un classificatore con AUC pari ad uno risponde in modo perfetto. Il valore dell'AUC può anche essere visto come la probabilità che il modello sia in grado di distinguere tra la classe positiva e la classe negativa. La \autoref{fig:auc} mostra in blu la curva ROC di un classificatore casuale, in viola quella di un buon classificatore, e in verde quella di un classificatore ottimo. 
+
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.60]{immagini/AUC.jpg}
+  \caption{Curve ROC per tre classificatori con prestazioni diverse}
+  \cite{auc-picture}
+  \label{fig:auc}
+\end{figure}
+
+L'AUC è da preferire a metriche più semplici come l'accuracy perchè possiede due proprietà fondamentali:
+
+\begin{enumerate}
+\item \textit{Invarianza di scala:} L'AUC non dipende dalla scala delle predizioni. Moltiplicando l'output del modello per un fattore casuale, la forma della curva ROC e l'AUC non cambiano. Solo la soglia cambia modificando la scala.
+\item \textit{Invarianza alla soglia:} L'AUC misura la qualità delle predizioni del modello indipendentemente dalla soglia di classificazione scelta.
+\end{enumerate}
+
+Per le proprietà elencate, ho scelto di usare l'AUC come metrica di paragone tra moveCARS e i modelli proposti nella \autoref{sec:comp-model}.
+
+\section{K-Fold Cross-Validation}
+La convalida incrociata è una delle tecniche di ricampionamento dei dati più utilizzata per stimare l'errore di predizione dei modelli e  per regolare i parametri del modello. Nella $k$-fold cross-validation, il dataset $D$ è partizionato in $k$ insiemi disgiunti approssimativamente della stessa dimensione. In questo contesto, ``fold" si riferisce al numero di sottoinsiemi che risultano dal partizionamento del dataset originale. Questo partizionamento viene eseguito selezionando casualmente esempi da $D$ senza rimpiazzo. Il modello è addestrato utilizzando $k-1$ sottoinsiemi che congiuntamente rappresentano il training set. Successivamente, le prestazioni del modello sono calcolate sul sottoinsieme rimanente denotato come test test. Il processo è ripetuto fino a quando tutti i $k$ sottoinsiemi sono stati usati come test set. La media delle $k$ prestazioni misurate sui $k$ test set costituisce il risultato della convalida incrociata \cite{k-fold}. La \autoref{fig:kfold} illustra il processo per $k=10$, cioè 10-fold cross-validation. Nel primo fold, il primo sottoinsieme funge da test set $D_{val}$ e i rimanenti nove sottoinsiemi costituiscono il training set. Nel secondo fold, il secondo sottoinsieme è il test set e i rimanenti sottoinsiemi sono il training set, e così via.
+
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.40]{immagini/kfold.png}
+  \caption{10-fold cross-validation. Il dataset è diviso in modo casuale in dieci sottoinsiemi disgiunti, ognuno contenente il 10\% dei dati}
+  \cite{k-fold}
+  \label{fig:kfold}
+\end{figure}
+
+Non esiste una regola formale per selezionare il valore corretto di $k$, i valori più comuni sono $k=5$ (l'80\% dei dati è usato come training set), oppure $k=10$ (il 90\% dei dati è usato come training set). Al crescere di $k$ la dimensione del training set aumenta, mentre la dimensione del test set diminuisce. In questa tesi per il tuning dei modelli e per misurare le prestazioni effettive ho usato $k=10$.
+
+\section{Grid search}
+Un iperparametro di un modello è una caratteristica esterna al modello il cui valore non può essere stimato dai dati. Il valore dell'iperparametro va impostato prima di iniziare il processo di apprendimento. In contrasto, un parametro è una caratteristica interna al modello e il suo valore può essere stimato dai dati. La grid search è usata per trovare gli iperparametri ottimali di un modello che portano ad ottenere le predizioni più accurate. 
+
+Lo spazio di ricerca della grid search è un volume in cui ogni dimensione rappresenta un iperparametro, ed ogni punto rappresenta una specifica configurazione del modello. Un punto nello spazio di ricerca è un vettore con una valore specifico per ogni iperparametro. L'obiettivo della procedura di ottimizzazione è trovare un vettore che risulta nelle prestazioni migliori del modello sul test set, dopo aver eseguito la fase di apprendimento sul training set. In questa tesi, è stato scelto come modello migliore quello con il valore di AUC più alto.
+
+Di seguito sono riportati gli iperparametri presi in considerazione e i possibili valori che possono assumere:
+
+\begin{table}[]
+\begin{tabular}{@{}lll@{}}
+\toprule
+Modelli                     & Iperparametri  & Valori                       \\ \midrule
+\multirow{3}{*}{ALS}        & Factors        & {[}64, 128, 256, 512{]}      \\
+                            & Regularization & {[}0.01, 0.1, 1, 5, 7, 10{]} \\
+                            & Iteration      & {[}1, 10, 50, 100, 200{]}    \\
+\multirow{3}{*}{NeuMF}      & Epochs         & c                            \\
+                            & Batch size     & c                            \\
+                            & Learn rate     &                              \\
+\multirow{3}{*}{ECAM NeuMF} & Epochs         & c                            \\
+                            & Batch size     & c                            \\
+                            & Learn rate     &                              \\ \midrule
+\multirow{5}{*}{moveCARS}   & Epochs         & c                            \\
+                            & Batch size     & c                            \\
+                            & Learn rate     &                              \\
+                            & Layers         &                              \\
+                            & Neurons        &                             
+\end{tabular}
+\end{table}
 
 % 
 %			CAPITOLO 6: Conclusioni e sviluppi futuri
