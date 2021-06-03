@@ -564,6 +564,9 @@ L'AUC è da preferire a metriche più semplici come l'accuracy perchè possiede 
 
 Per le proprietà elencate, ho scelto di usare l'AUC come metrica di paragone tra moveCARS e i modelli proposti nella \autoref{sec:comp-model}.
 
+\subsection{AUC per ALS}
+Per calcolare l'AUC di una rete neurale come NeuMF, ECAM NeuMF e moveCARS, si divide il dataset $D$, in due sottoinsiemi $D_{train}$ e $D_{val}$. Il modello è addestrato su $D_{train}$ e valutato su $D_{val}$ calcolando l'AUC in base ai valori predetti dalla rete $y_{pred}$ e i valori reali $y_{test}$ nel dataset $D_{val}$.
+
 \section{K-Fold Cross-Validation}
 La convalida incrociata è una delle tecniche di ricampionamento dei dati più utilizzata per stimare l'errore di predizione dei modelli e  per regolare i parametri del modello. Nella $k$-fold cross-validation, il dataset $D$ è partizionato in $k$ insiemi disgiunti approssimativamente della stessa dimensione. In questo contesto, ``fold" si riferisce al numero di sottoinsiemi che risultano dal partizionamento del dataset originale. Questo partizionamento viene eseguito selezionando casualmente esempi da $D$ senza rimpiazzo. Il modello è addestrato utilizzando $k-1$ sottoinsiemi che congiuntamente rappresentano il training set. Successivamente, le prestazioni del modello sono calcolate sul sottoinsieme rimanente denotato come test test. Il processo è ripetuto fino a quando tutti i $k$ sottoinsiemi sono stati usati come test set. La media delle $k$ prestazioni misurate sui $k$ test set costituisce il risultato della convalida incrociata \cite{k-fold}. La \autoref{fig:kfold} illustra il processo per $k=10$, cioè 10-fold cross-validation. Nel primo fold, il primo sottoinsieme funge da test set $D_{val}$ e i rimanenti nove sottoinsiemi costituiscono il training set. Nel secondo fold, il secondo sottoinsieme è il test set e i rimanenti sottoinsiemi sono il training set, e così via.
 
@@ -580,30 +583,61 @@ Non esiste una regola formale per selezionare il valore corretto di $k$, i valor
 \section{Grid search}
 Un iperparametro di un modello è una caratteristica esterna al modello il cui valore non può essere stimato dai dati. Il valore dell'iperparametro va impostato prima di iniziare il processo di apprendimento. In contrasto, un parametro è una caratteristica interna al modello e il suo valore può essere stimato dai dati. La grid search è usata per trovare gli iperparametri ottimali di un modello che portano ad ottenere le predizioni più accurate. 
 
-Lo spazio di ricerca della grid search è un volume in cui ogni dimensione rappresenta un iperparametro, ed ogni punto rappresenta una specifica configurazione del modello. Un punto nello spazio di ricerca è un vettore con una valore specifico per ogni iperparametro. L'obiettivo della procedura di ottimizzazione è trovare un vettore che risulta nelle prestazioni migliori del modello sul test set, dopo aver eseguito la fase di apprendimento sul training set. In questa tesi, è stato scelto come modello migliore quello con il valore di AUC più alto.
+Lo spazio di ricerca della grid search è un volume in cui ogni dimensione rappresenta un iperparametro, ed ogni punto rappresenta una specifica configurazione del modello. Un punto nello spazio di ricerca è un vettore con una valore specifico per ogni iperparametro. L'obiettivo della procedura di ottimizzazione è trovare un vettore che risulta nelle prestazioni migliori del modello sul test set, dopo aver eseguito la fase di apprendimento sul training set. In questa tesi, è stato scelto come modello migliore quello con il valore di AUC più alto. Per maggiore robustezza, l'AUC è calcolata con 5-fold cross validation, scegliendo gli iperparametri che portano ad un AUC più alta su una media di 5 fold. La \autoref{tab:grid-search} mostra gli iperparametri selezionati per il tuning dei modelli, e i possibili valori che possono assumere. Le ultime due colonne riportano il risultato della grid search sui dataset MDF e Frappe. I valori migliori sono utilizzati per la fase di addestramento dei modelli nella sezione boh.
 
-Di seguito sono riportati gli iperparametri presi in considerazione e i possibili valori che possono assumere:
 
 \begin{table}[]
-\begin{tabular}{@{}lll@{}}
+\centering
+\begin{tabular}{@{}lllll@{}}
 \toprule
-Modelli                     & Iperparametri  & Valori                       \\ \midrule
-\multirow{3}{*}{ALS}        & Factors        & {[}64, 128, 256, 512{]}      \\
-                            & Regularization & {[}0.01, 0.1, 1, 5, 7, 10{]} \\
-                            & Iteration      & {[}1, 10, 50, 100, 200{]}    \\
-\multirow{3}{*}{NeuMF}      & Epochs         & c                            \\
-                            & Batch size     & c                            \\
-                            & Learn rate     &                              \\
-\multirow{3}{*}{ECAM NeuMF} & Epochs         & c                            \\
-                            & Batch size     & c                            \\
-                            & Learn rate     &                              \\ \midrule
-\multirow{5}{*}{moveCARS}   & Epochs         & c                            \\
-                            & Batch size     & c                            \\
-                            & Learn rate     &                              \\
-                            & Layers         &                              \\
-                            & Neurons        &                             
+\textbf{Modelli}                     & \textbf{Iperparametri}  & \textbf{Valori}       & \textbf{MDF} & \textbf{Frappe}                    \\ \midrule 
+\multirow{3}{*}[-11pt]{ALS}        & Fattori        & {[}64, 128, 256, 512{]} & 128 & 64          \\ \addlinespace[1em]
+                            & Regolarizzazione & {[}0.01, 0.1, 1, 5, 7, 10{]}  & 5 & 10  \\  \addlinespace[1em]
+                            & Iterazioni      & {[}1, 10, 50, 100, 200{]}   & 10  & 1   \\  \midrule 
+                            
+\multirow{3}{*}[-12pt]{NeuMF}      & Epoche         & {[}5, 10, 15, 20{]}  & 10 & 5           \\ \addlinespace[1em]
+                            & Batch size     & {[}64, 128, 256{]}          & 64  & 64    \\ \addlinespace[1em]
+                            & Learn rate     & {[}0.0001, 0.001, 0.005, 0.01{]} & 0.001 & 0.001 \\  \midrule 
+                            
+\multirow{3}{*}[-12pt]{ECAM NeuMF} & Epoche         & {[}5, 10, 15, 20{]}    & 10  & 5        \\ \addlinespace[1em]
+                            & Batch size     & {[}64, 128, 256{]} & 256    & 128           \\ \addlinespace[1em]
+                            & Learn rate     & {[}0.0001, 0.001, 0.005, 0.01{]} & 0.001 & 0.001\\   \midrule 
+                            
+\multirow{5}{*}[-24pt]{moveCARS}   & Epoche         & {[}5, 10, 15, 20{]} & 10  & 10             \\ \addlinespace[1em]
+                            & Batch size     & {[}64, 128, 256{]} & 64 & 128        \\  \addlinespace[1em]
+                            & Learn rate     & {[}0.0001, 0.001, 0.005, 0.01{]} & 0.005 & 0.001 \\    \addlinespace[1em]
+                            & Layer nascosti        & {[}3, 4, 5{]} & 3 & 3                    \\ \addlinespace[1em]
+                            & Neuroni        & {[}100, 200, 300{]} & 100 & 200\\           \midrule
 \end{tabular}
+\caption{\label{tab:grid-search}Spazio di ricerca della grid search e risultati su MDF e Frappe}
 \end{table}
+
+\section{Risultati}
+In questa sezione sono riportati i risultati sui dataset MDF e Frappe. Come già detto, la metrica di paragone dei modelli è l'AUC, calcolata con 10-fold cross-validation. Gli iperparametri dei modelli sono impostati al valore migliore calcolato tramite grid search.
+\subsection{Risultati MDF}
+In \autoref{fig:result-mdf} sono riportati i risultati dei modelli sul dataset MDF. Il modello che ha la capacità minore di distinguere le due classi è ALS con un AUC $= 0.7818$. Probabilmente ALS è un modello più adatto per il task di predizione dei $k$ elementi più pertinenti per un utente, piuttosto che per un task di classificazione binaria. Inoltre l'utilizzo di un'applicazione Android è molto dipendente dal contesto, ALS utilizza invece solo informazioni su utenti e oggetti. NeuMF ha ottenuto un risultato migliore di ALS raggiungendo un AUC pari a 0.9212, dimostrando che una rete neurale è più adatta per un task di classificazione. La differenza di AUC con ECAM NeuMF è marcata, dimostrando che integrare informazioni contestuali nel processo di raccomandazione può portare a prestazioni migliori. Il modello moveCARS ha un AUC più alta di NeuMF e ALS, ma leggermente più bassa di quella di ECAM NeuMF. C'è da considerare però che moveCARS non ha le restrizioni di ECAM NeuMF descritte in \autoref{}, e inoltre le informazioni su utenti e oggetti associate a MDF sono piuttosto scarse. Per questi motivi considero il risultato di moveCARS su MDF ottimo, nonostante non si sia rivelato il modello migliore.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{immagini/mdf_test_results.pdf}
+  \caption{Risultati sul dataset MDF}
+  \label{fig:result-mdf}
+\end{figure}
+
+In \autoref{fig:result-movecars-mdf} il modello moveCARS è addestrato sul dataset MDF con feature differenti per valutare l'impatto del conteso sulle raccomandazioni. In particolare viene addestrato con le seguenti combinazioni di feature: (i) solo feature di utenti e oggetti, (ii) feature di utenti, oggetti e contesto sociale, (iii) feature di utenti, oggetti e contesto fisico, (iiii) feature di utenti, oggetti, contesto fisico e contesto sociale. 
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{immagini/moveCARS_diff_features.pdf}
+  \caption{Risultati di moveCARS sul dataset MDF. Il modello è addestrato su feature differenti per valutare l'impatto del contesto sulle raccomandazioni}
+  \label{fig:result-movecars-mdf}
+\end{figure}
+
+
+
+
+
+\subsection{Risultati Frappe}
 
 % 
 %			CAPITOLO 6: Conclusioni e sviluppi futuri
