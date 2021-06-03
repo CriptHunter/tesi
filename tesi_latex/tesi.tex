@@ -565,7 +565,42 @@ L'AUC è da preferire a metriche più semplici come l'accuracy perchè possiede 
 Per le proprietà elencate, ho scelto di usare l'AUC come metrica di paragone tra moveCARS e i modelli proposti nella \autoref{sec:comp-model}.
 
 \subsection{AUC per ALS}
-Per calcolare l'AUC di una rete neurale come NeuMF, ECAM NeuMF e moveCARS, si divide il dataset $D$, in due sottoinsiemi $D_{train}$ e $D_{val}$. Il modello è addestrato su $D_{train}$ e valutato su $D_{val}$ calcolando l'AUC in base ai valori predetti dalla rete $y_{pred}$ e i valori reali $y_{test}$ nel dataset $D_{val}$.
+Per calcolare l'AUC di una rete neurale si divide il dataset $D$ in due sottoinsiemi $D_{train}$ e $D_{val}$. Il modello è addestrato su $D_{train}$ e valutato su $D_{val}$ calcolando l'AUC in base ai valori predetti dalla rete $y_{pred}$ e i valori reali $y_{test}$ nel dataset $D_{val}$. Per gli algoritmi di matrix factorization come ALS, la divisione in train e test della matrice originale avviene mascherando una percentuale dei feedback positivi dalla matrice originale. L'AUC è poi calcolata sulla lista prodotta delle $k$ migliori raccomandazioni, o sull'errore di ricostruzione della matrice prodotta da ALS rispetto alla matrice originale.
+Per confrontare ALS con gli altri modelli ho seguito l'approccio suggerito in \cite{auc-als}, che punta a calcolare l'AUC solo per gli utenti che hanno avuto uno o più feedback mascherati, al posto che su tutta la matrice. L'algoritmo \ref{alg:auc-als} riporta lo pseudocodice della procedura. Gli input sono una matrice $D_{train}$ che corrisponde alla matrice originale $D$ con una percentuale di feedback positivi alterati in feedback negativi, $D_{test}$ che è una matrice i cui feedback positivi corrispondono ai feedback mascherati da $D_{train}$, e $D_{pred}$ che è la matrice ricostruita dal modello ALS dopo essere stato addestrato su $D_{train}$. L'output è l'AUC di ALS su $D$. L'algoritmo inizia creando una lista di tutti gli utenti che hanno almeno un feedback alterato (riga 1). Per ogni utente $u$ nella lista degli utenti alterati (riga 2), si trovano i vettori $u_{train}$, $u_{test}$ e $u_{pred}$ che corrispondono alla riga dell'utente $u$ nelle matrici $D_{train}$, $D_{test}$ e $D_{pred}$ (righe 3, 4, 5). Poi viene generato un vettore di indici $u_{idx}$ che denota le posizioni in $u_{train}$ che hanno feedback negativo (riga 6). Il motivo per cui si fa questo è che non vanno considerati nel calcolo dell'AUC i feedback positivi noti in fase di training che sono zero in $u_{test}$. Dei vettori $u_{test}$ e $u_{pred}$ vengono considerati solo gli elementi in posizione $u_{idx}$ (righe 7, 8). A questo punto viene calcolata con la funzione $auc\_score$, l'AUC per l'utente $u$ tra $u_{test}$ e $u_{pred}$ (riga 9). Il risultato $u_{auc}$ è sommato all'AUC globale (riga 10). Calcolata l'AUC per tutti gli utenti $u$, l'AUC globale viene ritornata (riga 12).
+
+\begin{algorithm}
+\floatname{algorithm}{Algoritmo}
+\caption{AUC per ALS}
+\label{alg:auc-als}
+ \hspace*{\algorithmicindent}
+  \textbf{Input:} \\
+  \hspace*{\algorithmicindent}
+  $D_{train}$ - $users \times items$ matrix with masked user-item interactions \\
+  \hspace*{\algorithmicindent}
+  $D_{test}$ - $users \times items$ matrix containing masked interactions from $D_{train}$ \\
+  \hspace*{\algorithmicindent}
+  $D_{pred}$ - $users \times items$ matrix containing predicted feedbacks \\
+ \hspace*{\algorithmicindent} \textbf{Output:} $AUC$ \\ 
+\begin{algorithmic}[1]
+
+\STATE $altered\_users \leftarrow$ list of users that have at least one item masked
+\FORALL{$u \in altered\_users$} 
+  \STATE $u_{train} \leftarrow$ user $u$ feedbacks in $D_{train}$
+  \STATE $u_{test} \leftarrow$ user $u$ feedbacks in $D_{test}$
+  \STATE $u_{pred} \leftarrow$ user $u$ feedbacks in $D_{pred}$
+  \STATE $u_{idx} \leftarrow$ indices where $u_{train} = 0$
+  \STATE $u_{test} \leftarrow$  $u_{test}$ elements with indices in $u_{idx}$
+  \STATE $u_{pred} \leftarrow$  $u_{pred}$ elements with indices in $u_{idx}$
+  \STATE $u_{AUC} \leftarrow auc\_score(u_{test}, u_{pred})$
+  \STATE $AUC = AUC + u_{AUC}$ 
+\ENDFOR
+
+\STATE Return $AUC/altered\_user.length$
+
+\end{algorithmic}
+\end{algorithm}
+
+
 
 \section{K-Fold Cross-Validation}
 La convalida incrociata è una delle tecniche di ricampionamento dei dati più utilizzata per stimare l'errore di predizione dei modelli e  per regolare i parametri del modello. Nella $k$-fold cross-validation, il dataset $D$ è partizionato in $k$ insiemi disgiunti approssimativamente della stessa dimensione. In questo contesto, ``fold" si riferisce al numero di sottoinsiemi che risultano dal partizionamento del dataset originale. Questo partizionamento viene eseguito selezionando casualmente esempi da $D$ senza rimpiazzo. Il modello è addestrato utilizzando $k-1$ sottoinsiemi che congiuntamente rappresentano il training set. Successivamente, le prestazioni del modello sono calcolate sul sottoinsieme rimanente denotato come test test. Il processo è ripetuto fino a quando tutti i $k$ sottoinsiemi sono stati usati come test set. La media delle $k$ prestazioni misurate sui $k$ test set costituisce il risultato della convalida incrociata \cite{k-fold}. La \autoref{fig:kfold} illustra il processo per $k=10$, cioè 10-fold cross-validation. Nel primo fold, il primo sottoinsieme funge da test set $D_{val}$ e i rimanenti nove sottoinsiemi costituiscono il training set. Nel secondo fold, il secondo sottoinsieme è il test set e i rimanenti sottoinsiemi sono il training set, e così via.
@@ -624,7 +659,7 @@ In \autoref{fig:result-mdf} sono riportati i risultati dei modelli sul dataset M
   \label{fig:result-mdf}
 \end{figure}
 
-In \autoref{fig:result-movecars-mdf} il modello moveCARS è addestrato sul dataset MDF con feature differenti per valutare l'impatto del conteso sulle raccomandazioni. In particolare viene addestrato con le seguenti combinazioni di feature: (i) solo feature di utenti e oggetti, (ii) feature di utenti, oggetti e contesto sociale, (iii) feature di utenti, oggetti e contesto fisico, (iiii) feature di utenti, oggetti, contesto fisico e contesto sociale. 
+In \autoref{fig:result-movecars-mdf} il modello moveCARS è addestrato sul dataset MDF con feature differenti per valutare l'impatto del contesto sulle raccomandazioni. In particolare viene addestrato con le seguenti combinazioni di feature: (i) solo feature di utenti e oggetti, (ii) feature di utenti, oggetti e contesto sociale, (iii) feature di utenti, oggetti e contesto fisico, (iiii) feature di utenti, oggetti, contesto fisico e contesto sociale. Si può notare che il modello addestrato solo su feature di utenti e oggetti ha un AUC molto bassa, pari a 0.7119. Cioè è dovuto alla scarsità di feature che non descrivono in modo esaustivo gli utenti e gli oggetti. Aggiungendo il contesto sociale, che indica il tipo di persone in prossimità dell'utente nel momento in cui ha utilizzato un'applicazione, l'AUC aumenta a 0.7767. Ovviamente le informazioni di contesto sociale non sono sufficienti a descrivere interamente la situazione contestuale di un utente. Aggiungendo il contesto fisico alle feature di utenti e oggetti, l'AUC aumenta a 0.9583. Ciò dimostra ancora una volta che il contesto ha un effetto molto rilevante sulle raccomandazioni. Combinando il contesto fisico è sociale si ottiene l'AUC migliore, pari a 0.9731. Questa è un'indicazione che utilizzare più informazioni contestuali può migliorare ulteriormente le raccomandazioni.
 
 \begin{figure}
   \centering
@@ -634,10 +669,14 @@ In \autoref{fig:result-movecars-mdf} il modello moveCARS è addestrato sul datas
 \end{figure}
 
 
-
-
-
 \subsection{Risultati Frappe}
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{immagini/frappe_test_results.pdf}
+  \caption{Risultati di moveCARS sul dataset MDF. Il modello è addestrato su feature differenti per valutare l'impatto del contesto sulle raccomandazioni}
+  \label{fig:result-movecars-mdf}
+\end{figure}
+
 
 % 
 %			CAPITOLO 6: Conclusioni e sviluppi futuri
