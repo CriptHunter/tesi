@@ -20,7 +20,7 @@ do
     do
         echo -ne "Running test $k/$N_BENCHMARK\r"
         adb shell am start -S -n $BENCHMARK_APP --es args $ARGS > /dev/null 2>&1 # run benchmark app on Android device
-        sleep 120  # wait otherwise it doesn't print anything in the logcat...
+        sleep 60  # wait otherwise it doesn't print anything in the logcat...
     done
     adb logcat -d | grep --line-buffered "Average inference" > ${MODEL_NAMES[i]} # write logcat on file
     adb logcat -c # clear log cat

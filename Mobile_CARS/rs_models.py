@@ -9,6 +9,7 @@ from implicit.als import AlternatingLeastSquares
 import numpy as np
 from sklearn.model_selection import KFold
 from tqdm import tqdm
+from sklearn.preprocessing import MinMaxScaler
 
 from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import precision_score
@@ -39,9 +40,9 @@ def NeuMF(param):
     mlp_vector = Concatenate()([mlp_user_latent, mlp_item_latent])
     
     # dense layers
-    dense = Dense(200, name='fully_connected_1')(mlp_vector)
-    dense_2 = Dense(100, name='fully_connected_2')(dense)
-    dense_3 = Dense(50, name='fully_connected_3')(dense_2)
+    dense = Dense(200, activation='relu', name='fully_connected_1')(mlp_vector)
+    dense_2 = Dense(100, activation='relu', name='fully_connected_2')(dense)
+    dense_3 = Dense(50, activation='relu', name='fully_connected_3')(dense_2)
 
     # Concatenate MF and MLP parts
     predict_vector = Concatenate()([mf_vector, dense_3])
@@ -78,9 +79,9 @@ def ECAM_NeuMF(param):
     mlp_vector = Concatenate()([mlp_user_latent, mlp_item_latent, context_input])
     
     # dense layers
-    dense = Dense(200, name='fully_connected_1')(mlp_vector)
-    dense_2 = Dense(100, name='fully_connected_2')(dense)
-    dense_3 = Dense(50, name='fully_connected_3')(dense_2)
+    dense = Dense(200, activation='relu', name='fully_connected_1')(mlp_vector)
+    dense_2 = Dense(100, activation='relu', name='fully_connected_2')(dense)
+    dense_3 = Dense(50, activation='relu', name='fully_connected_3')(dense_2)
 
     # Concatenate MF and MLP parts
     predict_vector = Concatenate()([mf_vector, dense_3])
@@ -201,6 +202,72 @@ def mf_AUC(model, train, test):
     train_dense = np.array(train.todense())
     test_dense = np.array(test.todense())
     pred_dense = np.dot(model.item_factors, model.user_factors.T)
+    
+    # fill altered_user list
+    for user in range(np.shape(test_dense)[1]):
+        test_user = test_dense[:, user]
+        if 1 in test_user: # check if user has items altered
+            altered_users.append(user)
+
+    auc = 0
+
+    for user in altered_users:
+        train_user = train_dense[:, user] # get ratings in train set for one user
+        zero_idx = np.where(train_user == 0) # find where ratings is zero
+
+        # get predicted values
+        user_vec = pred_dense[:, user]
+        pred_user = user_vec[zero_idx]
+
+        # get actual value in test set
+        user_vec2 = test_dense[:, user]
+        actual_user = user_vec2[zero_idx]
+
+        auc_user = roc_auc_score(actual_user, pred_user)
+        auc = auc + auc_user
+
+
+    return auc/len(altered_users)
+
+
+def mf_AUC2(model, train, test):
+    '''
+    Parameters
+    ----------
+    model : implicit
+        Implicit library MF model
+    train : numpy array
+        (item, user) matrix used to train the model
+    test : numpy array
+        (item, user) matrix with new interactions
+        
+    Returns
+    -------
+    results : float
+        mean AUC between users AUC
+        
+        
+    - selezionare solo utenti che hanno almeno un rating alterato (uno o più rating con valore 1 sono stati messi a 0 nel train set)
+    - per ogni utente alterato:
+        - `idx` = indici nel train set per cui rating == 0, in questo modo evito di calcolare l'AUC su rating con valore 1 nel train set
+        - `pred` = valori dalla matrice predicted con indici in `idx`
+        - `actual` = valori dal test set con indici `idx`
+        - calcolare AUC per l'utente tra `actual` e `pred`
+    - fare media AUC
+    '''
+    altered_users = [] # list of user that has at least one rating with value 1 hidden from the train set
+    train_dense = np.array(train.todense())
+    test_dense = np.array(test.todense())
+    pred_dense = np.dot(model.item_factors, model.user_factors.T)
+    
+    # train and test matrices do not contains ratings as 0 and 1, but as how many time a user
+    # consumed an item, so to calculate AUC that is a binary metric we binarize the matrices
+    train_dense = (train_dense > 0).astype(np.int_)
+    test_dense = (test_dense > 0).astype(np.int_)
+    
+    # scale predicted value between [0 1] because usually they are in a range like [-0.1, 1.1]
+    min_max = MinMaxScaler()
+    pred_dense = min_max.fit_transform(pred_dense)
     
     # fill altered_user list
     for user in range(np.shape(test_dense)[1]):
