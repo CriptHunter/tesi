@@ -273,7 +273,7 @@ Per risolvere i problemi legati all'utilizzo del contesto multidimensionale, vie
 \label{ssec:latent-context}
 \begin{figure}
  \centering
-  \includegraphics[scale=0.65]{immagini/autoencoder.png}
+  \includegraphics[scale=0.50]{immagini/autoencoder.png}
   \caption{Esempio struttura di un autoencoder}
   \cite{hierarchical-context}
   \label{fig:ae}
@@ -349,6 +349,7 @@ In \autoref{fig:context-neumf} è schematizzato il modello NeuMF  esteso per sup
 
 
 \section{Problemi RS client-server}
+% rimuovere le ripetizioni, seguire correzioni prof
 In letteratura la stragrande maggioranza dei RS proposti si basa su un'architettura client-server. Il RS che esegue sul server ha una conoscenza completa di utenti, oggetti e rating. Il client, fisso o mobile, esegue delle query al RS per ricevere raccomandazioni. I problemi nel realizzare un RS context-aware che esegue sul dispositivo locale dell'utente sono principalmente due:
 \begin{enumerate}
  \item I sistemi di raccomandazione mobile hanno una conoscenza solo parziale di utenti, oggetti, e dei feedback che gli utenti hanno lasciato sugli oggetti. Questo è dovuto al fatto che il RS inizialmente è a conoscenza solo dei feedback dell'utente locale, e ne scopre di nuovi tramite comunicazione D2D con altri dispositivi. 
@@ -359,15 +360,11 @@ Più nel dettaglio per gli algoritmi visti in questo capitolo:
 
 
 \myparagraph{ALS}
-Alternating least square (\autoref{subsec:als}) è un algoritmo di matrix factorization per feedback impliciti. L'input di ALS è una matrice $R$ di dimensione $u \times i$ con $u$ numero di utenti, e $i$ numero di oggetti. Un elemento $r_{ui}$ della matrice $R$, indica quante volte l'utente $u$ ha consumato l'oggetto $i$. In ambiente mobile inizialmente la matrice $R$ è vuota perché l'utente non ha espresso nessuna valutazione e non ha incontrato altri utenti. Ogni volta che un nuovo utente o un nuovo oggetto viene scoperto, si aggiunge una nuova riga/colonna alla matrice $R$. Il primo problema di questo algoritmo, e più in generale degli algoritmi di matrix factorization, è l'aggiunta di un nuovo utente/oggetto che comporta un cambiamento nella dimensione della matrice $R$. L'algoritmo deve essere addestrato nuovamente da zero sulla nuova matrice $R$ per poter raccomandare i nuovi oggetti, e tenere conto delle valutazioni dei nuovi utenti. Il secondo problema di MF è l'aggiunta del contesto. Come detto nella \autoref{subsec:multidim}, ogni feature di contesto è una dimensione aggiunta alla matrice dei rating $R$. Per mantenere una complessità computazionale bassa, per i modelli MF context-aware si seleziona un insieme molti limitato di feature contestuali, che potrebbero non rappresentare pienamente il contesto corrente dell'utente.
+L'input di ALS (\autoref{subsec:als}) è una matrice $R$ di dimensione $u \times i$ con $u$ numero di utenti, e $i$ numero di oggetti. In ambiente mobile inizialmente la matrice $R$ è vuota perché l'utente non ha espresso nessuna valutazione e non ha incontrato altri utenti. Ogni volta che un nuovo utente o un nuovo oggetto viene scoperto, si aggiunge una nuova riga/colonna alla matrice $R$. Il primo problema di questo algoritmo, e più in generale degli algoritmi di matrix factorization, è l'aggiunta di un nuovo utente/oggetto che comporta un cambiamento nella dimensione della matrice $R$. \textit{L'algoritmo deve essere addestrato nuovamente da zero} sulla nuova matrice $R$ per poter raccomandare i nuovi oggetti, e tenere conto delle valutazioni dei nuovi utenti. Il secondo problema di MF è l'aggiunta del contesto. Come detto nella \autoref{subsec:multidim}, ogni feature di contesto è una dimensione aggiunta alla matrice dei rating $R$. Per mantenere una complessità computazionale bassa, per i modelli MF context-aware si seleziona un insieme molti limitato di feature contestuali, che potrebbero non rappresentare pienamente il contesto corrente dell'utente.
 
 \myparagraph{NeuMF}
 Neural matrix factorization (\autoref{subsec:ncf}) implementa un RS
-collaborative-filtering con una deep neural network. L'input della 
-rete è una tupla del tipo \texttt{(user\_id, item\_id, rating)}.
-Per essere correttamente processati dalla dalla rete neurale \texttt{user\_id} e \texttt{item\_id} sono convertiti da numeri interi in vettori binari con one-hot encoding. Questi vettori hanno lunghezza pari al numero di 
-user/item, e hanno valore 1 solo in corrispondenza dell'elemento  
-\texttt{user\_id}/\texttt{item\_id}. La dimensione dell'input della rete, e di conseguenza la dimensione dell'input del layer di embedding è da definire a livello di compilazione della rete prima di eseguire il training. Una volta terminato il training, la rete è in grado di predire i rating solo degli stessi utenti/oggetti già presenti durante il training. Questo perché l'input deve avere la stessa dimensione di quella definito a livello di compilazione, e di conseguenza il numero di utenti e oggetti è lo stesso definito a livello di compilazione. Come per ALS, aggiungere un nuovo utente od un nuovo oggetto significa dover compilare di nuovo il modello ed eseguire il training da zero. Questo modello inoltre, come presentato in \cite{NCF} non ha nessun supporto per le feature di contesto.
+collaborative-filtering con una deep neural network. La dimensione dell'input della rete, e di conseguenza la dimensione dell'input del layer di embedding è da definire a livello di compilazione della rete prima di eseguire il training. Una volta terminato il training, la rete è in grado di predire i rating solo degli stessi utenti/oggetti già presenti durante il training. Questo perché l'input deve avere la  dimensione definita a livello di compilazione, e di conseguenza il numero di utenti e oggetti è lo stesso definito a livello di compilazione. Come per ALS, aggiungere un nuovo utente od un nuovo oggetto significa dover compilare di nuovo il modello ed eseguire il training da zero. Questo modello inoltre, come presentato in \cite{NCF} non ha nessun supporto per le feature di contesto.
 
 \myparagraph{Context-aware NeuMF}
-Context-aware neural matrix factorization è un estensione di NeuMF che supporta le feature di contesto. L'input della rete è una tupla del tipo \texttt{(user\_id, item\_id, context, rating)}. Questo modello essendo basato su reti neurali, permette di definire il contesto dell'utente usando un alto numero di feature contestuali, a differenza di MF. Rimangono le stesse limitazioni di NeuMF sull'input, dato che gli ID di utenti e oggetti sono dati in input come vettori in one-hot encoding con dimensione fissata.
+Context-aware neural matrix factorization è un estensione di NeuMF che supporta le feature di contesto. Rimangono le stesse limitazioni di NeuMF sull'input, dato che gli ID di utenti e oggetti sono dati in input come vettori in one-hot encoding con dimensione fissata.
