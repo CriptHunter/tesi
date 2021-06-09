@@ -227,7 +227,7 @@ In \autoref{fig:ffnet} è rappresentata la struttura della rete neurale. In ques
 
 \subsection{Training e inferenza} \label{subsec: training}
 \myparagraph{Training}
-Il processo di training di una rete neurale si basa sul trovare un insieme di pesi nella rete che permettano di risolvere nel modo migliore possibile un problema specifico. Il processo di training è iterativo, il che significa che procede passo dopo passo con piccoli aggiornamenti nei pesi del modello ad ogni iterazione, migliorando le performance del modello. Il processo di training iterativo di una rete neurale risolve un problema di ottimizzazione per dei parametri, (i pesi del modello) che ha come risultato un errore minimo durante la valutazione degli esempi nel training dataset. In ambiente mobile e pervasivo inizialmente il numero di esempi nel training dataset è limitato, e non rappresenta la conoscenza globale su tutti gli utenti, oggetti e rating. Questo non è un problema per moveCARS che può iniziare il training sui sample disponibili, per poi riprenderlo in un secondo momento quando il device utente tramite comunicazione D2D avrà scoperto nuovi sample. Questo è possibile per la struttura dell'input della rete neurale. L'input è un vettore formato dalla concatenazione di \texttt{user\_features, item\_features, physical\_context, social\_context}, la cui dimensione è fissata. Infatti utenti, oggetto e contesto sono definiti da un insieme di feature che non cambia nel tempo. Non è quindi necessario ridefinire il modello ogni volta che il numero di utenti o oggetti cambia, cioè quando sono scoperti nuovi utenti od oggetti.
+Il processo di training di una rete neurale si basa sul trovare un insieme di pesi nella rete che permettano di risolvere nel modo migliore possibile un problema specifico. Il processo di training è iterativo, il che significa che procede passo dopo passo con piccoli aggiornamenti nei pesi del modello ad ogni iterazione, migliorando le performance del modello. Il processo di training iterativo di una rete neurale risolve un problema di ottimizzazione per dei parametri, (i pesi del modello) che ha come risultato un errore minimo durante la valutazione degli esempi nel training dataset. In ambiente mobile e pervasivo inizialmente il numero di esempi nel training dataset è limitato, e non rappresenta la conoscenza globale su tutti gli utenti, oggetti e rating. Questo non è un problema per moveCARS che può iniziare il training sui campioni disponibili, per poi riprenderlo in un secondo momento quando il device utente tramite comunicazione D2D avrà scoperto nuovi campioni. Questo è possibile per la struttura dell'input della rete neurale. L'input è un vettore formato dalla concatenazione di \texttt{user\_features, item\_features, physical\_context, social\_context}, la cui dimensione è fissata. Infatti utenti, oggetto e contesto sono definiti da un insieme di feature che non cambia nel tempo. Non è quindi necessario ridefinire il modello ogni volta che il numero di utenti o oggetti cambia, cioè quando sono scoperti nuovi utenti od oggetti.
 
 \myparagraph{Inferenza}
 Il task per un sistema di raccomandazione che fa classificazione è determinare se un utente è interessato ad un oggetto in una situazione descritta dal contesto fisico e sociale. La rete restituisce valore 1 se l'oggetto è rilevante, 0 altrimenti. Nel caso di moveCARS utenti e oggetti non sono definiti con degli ID numerici, come nei metodi collaborative filtering, ma da feature che li caratterizzano. Il task di moveCARS quindi può essere riformulato in modo più specifico come prevedere se all'utente con feature \texttt{user\_feature} interessa un oggetto con feature \texttt{item\_feature}, nel contesto fisico \texttt{physical\_context}, e nel contesto sociale \texttt{social\_context}.
@@ -295,7 +295,7 @@ Una ego network è una rete sociale composta da un individuo chiamato ego, e dal
 \subsubsection{Modellare il contesto sociale dell'utente}
 Per modellare il contesto sociale di un utente in ambiente mobile, si caratterizzano le interazioni sociali usando le seguenti sorgenti di dati: (i) chiamate telefoniche e log degli SMS, (ii) dati di prossimità, e (iii) attività svolte dall'utente sugli online social networks (OSN).
 
-Il primo step per costruire l'ego network di un individuo è stimare la forza dei legami sociali con i suoi alter. Un buon indicatore della forza delle relazioni sociale tra due persone è data dal numero di interazioni che le due persone hanno avuto in passato. Basandosi su questa considerazione, per modellare la forza dei legami sociali dell'utente online, sono prese in considerazione diverse attività svolte dall'utente su OSN, inclusi commenti, reazioni (come ``mi piace") e persone menzionate. Formalmente, la forza dei legami sociali virtuali tra l'ego $e$ ed uno dei suoi alter $a$, $\omega_{osn}(e,a)$ è calcolata nel modo seguente:
+Il primo step per costruire la ego network di un individuo è stimare la forza dei legami sociali con i suoi alter. Un buon indicatore della forza delle relazioni sociale tra due persone è data dal numero di interazioni che le due persone hanno avuto in passato. Basandosi su questa considerazione, per modellare la forza dei legami sociali dell'utente online, sono prese in considerazione diverse attività svolte dall'utente su OSN, inclusi commenti, reazioni (come ``mi piace") e persone menzionate. Formalmente, la forza dei legami sociali virtuali tra l'ego $e$ ed uno dei suoi alter $a$, $\omega_{osn}(e,a)$ è calcolata nel modo seguente:
 \begin{equation}	
 	\omega_{osn}(e,a)=\sum_{v_\in V}I_S (e, a)
 \end{equation}
@@ -331,11 +331,11 @@ Nei prossimi due capitoli sono descritti nel dettaglio due dataset context-aware
 %			CAPITOLO 4: Datasets
 % 
 \chapter{Dataset} \label{chap:datasets}
-In questo capitolo sono descritti i dataset context-aware usati per valutare il modello moveCARS, e confrontarlo con altre soluzioni stato dell'arte. I risultati sono riportati nel \autoref{chap:risultati}. Uno dei problemi nella valutazione dei CARS, è la scarsità di dataset pubblici che contengono informazioni di contesto ad alta dimensionalità. Molti dataset pubblici infatti, hanno informazioni di contesto limitate unicamente al timestamp dei rating o alla posizione dell'utente, come ad esempio Yelp\footnote{\url{https://www.yelp.com/dataset}}, Nowplaying-RS\footnote{\url{https://zenodo.org/record/3247476\#.YK9FxqgzY2x}}, Travel TripAdvisor\footnote{\url{https://github.com/irecsys/CARSKit/blob/master/context-aware_data_sets/Travel_TripAdvisor_v1.zip}}. Esistono invece dataset privati come CARS \cite{context-aware-deep-learning} e Hearo \cite{latent-context}, che contengono i dati raccolti da esperimenti sul campo, in cui gli utenti interagivano con il proprio telefono con un RS che che raccomandava punti di interesse nelle vicinanze. I rating raccolti sono associati a numerose feature di contesto estratte da sensori mobile come accelerometro, microfono, giroscopio, etc.
+In questo capitolo sono descritti i dataset context-aware usati per valutare il modello moveCARS, e confrontarlo con altre soluzioni stato dell'arte. I risultati sono riportati nel \autoref{chap:risultati}. Uno dei problemi nella valutazione dei CARS è la scarsità di dataset pubblici che contengono informazioni di contesto ad alta dimensionalità. Molti dataset pubblici infatti, hanno informazioni di contesto limitate unicamente al timestamp dei rating o alla posizione dell'utente, come ad esempio Yelp\footnote{\url{https://www.yelp.com/dataset}}, Nowplaying-RS\footnote{\url{https://zenodo.org/record/3247476\#.YK9FxqgzY2x}}, Travel TripAdvisor\footnote{\url{https://github.com/irecsys/CARSKit/blob/master/context-aware_data_sets/Travel_TripAdvisor_v1.zip}}. Esistono invece dataset privati come CARS \cite{context-aware-deep-learning} e Hearo \cite{latent-context}, che contengono i dati raccolti da esperimenti sul campo, in cui gli utenti interagivano con il proprio telefono con un RS che raccomandava punti di interesse nelle vicinanze. I rating raccolti sono associati a numerose feature di contesto estratte da sensori di apparati mobili come accelerometro, microfono, giroscopio, etc.
 \`E difficile trovare dataset pubblici simili a Hearo e CARS, che caratterizzano il contesto fisico e sociale dell'utente con una grande quantità di feature. Dato che il modello moveCARS si inserisce in un ambiente mobile e pervasivo, ho selezionato due dataset context-aware in cui i feedback impliciti corrispondono alle applicazioni in esecuzione sui dispositivi Android degli utenti: (i) My Digital Footprint\footnote{\url{https://github.com/contextkit/MyDigitalFootprint}}, (ii) Frappe\footnote{\url{https://www.baltrunas.info/context-aware}}.
 
 \section{Frappe}
-Frappe \cite{frappe} è un dataset di feedback impliciti pubblicamente disponibile collezionato da un sistema di raccomandazione context-aware di applicazioni Android. L'applicazione che monitora l'utilizzo degli smartphone, è stata installata da 957 utenti che hanno utilizzato un totale di 4082 applicazioni. Le informazioni raccolte descrivono la frequenza di utilizzo di un'applicazione da parte di un utente per un periodo di 2 mesi. Il numero totale di feedback presenti è 96203. Il task per un recommender system su questo dataset è prevedere se un'applicazione Android è rilevante per un utente in un determinato contesto.
+Frappe \cite{frappe} è un dataset di feedback impliciti pubblicamente disponibile collezionato da un sistema di raccomandazione context-aware di applicazioni Android. L'applicazione che monitora l'utilizzo degli smartphone, è stata installata da 957 utenti che hanno utilizzato un totale di 4082 applicazioni. Le informazioni raccolte descrivono la frequenza di utilizzo di un'applicazione da parte di un utente per un periodo di due mesi. Il numero totale di feedback presenti è 96203. L'obiettivo per un recommender system su questo dataset è prevedere se un'applicazione Android è rilevante per un utente in un determinato contesto.
 
 \subsection{Feature di contesto}
 Le feature di contesto descrivono la situazione dell'utente nel momento in cui ha utilizzato un'applicazione Android. Frappe può essere considerato un dataset con un contesto a bassa dimensionalità, e non contiene informazioni raccolte dai sensori dei dispositivi Android. Di seguito sono descritte tutte le feature di contesto presenti nel dataset.
@@ -346,7 +346,7 @@ Le feature di contesto descrivono la situazione dell'utente nel momento in cui h
 
 \paragraph{Isweekend} indica se un'applicazione è stata utilizzata nel fine settimana oppure in un giorno lavorativo. Può assumere due valori diversi: weekend e workday.
 
-\paragraph{Homework} indica se l'utente si trova al lavoro o a casa. Può assumere tre diversi valori: work, home, unknown.
+\paragraph{Homework} indica se l'utente si trova al lavoro o a casa. Può assumere tre diversi valori: casa, lavoro, sconosciuto.
 
 \paragraph{Weather} descrive la situazione meteo nel momento in cui un'applicazione è stata utilizzata. Può assumere nove valori differenti: soleggiato, nuvoloso, nebbioso, temporalesco, piovoso, nevoso, piovigginoso, nevischio, sconosciuto.
 
@@ -361,16 +361,16 @@ Le feature rimaste compongono il contesto: \texttt{daytime, weekday, isweekend, 
 Per quanto riguarda l'encoding, essendo tutte variabili categoriche sono codificate con one-hot encoding. Il vettore del contesto risultato contiene 24 feature: 7 per \texttt{daytime}, 7 per \texttt{weekday}, 8 per \texttt{weather} e 2 per \texttt{isweekend}.
 
 \subsection{Feedback}
-Qualsiasi dataset per sistemi di raccomandazione ha tre feature fondamentali: user, item, rating. User e item sono valori numerici che identificano univocamente gli utenti e gli oggetti. Il rating in Frappe è il numero di volte in cui un oggetto (un'applicazione) è stato utilizzato da un utente in un determinato contesto. Ad esempio, se una riga del dataset è composta da \texttt{(user:1, item:20, rating:50, daytime:morning, weekday:monday)}, significa che l'utente 1, ha utilizzato l'applicazione 20, il lunedì mattina, 50 volte. Il numero di volte è ottenuto sommando tutti gli utilizzi durante il periodo di raccolta dei dati. Il valore minimo dei rating è 1, il valore massimo 21262, e la media 88.26. Questi rating vanno convertiti in feedback impliciti con valore 0 o 1 per essere compatibili con l'input di moveCARS, come spiegato nella \autoref{subsec:input}. Considerando il valore medio dei rating, e cercando di avere un dataset bilanciato, ho deciso di convertire tutti i rating con valore maggiore di 4 in feedback con valore 1, mentre i rating con valore 4 o minore in feedback negativi. Il risultato è un dataset con il 62\% di feedback positivi (48604 data sample).
+Qualsiasi dataset per sistemi di raccomandazione ha tre feature fondamentali: user, item, rating. User e item sono valori numerici che identificano univocamente gli utenti e gli oggetti. Il rating in Frappe è il numero di volte in cui un oggetto (un'applicazione) è stato utilizzato da un utente in un determinato contesto. Ad esempio, se una riga del dataset è composta da \texttt{(user:1, item:20, rating:50, daytime:morning, weekday:monday)}, significa che l'utente 1, ha utilizzato l'applicazione 20, il lunedì mattina, 50 volte. Il numero di volte è ottenuto sommando tutti gli utilizzi durante il periodo di raccolta dei dati. Il valore minimo dei rating è 1, il valore massimo 21262, e la media 88.26. Questi rating vanno convertiti in feedback impliciti con valore 0 o 1 per essere compatibili con l'input di moveCARS, come spiegato nella \autoref{subsec:input}. Considerando il valore medio dei rating, e cercando di avere un dataset bilanciato, ho deciso di convertire tutti i rating con valore maggiore di 4 in feedback con valore 1, mentre i rating con valore 4 o minore in feedback negativi. Il risultato è un dataset con il 62\% di feedback positivi (48604 campioni).
 
 \subsection{Feature degli oggetti}
 Le feature degli oggetti sono caratteristiche che descrivono le applicazioni usate dagli utenti di Frappe. Il dataset contiene tre feature rilevanti per il task di classificazione: la categoria dell'applicazione, la lingua, e il costo.
 
-\paragraph{Category} è la categoria delle applicazioni ottenuta dal Google Play Store. In Frappe le applicazioni sono divise in 23 categorie che descrivono la loro funzionalità principale (es. videogiochi, notizie, social). Come si può vedere in \autoref{fig:frappe-categories}, il numero di data sample per ogni categoria è molto sbilanciato: la categoria Communication che comprende applicazioni di messaggistica come WhatsApp e Telegram ha più di 20k data sample. La seconda categoria più popolare è Social che comprende applicazioni come Facebook, Instagram e Twitter.
+\paragraph{Category} è la categoria delle applicazioni ottenuta dal Google Play Store. In Frappe le applicazioni sono divise in 23 categorie che descrivono la loro funzionalità principale (es. videogiochi, notizie, social). Come si può vedere in \autoref{fig:frappe-categories}, il numero di campioni per ogni categoria è molto sbilanciato: la categoria Communication che comprende applicazioni di messaggistica come WhatsApp e Telegram ha più di 20k campioni. La seconda categoria più popolare è Social che comprende applicazioni come Facebook, Instagram e Twitter.
 \begin{figure}
   \centering
   \includegraphics[width=\linewidth]{immagini/frappe-category.png}
-  \caption{Numero di data sample per ogni categoria di applicazioni nel dataset Frappe}
+  \caption{Numero di campioni per ogni categoria di applicazioni nel dataset Frappe}
   \label{fig:frappe-categories}
 \end{figure}
 
@@ -399,7 +399,7 @@ Il dataset Frappe non contiene nessuna informazione associata agli utenti oltre 
 \bigskip \noindent
 Come le feature di contesto e degli oggetti, anche le feature degli utenti sono tutte variabili categoriche. Vengono codificate con one-hot encoding in un vettore di 47 feature: 22 per \texttt{user category}, 7 per \texttt{user weekday}, 7 per \texttt{user daytime}, 7 per \texttt{user weather}, 2 per \texttt{user weekend}, 2 per \texttt{user paid apps}.
 
-Ricapitolando, il dataset Frappe processato contiene 78335 data sample, 857 utenti e 3180 oggetti. Oltre alle colonne user, item e feedback, il dataset contiene 47 feature degli utenti, 22 feature degli oggetti, e 24 feature di contesto.
+Ricapitolando, il dataset Frappe processato contiene 78335 campioni, 857 utenti e 3180 oggetti. Oltre alle colonne user, item e feedback, il dataset contiene 47 feature degli utenti, 22 feature degli oggetti, e 24 feature di contesto.
 
 \section{My Digital Footprint}
 My Digital Footprint (MDF) \cite{mdf} è un nuovo dataset composto da dati di sensori di smartphone, informazioni di prossimità fisica, e interazioni sugli online social network. Il dataset include due mesi di misurazioni e informazioni collezionate dai dispositivi personali di 31 volontari, nel loro ambiente naturale, senza limitare il loro comportamento usuale. I dati raccolti costituiscono un insieme completo di informazioni per descrivere il contesto utente in ambiente mobile. 
@@ -423,13 +423,13 @@ Di seguito è riportata la struttura delle cartelle:
 .2 $\dots$.
 }
 \noindent
-L'obiettivo è costruire un unico file csv, in cui ogni riga ha una struttura del tipo \texttt{(user\_ID, item\_ID, context)}. Siccome il task di un recommender system su questo dataset è prevedere se un'applicazione Android è rilevante per un utente in un determinato contesto, il punto di partenza per costruire il dataset sono le applicazioni in esecuzione nel file \texttt{running\_apps.csv}. Qui sotto è riportato il codice Python per generare il dataset: 
+L'obiettivo è costruire un unico file csv, in cui ogni riga ha una struttura del tipo \texttt{(user\_ID, item\_ID, context)}. Siccome l'obiettivo di un recommender system su questo dataset è prevedere se un'applicazione Android è rilevante per un utente in un determinato contesto, il punto di partenza per costruire il dataset sono le applicazioni in esecuzione nel file \texttt{running\_apps.csv}. Qui sotto è riportato il codice Python per generare il dataset: 
 \lstinputlisting[language=Python]{codice/make_mdf.py}
 Per ogni cartella utente (riga 4) si legge il file \texttt{running\_apps.csv} (riga 7). Per ogni elemento nel file con timestamp $t$ (riga 15), e per ogni altro file csv nella cartella dell'utente corrente, si seleziona la riga con timestamp più vicino a $t$ (riga 21). Il risultato è una tupla \texttt{(user\_ID, item\_ID, context)} (riga 25) che viene concatenata al dataset finale (riga 26).
 
 \subsection{Negative sampling}
-In MDF sono presenti solo i log indicanti che un'applicazione era in esecuzione sul dispositivo dell'utente, ad un certo timestamp $t$, in una situazione contestuale $c$. Per eseguire il training di una rete neurale sono però necessari degli esempi negativi, i quali indicano che un'applicazione non era in uso da parte di un utente al tempo $t'$, in una specifica situazione contestuale $c'$. Ad ogni campione è associata una label, che riassume il contesto dell'utente ad alto livello con i seguenti valori: \texttt{home, school, workplace, external school} (quando gli autori del dataset incontravano i volontari), \texttt{free time}, e \texttt{holiday}. Questa etichetta non è usata come feature di contesto, ma per fare negative sampling del dataset. 
-L'algoritmo \ref{alg:neg-sampling} mostra il procedimento: per ogni sample $d$ nel dataset $D$ con struttura $(user, item, feedback, context, label)$, vengono identificate le label in cui $d.item$ non è mai stato utilizzato (riga 2). Per ogni label $n$ viene scelto in modo casuale un sample $\in D$ con label = $n$ (riga 4). Di questo sample viene mantenuto solo il contesto $context_{neg}$ scartando user, item e feedback. Il sample negativo $d_{neg}$ è ottenuto concatenando $d.user$ e $d.item$, con 0 (il feedback negativo) e $context_{neg}$ (riga 6).  $d_{neg}$ è aggiunto al dataset $D_{neg}$ che contiene solo esempi negativi (riga 7). In ultimo il dataset $D_{neg}$ è unito al dataset $D$, ed è eliminata la colonna corrispondente alle label (righe 10 e 11). Il risultato è una dataset con 31 utenti, 338 oggetti, e 73176 feedback, di cui il 66\% con valore 1.
+In MDF sono presenti solo i log indicanti che un'applicazione era in esecuzione sul dispositivo dell'utente, ad un certo timestamp $t$, in una situazione contestuale $c$. Per eseguire il training di una rete neurale sono però necessari degli esempi negativi, i quali indicano che un'applicazione non era in uso da parte di un utente al tempo $t'$, in una specifica situazione contestuale $c'$. Ad ogni campione è associata un'etichetta, che riassume il contesto dell'utente ad alto livello con i seguenti valori: \texttt{home, school, workplace, external school} (quando gli autori del dataset incontravano i volontari), \texttt{free time}, e \texttt{holiday}. Questa etichetta non è usata come feature di contesto, ma per fare negative sampling del dataset. 
+L'algoritmo \ref{alg:neg-sampling} mostra il procedimento: per ogni campione $d$ nel dataset $D$ con struttura $(user, item, feedback, context, label)$, vengono identificate le etichette in cui $d.item$ non è mai stato utilizzato (riga 2). Per ogni etichetta $n$ viene scelto in modo casuale un campione $\in D$ con etichetta = $n$ (riga 4). Di questo campione viene mantenuto solo il contesto $context_{neg}$ scartando user, item e feedback. Il campione negativo $d_{neg}$ è ottenuto concatenando $d.user$ e $d.item$, con 0 (il feedback negativo) e $context_{neg}$ (riga 6).  $d_{neg}$ è aggiunto al dataset $D_{neg}$ che contiene solo esempi negativi (riga 7). In ultimo il dataset $D_{neg}$ è unito al dataset $D$, ed è eliminata la colonna corrispondente alle etichette (righe 10 e 11). Il risultato è una dataset con 31 utenti, 338 oggetti, e 73176 feedback, di cui il 66\% con valore 1.
 
 \begin{algorithm}
 \floatname{algorithm}{Algoritmo}
@@ -483,7 +483,7 @@ possibili sono \texttt{in vehicle, on bicycle, on foot, running, still, tilting,
 
 \paragraph{Data e ora} Dai timestamp dei feedback in formato \texttt{YYYY-MM-DD HH:MM:SS}, sono estratte nuove feature: \texttt{daytime} (mattina, pomeriggio, sera, e notte) \texttt{weekday} e \texttt{isweekend}. Oltre a queste, con la libreria Python Holidays\footnote{\url{https://pypi.org/project/holidays/}}, è calcolato se è un giorno di vacanza o no, in base al calendario delle festività italiano.
 
-\paragraph{Feature sociali} Le feature sociali sono ottenute dall'ego network descritta nella \autoref{subsec:social-context}. Ci sono quattro feature \texttt{social\_c1, social\_c2, social\_c3, social\_c4}, che corrispondono alle quattro cerchie sociali della ego network. I valori tra 0 e 1 di queste feature indicano la percentuale di alter in ogni cerchia sociale in prossimità dell'utente, nel momento in cui ha utilizzato un'applicazione. La feature \texttt{layer} indica il posizionamento nella ego network dell'utente da cui è stata ricevuta una raccomandazione. Questo presuppone un dataset diverso per ogni utente perché l'ego network è personale (es. l'utente $u_1$ potrebbe essere uno sconosciuto per $u_2$, ma un amico per $u_3$, e quindi $u_1$ è posizionato su un layer della ego network di $u_2$ diverso dal layer della ego network di $u_3$).
+\paragraph{Feature sociali} Le feature sociali sono ottenute dalla ego network descritta nella \autoref{subsec:social-context}. Ci sono quattro feature \texttt{social\_c1, social\_c2, social\_c3, social\_c4}, che corrispondono alle quattro cerchie sociali della ego network. I valori tra 0 e 1 di queste feature indicano la percentuale di alter in ogni cerchia sociale in prossimità dell'utente, nel momento in cui ha utilizzato un'applicazione. La feature \texttt{layer} indica il posizionamento nella ego network dell'utente da cui è stata ricevuta una raccomandazione. Questo presuppone un dataset diverso per ogni utente perché la ego network è personale (es. l'utente $u_1$ potrebbe essere uno sconosciuto per $u_2$, ma un amico per $u_3$, e quindi $u_1$ è posizionato su un layer della ego network di $u_2$ diverso dal layer della ego network di $u_3$).
 
 \bigskip \noindent
 Le feature categoriche sono codificate con one-hot encoding, mentre le feature numeriche sono normalizzate. Il risultato è un vettore che contiene 63 feature che descrivono il contesto fisico dell'utente, e 8 feature che descrivono il contesto sociale dell'utente.
@@ -492,13 +492,13 @@ Le feature categoriche sono codificate con one-hot encoding, mentre le feature n
 
 \paragraph{Category}
 è la categoria delle applicazioni ottenuta dal Google Play Store. In
-MDF le applicazioni sono divise in 26 categorie che descrivono la loro funzionalità principale (es. videogiochi, notizie, social). Come si può vedere dalla \autoref{fig:mdf-categories}, anche in MDF il numero di data sample per ogni categoria è molto sbilanciato: la categoria Communication che comprende applicazioni di messaggistica come Whatsapp e Telegram ha più di
-20k data sample. La seconda categoria più popolare è Social che comprende applicazioni come Facebook, Instagram e Twitter. La categoria è codificata con one-hot encoding.
+MDF le applicazioni sono divise in 26 categorie che descrivono la loro funzionalità principale (es. videogiochi, notizie, social). Come si può vedere dalla \autoref{fig:mdf-categories}, anche in MDF il numero di campioni per ogni categoria è molto sbilanciato: la categoria Communication che comprende applicazioni di messaggistica come Whatsapp e Telegram ha più di
+20k campioni. La seconda categoria più popolare è Social che comprende applicazioni come Facebook, Instagram e Twitter. La categoria è codificata con one-hot encoding.
 
 \begin{figure}
   \centering
   \includegraphics[width=\linewidth]{immagini/mdf-category.png}
-  \caption{Numero di data sample per ogni categoria di applicazioni nel dataset My Digital Footprint}
+  \caption{Numero di campioni per ogni categoria di applicazioni nel dataset My Digital Footprint}
   \label{fig:mdf-categories}
 \end{figure}
 
@@ -516,7 +516,7 @@ Come per Frappe, il dataset MDF non contiene nessuna informazione sugli utenti. 
 \bigskip \noindent
 Come le feature degli oggetti, anche le feature degli utenti sono tutte variabili categoriche. Vengono codificate con one-hot encoding in un vettore di 27 feature: 14 per \texttt{user category}, 7 per \texttt{user weekday}, 4 per \texttt{user daytime}, 2 per \texttt{user weekend}.
 
-Ricapitolando, il dataset MDF processato contiene 73176 data sample, 31 utenti e 338 oggetti. Oltre alle colonne user, item e feedback, il dataset contiene  27 feature degli utenti, 26 feature degli oggetti, e 71 feature di contesto.
+Ricapitolando, il dataset MDF processato contiene 73176 campioni, 31 utenti e 338 oggetti. Oltre alle colonne user, item e feedback, il dataset contiene  27 feature degli utenti, 26 feature degli oggetti, e 71 feature di contesto.
 
 
 % 
@@ -625,7 +625,7 @@ Non esiste una regola formale per selezionare il valore corretto di $k$, i valor
 \section{Grid search} \label{sec:grid-search}
 Un iperparametro di un modello è una caratteristica esterna al modello il cui valore non può essere stimato dai dati. Il valore dell'iperparametro va impostato prima di iniziare il processo di apprendimento. All'opposto, un parametro è una caratteristica interna al modello e il suo valore può essere stimato dai dati. La grid search è usata per trovare gli iperparametri ottimali di un modello che portano ad ottenere le predizioni più accurate. 
 
-Uno spazio di ricerca è un volume in cui ogni dimensione rappresenta un iperparametro, ed ogni punto rappresenta una specifica configurazione del modello. Un punto nello spazio di ricerca è un vettore con una valore specifico per ogni iperparametro. La grid search è un processo che testa l'algoritmo selezionato in modo esaustivo, considerando un sottoinsieme definito manualmente dello spazio di ricerca. In pratica, per ogni iperparametro viene specificato manualmente un sottoinsieme di valori che può assumere, e la grid search testa l'agoritmo scelto
+Uno spazio di ricerca è un volume in cui ogni dimensione rappresenta un iperparametro, ed ogni punto rappresenta una specifica configurazione del modello. Un punto nello spazio di ricerca è un vettore con una valore specifico per ogni iperparametro. La grid search è un processo che testa l'algoritmo selezionato in modo esaustivo, considerando un sottoinsieme definito manualmente dello spazio di ricerca. In pratica, per ogni iperparametro viene specificato manualmente un sottoinsieme di valori che può assumere, e la grid search testa l'algoritmo scelto
 considerando tutte le possibili combinazioni di iperparametri.
 In questa tesi, è stata scelta come combinazione di iperparametri migliore quella con cui il modello ottiene un valore di AUC più alto. Per maggiore robustezza, l'AUC è calcolata con 5-fold cross validation, scegliendo gli iperparametri che portano ad un AUC più alta su una media di 5 fold. La \autoref{tab:grid-search} mostra gli iperparametri selezionati per la calibrazione dei modelli, e i possibili valori che possono assumere. Le ultime due colonne riportano il risultato della grid search sui dataset MDF e Frappe.
 
@@ -683,7 +683,7 @@ Nei test precedenti come feature di contesto sociale sono state considerate solo
 
 
 \subsection{Risultati Frappe}
-In \autoref{fig:result-frappe} è riportato un grafico a barre con i risultati dei modelli sul dataset Frappe. Come per MDF l'algoritmo peggiore è ALS con un AUC pari a 0.7576. NeuMF ha un AUC migliore di ALS pari a 0.8143.  Nonostante Frappe sia un dataset con poche informazioni contestuali, il contesto aiuta comunque nel processo di raccomandazione. ECAM NeuMF infatti ha un AUC più alta del 3,16\% rispetto a NeuMF. La differenza meno marcata rispetto al dataset MDF si può spiegare nella minore dimensionalità del contesto di Frappe. MoveCARS ha ottenuto un risultato migliore di NeuMF, con un AUC superiore del 2,46\%, e leggermente inferiore a ECAM NeuMF. Di nuovo si può vedere come con meno restrizioni sull'input moveCARS riesce ad ottenere risultati molto simili a ECAM NeuMF.
+In \autoref{fig:result-frappe} è riportato un grafico a barre con i risultati dei modelli sul dataset Frappe. Come per MDF l'algoritmo peggiore è ALS con un AUC pari a 0.7576. NeuMF ha un AUC migliore di ALS pari a 0.8143.  Nonostante Frappe sia un dataset con poche informazioni contestuali, il contesto aiuta comunque nel processo di raccomandazione. ECAM NeuMF infatti ha un AUC più alta del 3,16\% rispetto a NeuMF. La differenza meno marcata rispetto al dataset MDF si può spiegare nella minore dimensionalità del contesto di Frappe. MoveCARS ha ottenuto un risultato migliore di NeuMF, con un AUC superiore del 2,46\%, e leggermente inferiore a ECAM NeuMF. Di nuovo si può notare come con meno restrizioni sull'input moveCARS riesce ad ottenere risultati molto simili a ECAM NeuMF.
 
 \begin{figure}
   \centering
@@ -693,42 +693,34 @@ In \autoref{fig:result-frappe} è riportato un grafico a barre con i risultati d
 \end{figure}
 
 \section{Test su smartphone}
-L'ultima parte di questo capitolo è dedicata a valutare se il modello moveCARS e gli altri algoritmi proposti come confronto, possono essere eseguiti su dispositivi mobili, e se ci sono differenze in termini di tempo di esecuzione. Non è stata valutata la fase di addestramento dei modelli, che è rimandata agli sviluppi futuri, ma solo il tempo di inizializzazione e di inferenza del modello. Dato che i modelli selezionati sono scritti in Keras con Tensorflow come backend, ho scelto come framework TensorFlow Lite. 
+L'ultima parte di questo capitolo è dedicata a valutare se il modello moveCARS e gli altri algoritmi proposti come confronto possono essere eseguiti su dispositivi mobili, e se ci sono differenze in termini di tempo di esecuzione. Non è stata valutata la fase di addestramento dei modelli, che è rimandata agli sviluppi futuri, ma solo il tempo di inizializzazione e di inferenza del modello. Dato che i modelli selezionati sono scritti in Keras con Tensorflow come backend, ho scelto di fare affidamento su TensorFlow Lite. 
 
 \subsection{TensorFlow Lite}
-TensorFlow Lite\footnote{\url{https://www.tensorflow.org/lite}} (TF Lite) è un framework di deep learning, open-source, multipiattaforma, distribuito con TensorFlow 2.0. TF Lite permette di convertire un modello TensorFlow precedentemente addestrato in un formato speciale che può essere ottimizzato in velocità e memoria occupata. Questo formato speciale può essere distribuito su dispositivi edge come smartphone con Android o iOS, o dispositivi basati su linux come il Raspberry Pi e altri microcontrollori.
+TensorFlow Lite\footnote{\url{https://www.tensorflow.org/lite}} (TF Lite) è un framework di deep learning open-source, multipiattaforma, distribuito con TensorFlow 2.0. TF Lite permette di convertire un modello TensorFlow precedentemente addestrato in un formato speciale che può essere ottimizzato in velocità e memoria occupata. Questo formato speciale può essere distribuito su smartphone con Android o iOS, o dispositivi basati su linux come il Raspberry Pi e altri microcontrollori.
 
 
-TF Lite contiene principalmente due componenti fondamentali:  il convertitore (TF Lite Converter) e l’interprete (TF Lite Interpreter) che può essere installato indipendentemente sul dispositivo su cui si vuole fare inferenza.  Il convertitore ha il compito principale di ottimizzare il modello riducendo le sue dimensioni e aumentando la sua velocità di esecuzione. Sono disponibili diverse ottimizzazioni, ad esempio è possibile ridurre la precisione del modello convertendo tutti i pesi del modello da float a 32 bit a interi a 8 bit. Nei test effettuati in questa tesi sono state mantenute le impostazioni predefinite di TF Lite.
+TF Lite contiene principalmente due componenti fondamentali:  il convertitore (TF Lite Converter) e l’interprete (TF Lite Interpreter) che può essere installato indipendentemente sul dispositivo su cui si vuole fare inferenza.  Il convertitore ha il compito principale di ottimizzare il modello riducendo le sue dimensioni e aumentando la sua velocità di esecuzione. Sono disponibili diverse ottimizzazioni, ad esempio è possibile ridurre la precisione del modello convertendo tutti i pesi del modello da float a 32 bit a interi a 8 bit, a discapito naturalmente dell'accuratezza delle inferenze. Nei test effettuati in questa tesi sono state mantenute le impostazioni predefinite di TF Lite che riducono le dimensioni del modello senza quantizzazione dei pesi o delle attivazioni.
 
-La conversione di un modello TensorFlow in un modello TF Lite compatibile con dispositivi Android si compone di quattro passaggi:
+La conversione di un modello TensorFlow 2.0 in un modello TF Lite compatibile con dispositivi Android si compone di quattro passaggi:
 \begin{enumerate}
-\item \textit{Fase di addestramento:} Il modello TensorFlow viene addestrato su dispositivo fisso con i dati disponibili.
+\item \textit{Fase di addestramento:} Il modello TensorFlow viene addestrato su dispositivo fisso con un dataset, allo stesso modo in cui si procede usualmente.
+
 \item \textit{Salvataggio del modello:} Il modello viene serializzato in un singolo file che contiene i pesi, i bias, e la configurazione di training del modello.
-\item \textit{Conversione del modello:} Il file salvato è dato in input al convertitore TF Lite che converte il modello TensorFlow in un modello TF Lite, e lo salva in un file con estensione tflite.
-\item \textit{Copia sul dispositivo:} il file tflite viene copiato sul dispositivo mobile con  Android Debug Bridge (adb), o con un semplice copia-incolla.
+
+\item \textit{Conversione del modello:} Il file salvato è dato in input al convertitore TF Lite che converte il modello TensorFlow in un modello TF Lite, e lo salva in un nuovo file con estensione tflite.
+
+\item \textit{Copia sul dispositivo:} Il file tflite viene copiato sul dispositivo mobile con  Android Debug Bridge (adb), o con un semplice copia-incolla.
 \end{enumerate}
 
-A questo punto si può utilizzare l'applicazione Android BenchmarkModel\footnote{\url{https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/tools/benchmark}} per valutare i tempi di inizializzazione e inferenza dei modelli. Questa applicazione genera casualmente dei dati per un modello tflite e monitora il tempo che il modello impiega per inizializzare i propri parametri ed essere pronto per fare inferenza, e il tempo effettivo di inferenza sui dati generati casualmente. Ci sono alcuni parametri che possono essere configurati prima di eseguire il benchmark, tra cui:
+\noindent A questo punto si può utilizzare l'applicazione Android BenchmarkModel\footnote{\url{https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/tools/benchmark}} per valutare i tempi di inizializzazione e inferenza dei modelli. Questa applicazione genera casualmente dei campioni compatibili con l'input del modello TF Lite e monitora il tempo che il modello impiega per inizializzare i propri parametri ed essere pronto per fare inferenza, e il tempo effettivo di inferenza sui dati generati casualmente. Ci sono alcuni parametri che possono essere configurati prima di eseguire il benchmark, tra cui:
 \begin{itemize}
 \item \texttt{num\_thread} \\ Il numero di thread usati per eseguire l'interprete di TF Lite. Ho usato il valore 1 in modo da evitare il multithreading.
 \item \texttt{num\_benchmark} \\ Il numero di benchmark eseguiti. Ogni benchmark è la media di \texttt{num\_runs} esecuzioni. Ho usato un numero di benchmark pari a 10.
-\item \texttt{num\_runs} \\ Il numero di esecuzioni in un benchmark. Aumentare questo valore riduce la varianza. Ho usato un numero di esecuzioni pari a 1000.
+\item \texttt{num\_runs} \\ Il numero di esecuzioni in un benchmark. Aumentare questo valore riduce la varianza dei tempi di inizializzazione e inferenza. Ho usato un numero di esecuzioni pari a 1000.
 \item \texttt{use\_gpu} \\ Valore booleano che permette di selezionare se usare oppure no la GPU del dispositivo mobile. Per ragioni di stabilità ho impostato il valore su falso.
 \end{itemize}
 
 \subsection{Risultati benchmark su Android}
-
-\noindent Per valutare nel modo più accurato possibile i modelli, ho usato quattro diversi smartphone Android, su cui sono stati valutati i tempi di inizializzazione e inferenza dei modelli usando l'applicazione Android BenchmarkModel:
-\begin{itemize}
-\item \textit{Google Nexus 5:} \`E un telefono rilasciato sul mercato a fine 2013 dotato di processore Qualcomm Snapdragon 800 e 2GB di memoria RAM. Monta la versione di fabbrica di Android rilasciata da Google, e non ha installate applicazioni aggiuntive che potrebbero influire sui test.
-
-\item \textit{Google Nexus 6:} \`E un telefono rilasciato sul mercato a fine 2014 dotato di processore Qualcomm Snapdragon 805 e 3GB di RAM. Come il Nexus 5, anche il Nexus 6 monta la versione di fabbrica di Android, e non ha installate applicazioni aggiuntive.
-
-\item \textit{Samsung Galaxy S9 Plus:} \'E un telefono rilasciato sul mercato a inizio 2018 dotato di processore Samsung Exynos 9810 e 6GB di RAM. Monta una versione Android modificata da Samsung chiamata Samsung Experience. \`E l'unico tra i dispositivi usati per il confronto ad avere un processore diverso dai Qualcomm Snapdragon.
-
-\item \textit{Xiaomi Mi9T:} \`E un telefono rilasciato sul mercato a inizio 2019 dotato di processore Qualcomm Snapdragon 730  e ha 6GB di memoria RAM. Utilizza una versione Android modificata da Xiaomi chiamata MIUI. \`E il dispositivo più recente tra quelli usati per il benchmark.
-\end{itemize}
 
 \begin{figure}
   \centering
@@ -736,6 +728,17 @@ A questo punto si può utilizzare l'applicazione Android BenchmarkModel\footnote
   \caption{Tempo di inizializzazione in microsecondi dei modelli di deep learning su dispositivi Android}
   \label{fig:init-time}
 \end{figure}
+
+\noindent Per valutare nel modo più accurato possibile i modelli, ho usato quattro diversi smartphone Android, su cui sono stati misurati i tempi di inizializzazione e inferenza dei modelli usando l'applicazione Android BenchmarkModel:
+\begin{itemize}
+\item \textit{Google Nexus 5:} \`E un telefono rilasciato sul mercato a fine 2013 dotato di processore Qualcomm Snapdragon 800 e 2GB di RAM. Monta la versione di fabbrica di Android rilasciata da Google, e non ha installate applicazioni addizionali che potrebbero influire sui test.
+
+\item \textit{Google Nexus 6:} \`E un telefono rilasciato sul mercato a fine 2014 dotato di processore Qualcomm Snapdragon 805 e 3GB di RAM. Come il Nexus 5, anche il Nexus 6 monta la versione di fabbrica di Android, e non ha installate applicazioni aggiuntive.
+
+\item \textit{Samsung Galaxy S9 Plus:} \'E un telefono rilasciato sul mercato a inizio 2018 dotato di processore Samsung Exynos 9810 e 6GB di RAM. Monta una versione Android modificata da Samsung chiamata Samsung Experience. \`E l'unico tra i dispositivi usati per il confronto ad avere un processore diverso dai Qualcomm Snapdragon.
+
+\item \textit{Xiaomi Mi9T:} \`E un telefono rilasciato sul mercato a inizio 2019 dotato di processore Qualcomm Snapdragon 730  e 6GB di RAM. Utilizza una versione Android modificata da Xiaomi chiamata MIUI. \`E il dispositivo più recente tra quelli usati per il benchmark.
+\end{itemize}
 
 \begin{figure}
   \centering
