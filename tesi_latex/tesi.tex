@@ -9,8 +9,8 @@
 \newcommand{\myparagraph}[1]{\paragraph{#1}\mbox{}\\} % paragrafo che va a capo
 \usepackage[htt]{hyphenat} % manda a capo typewriter font
 \usepackage{dirtree} % per fare gerarchie delle cartelle
-\usepackage{booktabs}
-\usepackage{multirow}
+\usepackage{booktabs} % tabelle belle
+\usepackage{multirow} % celle su più righe
 
 % per colorare il codice
 \usepackage{listings}
@@ -39,7 +39,6 @@
 }
 \lstset{style=mystyle}
 
-%\usepackage[section]{placeins}
 
 %
 %			INFORMAZIONI SULLA TESI
@@ -49,15 +48,16 @@
 % CORSO DI LAUREA:
 \def\myCDL{Corso di Laurea magistrale in\\Informatica}
 % TITOLO TESI:
-\def\myTitle{Il titolo\\della tesi}
+\def\myTitle{Studio e sviluppo di un sistema di raccomandazione context-aware per sistemi mobili e pervasivi}
 
 % AUTORE:
 \def\myName{Lorenzo D'Alessandro}
 \def\myMat{Matr. Nr. 939416}
 
 % RELATORE E CORRELATORE:
-\def\myRefereeA{Relatore 1}
-\def\myRefereeB{Correlatore 1}
+\def\myRefereeA{Prof. Elena Pagani}
+\def\myRefereeB{Dott. Franca Delmastro}
+\def\myRefereeC{Dott. Mattia Campana}
 
 % ANNO ACCADEMICO
 \def\myYY{2020-2021}
@@ -524,16 +524,16 @@ Ricapitolando, il dataset MDF processato contiene 73176 campioni, 31 utenti e 33
 % 
 
 \chapter{Risultati} \label{chap:risultati}
-In questo capitolo sono riportati i risultati sui dataset Frappe e MDF. Nella \autoref{sec:comp-model} sono spiegati i modelli scelti per comparare le prestazioni di moveCARS e il motivo della scelta. Nella \autoref{sec:auc} è spiegata la metrica utilizzata per la valutazione dei modelli, e i vantaggi che comporta. Nelle sezioni \ref{sec:k-fold} e \ref{sec:grid-search} sono spiegati $k$-fold e grid search per identificare gli iperparametri migliori dei modelli. Nella \autoref{sec:results} sono riportati i risultati sui dataset presentati nel \autoref{chap:datasets}, e in ultimo i tempi di esecuzione su dispositivi Android.
+In questo capitolo sono riportati i risultati sui dataset Frappe e MDF. Nella \autoref{sec:comp-model} sono spiegati i modelli scelti per comparare le prestazioni di moveCARS e il motivo della selezione. Nella \autoref{sec:auc} è spiegata la metrica utilizzata per la valutazione dei modelli e i vantaggi che comporta. Nelle sezioni \ref{sec:k-fold} e \ref{sec:grid-search} sono spiegati $k$-fold e grid search per identificare gli iperparametri migliori dei modelli. Nella \autoref{sec:results} sono riportati i risultati sui dataset presentati nel \autoref{chap:datasets}, e in ultimo i tempi di esecuzione su dispositivi Android (\autoref{sec:smartphone}).
 
 \section{Modelli di confronto} \label{sec:comp-model}
 Ho comparato il modello moveCARS con tre modelli collaborative-filtering già discussi nel \autoref{chap:stato_arte}:
 \begin{enumerate}
-\item \textit{ALS}: Ho scelto questo modello per valutare la differenza di prestazioni su task di classificazione, tra un algoritmo più classico di matrix factorization
+\item \textit{ALS}: Ho scelto questo modello per valutare la differenza di prestazioni su task di classificazione tra un algoritmo più classico di matrix factorization,
 e i nuovi approcci basati su deep learning. Ho utilizzato l'algoritmo ALS della libreria Python Implicit\footnote{\url{https://github.com/benfred/implicit}}. Questo progetto open-source fornisce le implementazioni di diversi algoritmi popolari per dataset con feedback impliciti, con supporto a multi-threading su CPU e kernel GPU. 
 \item \textit{NeuMF:} Ho scelto questo modello come algoritmo base di deep learning non context-aware. \`E stato utile 
 per valutare l'impatto del contesto nella produzione di raccomandazioni, confrontandolo con la sua variante context-aware ECAM NeuMF e con moveCARS. \`E infatti l'unico algoritmo di deep learning selezionato senza informazioni di contesto. Ho implementato il modello con la libreria Keras, seguendo il codice pubblicamente disponibile sul profilo GitHub di Xiangnan He\footnote{\url{https://github.com/hexiangnan/neural_collaborative_filtering}}, uno degli autori di \cite{NCF} in cui il modello è stato proposto.
-\item \textit{ECAM NeuMF:} Delle tre estensioni context-aware di NeuMF (ECAM, UCAM, HCAM), ho scelto ECAM NeuMF che utilizza un vettore di contesto senza ulteriori elaborazioni. Nonostante ECAM NeuMF sia la versione meno performante delle tre varianti \cite{context-aware-deep-learning}, è anche l'unica plausibile per essere implementata su dispositivi mobili. Questo modello è utile per un confronto diretto con moveCARS dato che i due modelli utilizzano lo stesso insieme di feature di contesto. Gli autori del modello non hanno rilasciato il codice sorgente o dettagli sull'implementazione. Per questo motivo ho implementato ECAM NeuMF in Keras, a partire da NeuMF.
+\item \textit{ECAM NeuMF:} Delle tre estensioni context-aware di NeuMF (ECAM, UCAM, HCAM), ho scelto ECAM NeuMF che utilizza un vettore di contesto senza ulteriori elaborazioni. Nonostante ECAM NeuMF sia la versione meno performante delle tre varianti \cite{context-aware-deep-learning}, è l'unica plausibile per essere implementata su dispositivi mobili. Questo modello è utile per un confronto diretto con moveCARS, dato che i due modelli utilizzano lo stesso insieme di feature di contesto. Gli autori del modello non hanno rilasciato il codice sorgente o dettagli sull'implementazione. Per questo motivo ho implementato ECAM NeuMF in Keras, a partire da NeuMF.
 \end{enumerate}
 
 \section{AUC} \label{sec:auc}
@@ -546,7 +546,7 @@ per valutare l'impatto del contesto nella produzione di raccomandazioni, confron
   \label{fig:auc}
 \end{figure}
 
-Una curva ROC (receiver operating characteristic) è un grafico che mostra le prestazioni di un modello di classificazione binario a tutte le possibili soglie di classificazione. Questa curva traccia due parametri: (i) True Positive Rate (TPR), (ii) False Positive Rate (FPR). I due parametri sono definiti come:
+Una curva ROC (Receiver Operating Characteristic) è un grafico che mostra le prestazioni di un modello di classificazione binario a tutte le possibili soglie di classificazione. Questa curva traccia due parametri: (i) True Positive Rate (TPR), (ii) False Positive Rate (FPR). I due parametri sono definiti come:
 $$
 TPR = \frac{TP}{TP+FN}
 $$
@@ -556,7 +556,7 @@ FPR = \frac{FP}{FP+TN}
 $$
 in cui $TP$ sono gli esempi positivi correttamente classificati come positivi, $TN$ sono gli esempi negativi correttamente classificati come negativi, $FP$ sono gli esempi negativi erroneamente classificati come positivi, $FN$ sono gli esempi positivi erroneamente classificati come negativi. Una curva ROC traccia $TPR$ e $FPR$ a diverse soglie di classificazione. Abbassando la soglia di classificazione il modello classifica più oggetti come positivi, aumentando di conseguenza i falsi positivi e i veri positivi. 
 
-L'AUC è l'area sottostante alla curva ROC. Quest'area è sempre rappresentata da un valore tra 0 e 1, così come sia TPR che FPR possono variare tra 0 e 1. L'obiettivo è cercare di massimizzare l'area, in modo tale da avere il più alto $TPR$ possibile e il più basso $FPR$ possibile per una data soglia. Ne consegue che il classificatore binario peggiore possibile ha un AUC pari a zero, ciò significa che predice sempre il valore opposto a quello reale. Un classificatore con AUC pari a 0.5 risponde in modo casuale, mentre un classificatore con AUC pari ad uno risponde in modo perfetto. Il valore dell'AUC può anche essere visto come la probabilità che il modello sia in grado di distinguere tra la classe positiva e la classe negativa. La \autoref{fig:auc} mostra in blu la curva ROC di un classificatore casuale, in viola quella di un buon classificatore, e in verde quella di un classificatore ottimo. 
+L'AUC è l'area sottostante alla curva ROC. Quest'area è sempre rappresentata da un valore tra 0 e 1, così come sia TPR sia FPR possono variare tra 0 e 1. L'obiettivo è cercare di massimizzare l'area, in modo tale da avere il più alto $TPR$ possibile e il più basso $FPR$ possibile per una data soglia. Ne consegue che il classificatore binario peggiore possibile ha un AUC pari a zero, ciò significa che predice sempre il valore opposto a quello reale. Un classificatore con AUC pari a 0.5 risponde in modo casuale, mentre un classificatore con AUC pari ad uno risponde in modo perfetto. Il valore dell'AUC può anche essere visto come la probabilità che il modello sia in grado di distinguere tra la classe positiva e la classe negativa. La \autoref{fig:auc} mostra in blu la curva ROC di un classificatore casuale, in viola quella di un buon classificatore, e in verde quella di un classificatore ottimo. 
 
 L'AUC possiede due proprietà fondamentali che la rendono un'ottima metrica per valutare le prestazioni generali di un classificatore binario \cite{auc-invariance}:
 
@@ -565,7 +565,7 @@ L'AUC possiede due proprietà fondamentali che la rendono un'ottima metrica per 
 \item \textit{Invarianza alla soglia:} L'AUC misura la qualità delle predizioni del modello indipendentemente dalla soglia di classificazione scelta.
 \end{enumerate}
 
-\noindent Per le proprietà elencate, ho scelto di usare l'AUC come metrica di paragone sia per il tuning degli iperparametri, sia per valutare le prestazioni dei modelli proposti nella \autoref{sec:comp-model} rispetto a moveCARS.
+\noindent Per le proprietà elencate, ho scelto di usare l'AUC come metrica di paragone sia per ottimizzare gli iperparametri, sia per valutare le prestazioni dei modelli proposti nella \autoref{sec:comp-model} rispetto a moveCARS.
 
 \subsection{AUC per ALS}
 Per calcolare l'AUC di una rete neurale si divide il dataset $D$ in due sottoinsiemi $D_{train}$ e $D_{val}$. Il modello è addestrato su $D_{train}$ e valutato su $D_{val}$, calcolando l'AUC in base ai valori predetti dalla rete $y_{pred}$ e i valori reali $y_{val}$ nel dataset $D_{val}$. Per gli algoritmi di matrix factorization come ALS, la divisione in train e test è effettuata mascherando una percentuale dei feedback positivi dalla matrice originale. L'AUC è poi calcolata sulla lista prodotta delle $k$ migliori raccomandazioni (AUC@$k$), o sull'errore di ricostruzione della matrice prodotta da ALS rispetto alla matrice originale.
@@ -573,7 +573,7 @@ Per confrontare ALS con i modelli di deep learning ho seguito l'approccio sugger
 L'algoritmo \ref{alg:auc-als} riporta lo pseudocodice della procedura. Gli input sono una matrice $D_{train}$ che corrisponde alla matrice originale $D$ con una percentuale di feedback positivi alterati in feedback negativi, $D_{test}$ che è una matrice i cui feedback positivi corrispondono ai feedback mascherati da $D_{train}$, e $D_{pred}$ che è la matrice ricostruita dal modello ALS dopo essere stato addestrato su $D_{train}$. 
 L'output è l'AUC di ALS su $D$. L'algoritmo inizia creando una lista di tutti gli utenti che hanno almeno un feedback alterato (riga 1). Per ogni utente $u$ nella lista degli utenti alterati (riga 2), si estraggono i vettori $u_{train}$, $u_{test}$ e $u_{pred}$ che corrispondono alla riga dell'utente $u$ nelle matrici $D_{train}$, $D_{test}$ e $D_{pred}$ (righe 3, 4, 5). 
 Successivamente viene generato un vettore di indici $u_{idx}$ che denota le posizioni in $u_{train}$ che contengono un feedback negativo (riga 6). Il motivo per cui si fa questo è che sono da escludere dal calcolo dell'AUC i feedback positivi noti in fase di training, i quali sono zero in $u_{test}$. Dei vettori $u_{test}$ e $u_{pred}$ vengono quindi considerati solo gli elementi in posizione $u_{idx}$ (righe 7, 8).
-A questo punto viene calcolata con la funzione $auc\_score$, l'AUC per l'utente $u$ tra $u_{test}$ e $u_{pred}$ (riga 9). Il risultato $u_{auc}$ è sommato all'AUC globale (riga 10). Calcolata l'AUC per tutti gli utenti $u$, l'AUC globale viene ritornata (riga 12).
+A questo punto viene calcolata con la funzione $auc\_score$, l'AUC per l'utente $u$ tra $u_{test}$ e $u_{pred}$ (riga 9). Il risultato $u_{auc}$ è sommato all'AUC globale (riga 10). Calcolata l'AUC per tutti gli utenti $u$, l'AUC globale viene ritornata come media di tutte le AUC degli utenti (riga 12).
 
 \begin{algorithm}
 \floatname{algorithm}{Algoritmo}
@@ -606,7 +606,6 @@ A questo punto viene calcolata con la funzione $auc\_score$, l'AUC per l'utente 
 
 \end{algorithmic}
 \end{algorithm}
-
 
 
 \section{K-Fold Cross-Validation} \label{sec:k-fold}
@@ -672,7 +671,7 @@ ECAM NeuMF ha un AUC più alta del 6,15\% rispetto alla sua controparte senza co
 
 La \autoref{fig:result-movecars-mdf} riporta un grafico a barre con i risultati di moveCARS addestrato su sottoinsiemi diversi delle feature di MDF, per valutare l'impatto del contesto sulle raccomandazioni. In particolare viene addestrato con le seguenti combinazioni di feature: (i) solo feature di utenti e oggetti, (ii) feature di utenti, oggetti e contesto sociale, (iii) feature di utenti, oggetti e contesto fisico, (iv) feature di utenti, oggetti, contesto fisico e contesto sociale. Si può notare che il modello addestrato solo su feature di utenti e oggetti ha un AUC molto bassa, pari a 0.7119. Cioè è dovuto alla scarsità di feature che non descrivono in modo esaustivo gli utenti e gli oggetti. Aggiungendo il contesto sociale, che indica il tipo di persone in prossimità dell'utente nel momento in cui ha utilizzato un'applicazione, l'AUC aumenta a 0.7767. Ovviamente le informazioni di contesto sociale non sono sufficienti a descrivere interamente la situazione contestuale di un utente. Aggiungendo il contesto fisico alle feature di utenti e oggetti, l'AUC aumenta a 0.9583. Ciò dimostra ancora una volta che il contesto ha un effetto molto rilevante sulle raccomandazioni. Combinando il contesto fisico è sociale si ottiene l'AUC migliore, pari a 0.9731. Questa è un'indicazione che utilizzare un numero elevato di informazioni contestuali può migliorare ulteriormente le raccomandazioni.
 
-Nei test precedenti come feature di contesto sociale sono state considerate solo \texttt{social\_c1, social\_c2, social\_c3, social\_c4} che descrivono gli alter in prossimità dell'utente nel momento in cui ha utilizzato un'applicazione. Non è stata considerata la feature \texttt{layer} che indica la cerchia sociale dell'utente da cui è stata ricevuta una raccomandazione. Questo perchè aggiungere questa nuova feature significa dover generare un dataset diverso e personale per ogni utente, in cui ogni riga contiene un valore che indica il layer dell'utente da cui è stata ricevuta la raccomandazione. Come ultimo test ho quindi generato un dataset per ogni utente (31 dataset), ogni dataset contiene tutti i campioni disponibili e tutte le feature già descritte, con l'aggiunta della feature \texttt{layer}. Per la valutazione, moveCARS è addestrato su tutti i dataset diversi, e viene memorizzata l'AUC ottenuta su ogni dataset. Di questi valori viene fatta la media per calcolare il risultato finale. L'AUC media è pari a 0.9822, superiore rispetto a l'AUC di moveCARS calcolata precedentemente (0.9731), e superiore all'AUC di ECAM NeuMF (0.9815).
+Nei test precedenti come feature di contesto sociale sono state considerate solo \texttt{social\_c1, social\_c2, social\_c3, social\_c4} che descrivono gli alter in prossimità dell'utente nel momento in cui ha utilizzato un'applicazione. Non è stata considerata la feature \texttt{layer} che indica la cerchia sociale dell'utente da cui è stata ricevuta una raccomandazione. Questo perchè aggiungere questa nuova feature significa dover generare un dataset diverso e personale per ogni utente, in cui ogni riga contiene un valore che indica il layer dell'utente da cui è stata ricevuta la raccomandazione. Come ultimo test ho quindi generato un dataset per ogni utente (31 dataset), ogni dataset contiene tutti i campioni disponibili e tutte le feature già descritte, con l'aggiunta della feature \texttt{layer}. Per la valutazione, moveCARS è addestrato su tutti i dataset degli utenti, e viene memorizzata l'AUC ottenuta su ogni dataset. Di questi valori viene fatta la media per calcolare il risultato finale. L'AUC media è pari a 0.9822, superiore rispetto all'AUC di moveCARS calcolata precedentemente (0.9731), e superiore all'AUC di ECAM NeuMF (0.9815).
 
 \begin{figure}
   \centering
@@ -692,12 +691,11 @@ In \autoref{fig:result-frappe} è riportato un grafico a barre con i risultati d
   \label{fig:result-frappe}
 \end{figure}
 
-\section{Test su smartphone}
-L'ultima parte di questo capitolo è dedicata a valutare se il modello moveCARS e gli altri algoritmi proposti come confronto possono essere eseguiti su dispositivi mobili, e se ci sono differenze in termini di tempo di esecuzione. Non è stata valutata la fase di addestramento dei modelli, che è rimandata agli sviluppi futuri, ma solo il tempo di inizializzazione e di inferenza del modello. Dato che i modelli selezionati sono scritti in Keras con Tensorflow come backend, ho scelto di fare affidamento su TensorFlow Lite. 
+\section{Test su smartphone} \label{sec:smartphone}
+L'ultima parte di questo capitolo è dedicata a valutare se il modello moveCARS e gli altri algoritmi proposti come confronto possono essere eseguiti su dispositivi mobili, e se ci sono differenze in termini di tempo di esecuzione. Non è stata valutata la fase di addestramento dei modelli, che è rimandata agli sviluppi futuri, ma solo il tempo di inizializzazione e di inferenza del modello. Dato che i modelli selezionati sono scritti in Keras con Tensorflow come backend, ho scelto di ricorrere al framework TensorFlow Lite. 
 
 \subsection{TensorFlow Lite}
-TensorFlow Lite\footnote{\url{https://www.tensorflow.org/lite}} (TF Lite) è un framework di deep learning open-source, multipiattaforma, distribuito con TensorFlow 2.0. TF Lite permette di convertire un modello TensorFlow precedentemente addestrato in un formato speciale che può essere ottimizzato in velocità e memoria occupata. Questo formato speciale può essere distribuito su smartphone con Android o iOS, o dispositivi basati su linux come il Raspberry Pi e altri microcontrollori.
-
+TensorFlow Lite\footnote{\url{https://www.tensorflow.org/lite}} (TF Lite) è un framework di deep learning open-source, multipiattaforma, distribuito con TensorFlow 2.0. TF Lite permette di convertire un modello TensorFlow precedentemente addestrato in un formato speciale che può essere ottimizzato in velocità e memoria occupata. Questo formato speciale può essere distribuito su smartphone con Android o iOS, o dispositivi basati su Linux come il Raspberry Pi e altri microcontrollori.
 
 TF Lite contiene principalmente due componenti fondamentali:  il convertitore (TF Lite Converter) e l’interprete (TF Lite Interpreter) che può essere installato indipendentemente sul dispositivo su cui si vuole fare inferenza.  Il convertitore ha il compito principale di ottimizzare il modello riducendo le sue dimensioni e aumentando la sua velocità di esecuzione. Sono disponibili diverse ottimizzazioni, ad esempio è possibile ridurre la precisione del modello convertendo tutti i pesi del modello da float a 32 bit a interi a 8 bit, a discapito naturalmente dell'accuratezza delle inferenze. Nei test effettuati in questa tesi sono state mantenute le impostazioni predefinite di TF Lite che riducono le dimensioni del modello senza quantizzazione dei pesi o delle attivazioni.
 
@@ -707,7 +705,7 @@ La conversione di un modello TensorFlow 2.0 in un modello TF Lite compatibile co
 
 \item \textit{Salvataggio del modello:} Il modello viene serializzato in un singolo file che contiene i pesi, i bias, e la configurazione di training del modello.
 
-\item \textit{Conversione del modello:} Il file salvato è dato in input al convertitore TF Lite che converte il modello TensorFlow in un modello TF Lite, e lo salva in un nuovo file con estensione tflite.
+\item \textit{Conversione del modello:} Il file salvato è dato in input al convertitore TF Lite che converte il modello TensorFlow in un modello TF Lite applicando le ottimizzazioni selezionate, e lo salva in un nuovo file con estensione tflite.
 
 \item \textit{Copia sul dispositivo:} Il file tflite viene copiato sul dispositivo mobile con  Android Debug Bridge (adb), o con un semplice copia-incolla.
 \end{enumerate}
@@ -717,7 +715,7 @@ La conversione di un modello TensorFlow 2.0 in un modello TF Lite compatibile co
 \item \texttt{num\_thread} \\ Il numero di thread usati per eseguire l'interprete di TF Lite. Ho usato il valore 1 in modo da evitare il multithreading.
 \item \texttt{num\_benchmark} \\ Il numero di benchmark eseguiti. Ogni benchmark è la media di \texttt{num\_runs} esecuzioni. Ho usato un numero di benchmark pari a 10.
 \item \texttt{num\_runs} \\ Il numero di esecuzioni in un benchmark. Aumentare questo valore riduce la varianza dei tempi di inizializzazione e inferenza. Ho usato un numero di esecuzioni pari a 1000.
-\item \texttt{use\_gpu} \\ Valore booleano che permette di selezionare se usare oppure no la GPU del dispositivo mobile. Per ragioni di stabilità ho impostato il valore su falso.
+\item \texttt{use\_gpu} \\ Valore booleano che permette di selezionare se usare oppure no la GPU del dispositivo Android. Per ragioni di stabilità ho impostato il valore su falso.
 \end{itemize}
 
 \subsection{Risultati benchmark su Android}
@@ -737,7 +735,7 @@ La conversione di un modello TensorFlow 2.0 in un modello TF Lite compatibile co
 
 \item \textit{Samsung Galaxy S9 Plus:} \'E un telefono rilasciato sul mercato a inizio 2018 dotato di processore Samsung Exynos 9810 e 6GB di RAM. Monta una versione Android modificata da Samsung chiamata Samsung Experience. \`E l'unico tra i dispositivi usati per il confronto ad avere un processore diverso dai Qualcomm Snapdragon.
 
-\item \textit{Xiaomi Mi9T:} \`E un telefono rilasciato sul mercato a inizio 2019 dotato di processore Qualcomm Snapdragon 730  e 6GB di RAM. Utilizza una versione Android modificata da Xiaomi chiamata MIUI. \`E il dispositivo più recente tra quelli usati per il benchmark.
+\item \textit{Xiaomi Mi9T:} \`E un telefono rilasciato sul mercato a inizio 2019 dotato di processore Qualcomm Snapdragon 730  e 6GB di RAM. Monta una versione Android modificata da Xiaomi chiamata MIUI. \`E il dispositivo più recente tra quelli usati per il benchmark.
 \end{itemize}
 
 \begin{figure}
