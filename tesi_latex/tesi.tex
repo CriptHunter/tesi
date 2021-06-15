@@ -61,8 +61,8 @@
 
 % RELATORE E CORRELATORE:
 \def\myRefereeA{Prof. Elena Pagani}
-\def\myRefereeB{Dott. Franca Delmastro}
-\def\myRefereeC{Dott. Mattia Campana}
+\def\myRefereeB{Dr. Franca Delmastro}
+\def\myRefereeC{Dr. Mattia Campana}
 
 % ANNO ACCADEMICO
 \def\myYY{2020-2021}
@@ -138,19 +138,49 @@ Questa sezione, facoltativa, contiene i ringraziamenti.
 
 \chapter{Introduzione}
 \label{cap:introduzione}
+%The increasing computational and sensing capabilities of mobile devices, along with their pervasiveness in our
+%daily lives, have contributed to the rapid expansion and evolution of the Internet at its edge. Here, personal mobile
+%devices can exploit different wireless technologies to establish device-to-device communication channels among
+%them and other smart objects in proximity to autonomously discover new contents available in the environment
+%and provide personalized services to the users.
+%
+%Nowadays we are living surrounded by a plethora of electronic devices that are equipped with a continuously increasing amount of both computational and networking capabilities. In particular, the computational resources of personal
+%5 mobile devices (e.g., smartphones, tablets, and wearables) are comparable or
+%sometimes exceed those of desktop computers of the past years.
 
-Introduzione...
+Al giorno d'oggi siamo circondati da un grande numero di dispositivi mobili dotati di sempre crescenti capacità computazionali e di rete che stanno portando ad una pervasività sempre maggiore dei dispositivi ed un'evoluzione dell'edge internet. In un ambiente pervasivo, i dispositivi personali degli utenti possono sfruttare diverse tecnologie wireless per stabilire una connessione device-to-device (D2D) con altri dispositivi nelle vicinanze e scoprire nuovi contenuti per l'utente. Un sistema di raccomandazione (RS) può essere utile per filtrare i contenuti più adatti ad un utente tra quelli 
+scoperti nelle vicinanze. Non è però semplice estendere le soluzioni esistenti per adattarle alla 
+limitazioni imposte da questo nuovo scenario. I recommender system tradizionali si appoggiano su un'architettura centralizzata (come  un server remoto, o un'infrastruttura cloud), in cui il sistema di raccomandazione esegue sul server, e processa 
+le richieste in arrivo dai client che possono essere dispositivi mobili o fissi. In maniera opposta, un RS per dispositivi mobili non dovrebbe appoggiarsi ad un server esterno, ma sfruttare unicamente le capacità computazionali del dispositvo. Oltre a questo, il task 
+di raccomandazione per un RS pervasivo è diverso rispetto a quello di un RS client/server. Tipicamente un sistema di raccomandazione ha una conoscenza globale di tutti gli utenti e oggetti del sistema, ed impara un modello singolo per generare raccomandazioni per tutti gli utenti. Al contrario in soluzioni distribuite ogni dispositivo potrebbe
+essere a conoscenza solo di una piccola parte dell'informazione globale. Questa conoscenza è inizialmente 
+circoscritta alle sole informazioni sull'utente locale, per poi allargarsi con lo scambio di informazioni 
+tramite comunicazione D2D con altri utenti o dispositivi di altra natura. Di conseguenza, 
+un RS implementato in un ambiente distribuito impara un modello di raccomandazione basato unicamente 
+sulle informazioni raccolte dal suo utente locale. Un'altra fondamentale per un sistema di raccomandazione per dispositivi mobili è il 
+supporto per il contesto utente. Sfruttando i numerosi sensori a bordo dei dispositivi degli utenti è possibile 
+generare un contesto ad alta dimensionalità che caratterizza in modo accurato la situazione dell'utente e permette raccomandazioni più precise. Questi sistemi sono definiti context-aware.
 
-\section{I contenuti}
-\label{sec:contenuti}
+L'obiettivo di questa tesi è lo studio e sviluppo di un nuovo sistema di raccomandazione context-aware basato su un algoritmo di deep learning, e pensato appositamente per dispositivi mobili e pervasivi. L'algoritmo è ideato in modo da fare affidamento sulle sole capacità computazionali del dispositivo e per supportare numerose informazioni contestuali.
 
-Spiegazione problema...
+
 
 
 \section{Organizzazione della tesi}
 \label{sec:organizzazione}
+La tesi è organizzata come segue: 
+\begin{enumerate}
+\item Nel \autoref{chap:stato_arte} sono introdotte le diverse categorie di sistemi di raccomandazione, il concetto di contesto, mostrati alcuni algoritmi stato dell'arte, e discussi i problemi nell'implementazione su dispositivi mobili.
 
-Organizzazione tesi...
+\item Nel \autoref{chap:classificatore} è spiegato nel dettaglio il nuovo sistema di raccomandazione proposto,la sua architettura, i vantaggi e gli svantaggi, e l'insieme di informazioni contestuali proposto.
+
+\item Nel \autoref{chap:datasets} sono descritti i dataset context-aware usati per la valutazione, la selezione e l'encoding delle feature.
+
+\item Nel \autoref{chap:risultati} sono spiegati i modelli selezionati come confronto, la metrica utilizzate, sono commentati i risultati sui dataset proposti, ed eseguiti alcuni test per verificare i tempi di esecuzione su smartphone.
+
+\item Nel \autoref{chap:conclusioni}, infine, vengono tratte le conclusioni sul lavoro svolto e prospettati i possibili sviluppi futuri. 
+\end{enumerate}
+
 
 % 
 %			CAPITOLO 2: Stato dell'arte
@@ -770,14 +800,24 @@ In conclusione, considerando i risultati dei test effettuati su smartphone con p
 \chapter{Conclusioni} \label{chap:conclusioni}
 
 \section{Conclusioni}
+In questo lavoro, il cui obiettivo principale è sviluppare un nuovo sistema di raccomandazione context-aware per dispositivi mobili, sono state affrontate le problematiche relative allo sviluppo e alla valutazione di un sistema di raccomandazione context-aware per dispositivi mobili.
 
-Conclusioni...
+Per prima cosa sono stati analizzati alcuni algoritmi  proposti in letteratura per mostrare che non sono adattabili alle restrizioni proposte da questo nuovo scenario. Per quanto riguarda il contesto, è stato fatto notare come la maggior parte della ricerca sia orientata ad un contesto a bassa dimensionalità, poco descrittivo della situazione utente. Recentemente, sono però stati proposti i primi lavori che mirano ad integrare il contesto ricavato dai sensori di dispositivi mobili nel processo di raccomandazione. 
+
+\`E stato quindi proposto il modello moveCARS, sviluppato tenendo a mente sia le restrizioni di un ambiente distribuito che la necessità di integrare il contesto utente con un alta dimensionalità.
+
+
+Un altro problema riscontrato per quanto riguarda i CARS, è la scarsità di dataset pubblici contenenti informazioni contestuali. In questo lavoro sono stati analizzati i dataset context-aware presenti in letteratura, scegliendo infine due dataset che potessero essere usati per valutare in modo accurato il modello proposto.
+
+Per quanto riguarda la valutazione, moveCARS è stato confrontato con algoritmi context-aware e non presentati in letteratura, dimostrato di ottenere risultati molto simili ma leggermente inferiori agli algoritmi context-aware stato dell'arte. Questo può essere considerato un compromesso accettabile, considerando i vantaggi che moveCARS comporta nell'implementazione su dispositivi mobili rispetto agli altri algoritmi.
+
+L'ultima valutazione ha riguardato i tempi di esecuzione dell'algoritmo moveCARS che ha dimostrato che è possibile svolgere inizializzazione e inferenza del modello direttamente sul dispositivo mobile. I tempi di inferenza molto bassi suggeriscono che è possibile generare raccomandazioni per l'utente quasi in tempo reale direttamente dal suo dispositivo personale.
+
+
 
 \section{Sviluppi futuri}
 
 Sviluppi futuri...
-
-
 
 %
 %			BIBLIOGRAFIA
