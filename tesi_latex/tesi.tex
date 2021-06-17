@@ -82,7 +82,7 @@
 \usepackage[a4paper]{geometry}		% Formato del foglio
 \usepackage[italian]{babel}			% Supporto per l'italiano
 \usepackage[utf8]{inputenc}			% Supporto per UTF-8
-%\usepackage[a-1b]{pdfx}			% File conforme allo standard PDF-A (obbligatorio per la consegna)
+\usepackage[a-1b]{pdfx}			% File conforme allo standard PDF-A (obbligatorio per la consegna)
 
 % Package per la grafica
 \usepackage{graphicx}				% Funzioni avanzate per le immagini
@@ -138,45 +138,34 @@ Questa sezione, facoltativa, contiene i ringraziamenti.
 
 \chapter{Introduzione}
 \label{cap:introduzione}
-%The increasing computational and sensing capabilities of mobile devices, along with their pervasiveness in our
-%daily lives, have contributed to the rapid expansion and evolution of the Internet at its edge. Here, personal mobile
-%devices can exploit different wireless technologies to establish device-to-device communication channels among
-%them and other smart objects in proximity to autonomously discover new contents available in the environment
-%and provide personalized services to the users.
-%
-%Nowadays we are living surrounded by a plethora of electronic devices that are equipped with a continuously increasing amount of both computational and networking capabilities. In particular, the computational resources of personal
-%5 mobile devices (e.g., smartphones, tablets, and wearables) are comparable or
-%sometimes exceed those of desktop computers of the past years.
-
-Al giorno d'oggi siamo circondati da un grande numero di dispositivi mobili dotati di sempre crescenti capacità computazionali e di rete che stanno portando ad una pervasività sempre maggiore dei dispositivi ed un'evoluzione dell'edge internet. In un ambiente pervasivo, i dispositivi personali degli utenti possono sfruttare diverse tecnologie wireless per stabilire una connessione device-to-device (D2D) con altri dispositivi nelle vicinanze e scoprire nuovi contenuti per l'utente. Un sistema di raccomandazione (RS) può essere utile per filtrare i contenuti più adatti ad un utente tra quelli 
-scoperti nelle vicinanze. Non è però semplice estendere le soluzioni esistenti per adattarle alla 
+I dispositivi mobili che ci circondano sono dotati di capacità computazionali e di rete sempre crescenti. Questo incremento, unito alla quantità e alla pervasività di questi dispositivi ha contribuito ad un'evoluzione dell'edge internet. In un ambiente pervasivo, i dispositivi personali degli utenti possono sfruttare diverse tecnologie wireless per stabilire una connessione device-to-device (D2D) con altri dispositivi nelle vicinanze e scoprire nuovi contenuti per l'utente. Un sistema di raccomandazione (RS) può essere utile per filtrare i contenuti più adatti ad un utente tra quelli 
+scoperti nelle vicinanze. Non è però semplice estendere le soluzioni esistenti per adattarle alle 
 limitazioni imposte da questo nuovo scenario. I recommender system tradizionali si appoggiano su un'architettura centralizzata (come  un server remoto, o un'infrastruttura cloud), in cui il sistema di raccomandazione esegue sul server, e processa 
-le richieste in arrivo dai client che possono essere dispositivi mobili o fissi. In maniera opposta, un RS per dispositivi mobili non dovrebbe appoggiarsi ad un server esterno, ma sfruttare unicamente le capacità computazionali del dispositvo. Oltre a questo, il task 
+le richieste in arrivo dai client che possono essere dispositivi mobili o fissi. In maniera opposta, un RS per dispositivi mobili non dovrebbe appoggiarsi ad un server esterno, ma sfruttare unicamente le capacità computazionali del dispositivo. Oltre a questo, il task 
 di raccomandazione per un RS pervasivo è diverso rispetto a quello di un RS client/server. Tipicamente un sistema di raccomandazione ha una conoscenza globale di tutti gli utenti e oggetti del sistema, ed impara un modello singolo per generare raccomandazioni per tutti gli utenti. Al contrario in soluzioni distribuite ogni dispositivo potrebbe
 essere a conoscenza solo di una piccola parte dell'informazione globale. Questa conoscenza è inizialmente 
 circoscritta alle sole informazioni sull'utente locale, per poi allargarsi con lo scambio di informazioni 
-tramite comunicazione D2D con altri utenti o dispositivi di altra natura. Di conseguenza, 
+tramite comunicazione D2D con dispositivi di altri utenti o di diversa natura. Di conseguenza, 
 un RS implementato in un ambiente distribuito impara un modello di raccomandazione basato unicamente 
-sulle informazioni raccolte dal suo utente locale. Un'altra fondamentale per un sistema di raccomandazione per dispositivi mobili è il 
+sulle informazioni raccolte dal suo utente locale. 
+
+Un'altra caratteristica fondamentale per un sistema di raccomandazione per dispositivi mobili è il 
 supporto per il contesto utente. Sfruttando i numerosi sensori a bordo dei dispositivi degli utenti è possibile 
 generare un contesto ad alta dimensionalità che caratterizza in modo accurato la situazione dell'utente e permette raccomandazioni più precise. Questi sistemi sono definiti context-aware.
 
-L'obiettivo di questa tesi è lo studio e sviluppo di un nuovo sistema di raccomandazione context-aware basato su un algoritmo di deep learning, e pensato appositamente per dispositivi mobili e pervasivi. L'algoritmo è ideato in modo da fare affidamento sulle sole capacità computazionali del dispositivo e per supportare numerose informazioni contestuali.
-
-
-
+L'obiettivo di questa tesi è lo studio e sviluppo di un nuovo sistema di raccomandazione context-aware basato su algoritmi di deep learning, e pensato appositamente per dispositivi mobili e pervasivi. L'algoritmo è ideato in modo da fare affidamento sulle sole capacità computazionali del dispositivo e per supportare numerose informazioni che descrivono il contesto dell'utente.
 
 \section{Organizzazione della tesi}
 \label{sec:organizzazione}
 La tesi è organizzata come segue: 
 \begin{enumerate}
-\item Nel \autoref{chap:stato_arte} sono introdotte le diverse categorie di sistemi di raccomandazione, il concetto di contesto, mostrati alcuni algoritmi stato dell'arte, e discussi i problemi nell'implementazione su dispositivi mobili.
+\item Nel \autoref{chap:stato_arte} sono introdotte le diverse categorie di sistemi di raccomandazione, spiegato cosa si intende per contesto, mostrati alcuni algoritmi stato dell'arte, e discussi i problemi dell'implementazione su dispositivi mobili.
 
-\item Nel \autoref{chap:classificatore} è spiegato nel dettaglio il nuovo sistema di raccomandazione proposto,la sua architettura, i vantaggi e gli svantaggi, e l'insieme di informazioni contestuali proposto.
+\item Nel \autoref{chap:classificatore} è spiegato nel dettaglio il nuovo sistema di raccomandazione proposto, la sua architettura, i vantaggi e gli svantaggi, e l'insieme di informazioni contestuali proposto.
 
-\item Nel \autoref{chap:datasets} sono descritti i dataset context-aware usati per la valutazione, la selezione e l'encoding delle feature.
+\item Nel \autoref{chap:datasets} sono presentati i dataset context-aware usati per la valutazione, è descritto l'insieme di feature selezionate, e come è stato fatto il preprocessing e l'encoding di queste feature.
 
-\item Nel \autoref{chap:risultati} sono spiegati i modelli selezionati come confronto, la metrica utilizzate, sono commentati i risultati sui dataset proposti, ed eseguiti alcuni test per verificare i tempi di esecuzione su smartphone.
+\item Nel \autoref{chap:risultati} sono spiegati i modelli selezionati come confronto, la metrica utilizzata, sono commentati i risultati sui dataset proposti, ed eseguiti alcuni test per verificare i tempi di esecuzione su smartphone.
 
 \item Nel \autoref{chap:conclusioni}, infine, vengono tratte le conclusioni sul lavoro svolto e prospettati i possibili sviluppi futuri. 
 \end{enumerate}
@@ -226,7 +215,7 @@ In questa sezione è descritto il sistema di raccomandazione moveCARS. Nella pri
 Solitamente l'input dei modelli collaborative filtering context-aware è composto da tuple \texttt{(user\_ID, item\_ID, rating, context)}, in cui \texttt{user\_ID} è l'utente che ha valutato l'oggetto \texttt{item\_ID} con una valutazione \texttt{rating} in una situazione descritta dal contesto \texttt{context}. Invece di identificare l'oggetto con un valore numerico intero \texttt{item\_ID}, si possono usare delle feature che caratterizzano l'oggetto, esattamente nello stesso modo in cui sono solitamente descritti gli oggetti nei sistemi di raccomandazione content-based. Ad esempio, se si sta sviluppando un RS per consigliare ristoranti agli utenti, si può sostituire il valore \texttt{item\_ID} che identifica il ristorante con delle feature che lo caratterizzano nel dettaglio come il tipo di cibo servito, il prezzo medio, l'atmosfera, se ha sedute all'aperto, etc. Allo stesso modo si può sostituire il valore \texttt{user\_ID} con delle feature che descrivono l'utente. Queste possono essere feature non specifiche come età o genere, o feature specifiche per l'ambiente in cui il RS è implementato. Tornando all'esempio dei ristoranti, si potrebbe chiedere all'utente quanto è disposto a spendere per mangiare fuori e il tipo di cucina preferita. A feature di utente e oggetto si aggiungono le feature del contesto fisico e sociale generate dal modulo di Context modeling. Un'istanza di rating per il modello moveCARS è quindi una tupla \texttt{(user\_features, item\_features, rating, physical\_context, social\_context)}.
 
 \begin{figure}
-  \includegraphics[width=\linewidth]{immagini/ffnet_schema.png}
+  \includegraphics[width=\linewidth]{immagini/ffnet_schema.pdf}
   \caption{Schema di moveCARS}
   \label{fig:ffnet}
 \end{figure}
@@ -258,7 +247,7 @@ Un ottimizzatore è un algoritmo che modifica i pesi del modello in modo da mini
 Epoche e batch size sono due parametri molto importanti da ottimizzare, il numero di epoche e la dimensione della batch size ideali sono calcolate tramite grid search nel \autoref{chap:risultati}. La batch size corrisponde al numero di campioni processati prima di aggiornare i parametri del modello. Il numero di epoche indica quante volte viene presentato alla rete il training set prima di concludere il training.
 
 \bigskip
-In \autoref{fig:ffnet} è rappresentata la struttura della rete neurale. In questo caso il modello ha due layer nascosti ed ogni layer contiene 10 neuroni, eccetto il layer di output che contiene un solo neurone.
+In \autoref{fig:ffnet} è rappresentata la struttura della rete neurale. In questo caso il modello ha due layer nascosti ed ogni layer contiene 6 neuroni, eccetto il layer di output che contiene un solo neurone.
 
 \subsection{Training e inferenza} \label{subsec: training}
 \myparagraph{Training}
@@ -653,7 +642,7 @@ La convalida incrociata è una delle tecniche di ricampionamento dei dati più u
 
 \begin{figure}
   \centering
-  \includegraphics[scale=0.40]{immagini/kfold.png}
+  \includegraphics[scale=0.35]{immagini/kfold.png}
   \caption{10-fold cross-validation. Il dataset è diviso in modo casuale in dieci sottoinsiemi disgiunti, ognuno contenente il 10\% dei dati}
   \cite{k-fold}
   \label{fig:kfold}
@@ -689,7 +678,7 @@ In questa tesi, è stata scelta come combinazione di iperparametri migliore quel
                             & Batch size     & {[}64, 128, 256{]} & 64 & 128        \\  \addlinespace[1em]
                             & Learn rate     & {[}0.0001, 0.001, 0.005, 0.01{]} & 0.005 & 0.001 \\    \addlinespace[1em]
                             & Layer nascosti        & {[}3, 4, 5{]} & 3 & 3                    \\ \addlinespace[1em]
-                            & Neuroni        & {[}100, 200, 300{]} & 100 & 200\\           \midrule
+                            & Neuroni        & {[}100, 200, 300{]} & 100 & 200\\           \bottomrule
 \end{tabular}
 \caption{\label{tab:grid-search}Spazio di ricerca della grid search e risultati su MDF e Frappe}
 \end{table}
@@ -800,24 +789,28 @@ In conclusione, considerando i risultati dei test effettuati su smartphone con p
 \chapter{Conclusioni} \label{chap:conclusioni}
 
 \section{Conclusioni}
-In questo lavoro, il cui obiettivo principale è sviluppare un nuovo sistema di raccomandazione context-aware per dispositivi mobili, sono state affrontate le problematiche relative allo sviluppo e alla valutazione di un sistema di raccomandazione context-aware per dispositivi mobili.
+In questo lavoro, il cui obiettivo principale è sviluppare un nuovo sistema di raccomandazione context-aware per dispositivi mobili, sono state affrontate le problematiche relative allo sviluppo e alla valutazione di un sistema di raccomandazione in questo nuovo ambito che si discosta dal tradizionale paradigma client-server.
 
-Per prima cosa sono stati analizzati alcuni algoritmi  proposti in letteratura per mostrare che non sono adattabili alle restrizioni proposte da questo nuovo scenario. Per quanto riguarda il contesto, è stato fatto notare come la maggior parte della ricerca sia orientata ad un contesto a bassa dimensionalità, poco descrittivo della situazione utente. Recentemente, sono però stati proposti i primi lavori che mirano ad integrare il contesto ricavato dai sensori di dispositivi mobili nel processo di raccomandazione. 
+Innanzitutto, sono stati analizzati alcuni algoritmi proposti in letteratura, ed è stato osservato che non sono direttamente applicabili in ambiente mobile a causa delle  restrizioni proposte da questo nuovo scenario. Per quanto riguarda il contesto, è stato riscontrato che la maggior parte dei lavori proposti in letteratura sono orientati ad un contesto a bassa dimensionalità, che potrebbe non essere abbastanza descrittivo della situazione attuale dell'utente. Recentemente, sono però stati proposti i primi lavori che mirano ad integrare il contesto ottenuto dai sensori di dispositivi mobili nel processo di raccomandazione. 
 
-\`E stato quindi proposto il modello moveCARS, sviluppato tenendo a mente sia le restrizioni di un ambiente distribuito che la necessità di integrare il contesto utente con un alta dimensionalità.
-
+\`E stato quindi proposto il modello moveCARS, sviluppato tenendo a mente sia le restrizioni di un ambiente distribuito, sia la necessità di integrare un gran numero di feature di contesto.
 
 Un altro problema riscontrato per quanto riguarda i CARS, è la scarsità di dataset pubblici contenenti informazioni contestuali. In questo lavoro sono stati analizzati i dataset context-aware presenti in letteratura, scegliendo infine due dataset che potessero essere usati per valutare in modo accurato il modello proposto.
 
-Per quanto riguarda la valutazione, moveCARS è stato confrontato con algoritmi context-aware e non presentati in letteratura, dimostrato di ottenere risultati molto simili ma leggermente inferiori agli algoritmi context-aware stato dell'arte. Questo può essere considerato un compromesso accettabile, considerando i vantaggi che moveCARS comporta nell'implementazione su dispositivi mobili rispetto agli altri algoritmi.
+A proposito della valutazione, moveCARS è stato confrontato con altri sistemi di raccomandazione presentati in letteratura, dimostrando di ottenere risultati molto simili ma leggermente inferiori agli algoritmi context-aware stato dell'arte. Questo può essere considerato un compromesso accettabile, considerando i vantaggi che moveCARS comporta nell'implementazione su dispositivi mobili rispetto agli altri algoritmi.
 
-L'ultima valutazione ha riguardato i tempi di esecuzione dell'algoritmo moveCARS che ha dimostrato che è possibile svolgere inizializzazione e inferenza del modello direttamente sul dispositivo mobile. I tempi di inferenza molto bassi suggeriscono che è possibile generare raccomandazioni per l'utente quasi in tempo reale direttamente dal suo dispositivo personale.
-
-
+L'ultima valutazione ha riguardato i tempi di esecuzione degli algoritmi NeuMF, ECAM NeuMF e moveCARS dimostrando che è possibile svolgere inizializzazione e inferenza di tutti i modelli direttamente su dispositivi mobili. I tempi di inferenza molto bassi suggeriscono che è possibile generare raccomandazioni per l'utente quasi in tempo reale direttamente dal suo dispositivo personale.
 
 \section{Sviluppi futuri}
+Per quanto riguarda gli sviluppi futuri, sicuramente la valutazione di moveCARS su nuovi dataset context-aware può essere utile sia a confermare i risultati ottenuti su MDF e Frappe, sia a capire come si comporta l'algoritmo con insiemi diversi di feature di utenti, oggetti e contesto.
 
-Sviluppi futuri...
+In merito a quanto non trattato in questa tesi ci sono diversi approfondimenti futuri sui cui ci si può concentrare. Uno di questi è il training della rete neurale su dispositivo mobile. \`E da definire in quali condizioni moveCARS termina la fase di training ed è pronto a fare inferenza, e indagare se in certe condizioni possa essere necessario ricominciare di nuovo il training. Ad esempio, le predizioni dell'algoritmo potrebbero non essere più accurate nel momento in cui un utente si sposta per un periodo di tempo lungo in un'area geografica diversa rispetto a quella usuale, e di conseguenza si trova in contesti diversi.
+
+Un altro aspetto da valutare in futuro sono le prestazioni di moveCARS con una conoscenza parziale delle informazioni. Nelle valutazioni effettuate in questa tesi, l'algoritmo era a conoscenza di tutto l'insieme di training, condizione che non si verifica in un ambiente reale. Scrivere un simulatore per riprodurre le interazioni e lo scambio di informazioni tra utenti, e valutare le prestazioni di moveCARS nel corso del tempo può chiarire questo aspetto.
+
+In ultimo si potrebbe sviluppare un'applicazione per Android o iOS per e valutare le predizioni di moveCARS in un ambiente reale. Lo sviluppo pone nuove sfide, dato che si dovranno definire diversi aspetti come ad esempio lo scambio di dati tra i dispositivi personali degli utenti, l'acquisizione e l'elaborazione del contesto, e il modo in cui le raccomandazioni sono prodotte.
+
+Concludendo, l'algoritmo proposto in questa tesi riguarda solo una parte dell'architettura necessaria per realizzare un sistema di raccomandazione per dispositivi mobili e pervasivi.
 
 %
 %			BIBLIOGRAFIA
