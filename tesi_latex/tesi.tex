@@ -138,9 +138,9 @@ Questa sezione, facoltativa, contiene i ringraziamenti.
 
 \chapter{Introduzione}
 \label{cap:introduzione}
-I dispositivi mobili che ci circondano sono dotati di capacità computazionali e di rete sempre crescenti. Questo incremento, unito alla quantità e alla pervasività di questi dispositivi ha contribuito ad un'evoluzione dell'edge internet. In un ambiente pervasivo, i dispositivi personali degli utenti possono sfruttare diverse tecnologie wireless per stabilire una connessione device-to-device (D2D) con altri dispositivi nelle vicinanze e scoprire nuovi contenuti per l'utente. Un sistema di raccomandazione (RS) può essere utile per filtrare i contenuti più adatti ad un utente tra quelli 
+I dispositivi mobili che ci circondano sono dotati di capacità computazionali e di rete sempre crescenti e sempre più vicine ai computer desktop. La potenza di calcolo, unita alla quantità e alla pervasività di questi dispositivi ha contribuito ad all'evoluzione dell'edge internet. In un ambiente pervasivo, i dispositivi personali degli utenti possono sfruttare diverse tecnologie wireless per stabilire una connessione device-to-device (D2D) con altri dispositivi nelle vicinanze e scoprire nuovi contenuti per l'utente. Un sistema di raccomandazione (RS) può essere utile per filtrare i contenuti più adatti ad un utente tra quelli 
 scoperti nelle vicinanze. Non è però semplice estendere le soluzioni esistenti per adattarle alle 
-limitazioni imposte da questo nuovo scenario. I recommender system tradizionali si appoggiano su un'architettura centralizzata (come  un server remoto, o un'infrastruttura cloud), in cui il sistema di raccomandazione esegue sul server, e processa 
+limitazioni imposte da questo nuovo scenario. I recommender system tradizionali si appoggiano su un'architettura centralizzata (come  un server remoto o un'infrastruttura cloud), in cui il sistema di raccomandazione esegue sul server, e processa 
 le richieste in arrivo dai client che possono essere dispositivi mobili o fissi. In maniera opposta, un RS per dispositivi mobili non dovrebbe appoggiarsi ad un server esterno, ma sfruttare unicamente le capacità computazionali del dispositivo. Oltre a questo, il task 
 di raccomandazione per un RS pervasivo è diverso rispetto a quello di un RS client/server. Tipicamente un sistema di raccomandazione ha una conoscenza globale di tutti gli utenti e oggetti del sistema, ed impara un modello singolo per generare raccomandazioni per tutti gli utenti. Al contrario in soluzioni distribuite ogni dispositivo potrebbe
 essere a conoscenza solo di una piccola parte dell'informazione globale. Questa conoscenza è inizialmente 
@@ -178,7 +178,375 @@ La tesi è organizzata come segue:
 \chapter{Stato dell'arte}
 \label{chap:stato_arte}
 
-\input{capitoli/stato_arte.tex}
+I recommender system (RS) sono algoritmi mirati a generare consigli significativi a un insieme di utenti per articoli o prodotti che potrebbero interessarli \cite{recsys-definition}. La definizione di oggetto è generica e include ad esempio film da guardare, libri da leggere, prodotti da comprare, punti di interesse, etc. 
+Quando gli utenti interagiscono con il sistema di raccomandazione generano dei feedback. Questi feedback possono essere di due tipi: espliciti o impliciti. I feedback espliciti sono valori numerici che un utente assegna ad un prodotto; i feedback impliciti riflettono indirettamente le opinioni di un utente osservando la cronologia degli acquisti, i link aperti, gli elementi visualizzati, etc. Tipicamente, i feedback espliciti sono valori numerici all'interno di un intervallo prefissato (es. da 1 a 5 stelle). Al contrario, i feedback impliciti sono modellati con valori binari 0/1.
+Basandosi sui feedback passati, i sistemi di raccomandazione imparano un modello per prevedere quanto un utente può essere interessato a nuovi oggetti. Questi oggetti sono poi ordinati in base alla pertinenza prevista per l'utente. In ultimo, gli oggetti con il rank più alto vengono suggeriti all'utente. La relazione tra utenti e oggetti è rappresentata con una matrice $R_M$ in cui sono memorizzati i rating passati degli utenti.
+La \textit{rating matrix} è definita come: 
+$$
+R_M: U \times I \rightarrow R
+$$
+dove $U = \{u_1, \dots, u_m\}$ rappresenta l'insieme degli utenti, $I = \{i_1,\dots, i_n\}$ rappresenta l'insieme degli oggetti, e $R = \{r_1, \dots, r_k\}$ rappresenta l'insieme dei possibili rating che un utente ha espresso riguardo a degli oggetti \cite{survey-mattia}. Un valore mancante nella rating matrix può avere due significati: l'utente non vuole esprimere un'opinione su un oggetto specifico, oppure l'utente -- non conoscendo ancora l'oggetto -- non può averlo valutato. La matrice dei rating è tipicamente molto sparsa: il numero di oggetti valutati da un utente è molto minore rispetto al numero totale di oggetti presenti nel database. Lo scopo di un RS è quello di predire i rating mancanti per tutte le coppie utente - oggetto.
+
+\vspace{5mm}
+\noindent I recommender system si dividono principalmente in quattro categorie:
+\begin{itemize}
+	\item \textit{Collaborative filtering:} I RS collaborative filtering sfruttano la similarità tra gli utenti per prevedere gli interessi individuali. L'idea di base è che, se due utenti hanno gusti simili probabilmente sono interessati agli stessi oggetti.
+	\item \textit{Content-based:} Nei RS content-based ogni oggetto è rappresentato da un insieme di caratteristiche che lo descrivono. All'utente vengono consigliati oggetti simili a quelli che ha apprezzato in passato.
+	\item \textit{Ibridi:} I RS ibridi combinano tipi diversi di sistemi di raccomandazione per formare dei modelli in grado di superare le debolezze dei modelli singoli.
+	\item \textit{Context-aware:} I RS context-aware non considerano solo i feedback che gli utenti hanno assegnato agli oggetti, ma anche il contesto in cui questi feedback sono stati generati.
+\end{itemize}
+
+\noindent In \autoref{fig:cb-cf} è schematizzato il modo diverso in cui operano i metodi collaborative filtering rispetto a quelli content-based. Le quattro categorie sono descritte in dettaglio nelle sezioni successive.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{immagini/cb_cf_schema.png}
+  \caption{Collaborative filtering vs Content-based}
+  \cite{cf-cb-picture}
+  \label{fig:cb-cf}
+  
+\end{figure}
+
+\section{Collaborative filtering recommender system}
+Collaborative filtering (CF) è la tecnica di raccomandazione più popolare e ampiamente utilizzata nei RS.
+Il presupposto alla base di CF è che le persone con preferenze simili valuteranno gli stessi oggetti con rating simili. CF quindi sfrutta le informazioni sul comportamento passato o le opinioni di una comunità di utenti esistente per prevedere quali elementi potranno piacere o saranno interessanti per l'utente corrente del sistema \cite{recsys-intro}. Gli approcci CF puri non sfruttano né richiedono alcuna conoscenza degli oggetti stessi ma solo dei feedback degli utenti. In letteratura sono stati proposti diversi modelli CF: il più conosciuto è \textit{matrix  factorization} \cite{matrix-factorization} (discusso nella \autoref{ssec:mf}), che fattorizza la matrice dei rating in due matrici a dimensionalità minore per predire i rating mancanti. Per mantenere una complessità computazionale bassa su dataset di grandi dimensioni sono state proposte le factorization machines \cite{factorization-machines}, che rappresentano le interazioni utente - oggetto come tuple di vettori di feature. Più recentemente sono stati proposti approcci basati sul deep learning \cite{deep-learning-survey} \cite{NCF}, che utilizzano \textit{deep neural network} (discusse nella \autoref{subsec:ncf}) per imparare le interazioni utente - oggetto.
+
+\subsection{Matrix factorization} \label{ssec:mf}
+Gli algoritmi basati su matrix factorization (MF) caratterizzano utenti e oggetti mediante dei vettori di fattori estratti dai pattern sui rating. Questi vettori, chiamati fattori latenti, sono delle feature nascoste che descrivono utenti e oggetti. Una corrispondenza alta tra i fattori di un utente e un oggetto porta ad una raccomandazione. Questi metodi sono diventati popolari negli ultimi anni perchè combinano scalabilità e accuratezza. % esempi di utilizzo
+
+Più formalmente, i modelli basati su matrix factorization mappano utenti e oggetti in uno spazio di fattori latenti di dimensionalità $d$, tale che le interazioni tra utenti e oggetti sono modellate come prodotti in quello spazio. Di conseguenza, ogni oggetto $i$ è associato con un vettore $q_i \in \mathbb{R}^d$, e ogni utente $u$ con un vettore $p_u \in \mathbb{R}^d$. Per un dato oggetto $i$, gli elementi di $q_i$ indicano la misura in cui l'oggetto possiede quei fattori, positivi o negativi. Per un dato utente $u$, gli elementi di $p_u$ indicano l'entità dell'interesse che l'utente ha per le varie caratteristiche rappresentate dai fattori latenti, positivi o negativi. Il prodotto scalare $q_i^Tp_u$ indica l'interesse dell'utente $u$ per le caratteristiche dell'oggetto $i$ \cite{matrix-factorization}. Quindi il rating $r_{ui}$ può essere approssimato come
+
+\begin{equation} \label{eq:dot_product}
+r_{ui} = q_i^Tp_u
+\end{equation}
+Il problema principale è calcolare il mapping di ogni oggetto e utente in vettori $q_i, p_u \in \mathbb{R}^d$. Una volta che il recommender system ha completato il mapping, può facilmente stimare il rating che un utente darà a qualsiasi oggetto utilizzando l'equazione \ref{eq:dot_product}. 
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{immagini/matrix_factorization.pdf}
+  \caption{Approssimazione matrice dei rating con matrix factorization}
+  \cite{mf-google}
+  \label{fig:matrix_factorization}
+\end{figure}
+
+In \autoref{fig:matrix_factorization} è mostrato come la matrice dei rating $A \in \mathbb{R}^{m \times n}$, con $m$ numero di utenti e $n$ numero di oggetti, viene decomposta in due matrici di dimensionalità molto minore:
+
+\begin{itemize}
+	\item Una matrice di fattori latenti per gli utenti $P \in \mathbb{R}^{m \times d}$, in cui la riga $i$ contiene i fattori latenti dell'utente $i$.
+	\item Una matrice di fattori latenti per gli oggetti $Q \in \mathbb{R}^{n \times d}$, in cui la riga $j$ contiene i fattori latenti dell'oggetto $j$.
+\end{itemize}
+Le due matrici di fattori latenti $P$ e $Q$ sono apprese in modo tale che il prodotto $PQ^T$ sia una buona approssimazione della matrice dei rating $A$ \cite{mf-google}. In letteratura esistono diversi algoritmi per calcolare i fattori latenti di utenti e oggetti. Il primo algoritmo proposto è stato FunkSVD \cite{funk-mf} che supporta unicamente feedback espliciti, SVD++ \cite{svd++} aggiunge il bias di utenti e oggetti e il supporto a feedback impliciti; ALS \cite{als} e logistic MF \cite{logistic-mf} sono invece algoritmi progettati con i feedback impliciti in mente.
+
+
+\subsection{Alternating least square} \label{subsec:als}
+Alternating Least Square (ALS) \cite{als} è un algoritmo di matrix factorization stato dell'arte per quanto riguarda i feedback impliciti. ALS è un processo di ottimizzazione iterativo in cui ad ogni iterazione si cerca di arrivare il più vicino possibile a una rappresentazione fattorizzata dei dati originali \cite{als-medium}. 
+
+\subsubsection{Feedback impliciti}
+I feedback impliciti sono più semplici da collezionare rispetto ai feedback espliciti. Infatti, mentre i feedback espliciti sono ottenuti da valutazioni che l'utente lascia intenzionalmente sugli oggetti (es. valutazione da 1 a 10 di un film); i feedback impliciti sono collezionati automaticamente osservando il comportamento di un utente (es. 1 se l'utente ha guardato un film, 0 altrimenti).
+I feedback impliciti hanno alcune importanti caratteristiche che li distinguono dai feedback espliciti, e impediscono di usare direttamente algoritmi progettati con i feedback espliciti in mente \cite{als}:
+\begin{enumerate}
+ \item \textit{Non ci sono feedback negativi.} Osservando il comportamento di un utente, è possibile inferire quali oggetti gli interessano e che quindi ha scelto di consumare. \'E difficile però capire in modo affidabile quali oggetti l'utente non apprezza. Per esempio, un utente che non ha guardato una serie tv potrebbe non averlo fatto perchè non interessato a quella serie, oppure perché non la conosceva. Questa asimmetria non esiste nei feedback espliciti in cui un utente si esprime su cosa gli piace e cosa non gli piace. Anche i dati mancanti sono un problema: nei feedback espliciti si conosce quali rating non sono stati espressi dall'utente, nei feedback impliciti no.
+ 
+ \item \textit{I feedback impliciti sono intrinsicamente rumorosi.} Tenendo traccia passivamente dei comportamenti degli utenti è difficile distinguere il caso in cui un utente ha consumato un oggetto perchè davvero interessato o per altri motivi.
+ 
+ \item Il valore numerico dei feedback espliciti indica la \textit{preferenza}, mentre il valore numerico dei feedback impliciti indica la \textit{confidenza}. I sistemi basati sui feedback espliciti permettono all'utente di impostare il loro livello di preferenza su un oggetto, ad esempio con un voto da 1 a 5. I feedback impliciti invece descrivono la frequenza di un'azione, ma un valore più alto  non indica per forza una preferenza maggiore
+\end{enumerate}
+
+\subsubsection{Il modello}
+Per prima cosa vanno formalizzati i concetti di preferenza e confidenza. La preferenza di un utente $u$ per un item $i$ è indicata con un valore binario $p_{ui}$:
+$$
+p_{ui} =     \begin{cases}
+				1 \;\;\; r_{ui} > 0 \\
+				0 \;\;\; r_{ui} = 0
+              \end{cases}
+$$
+In pratica, se un utente $u$ ha consumato un oggetto $i$ ($r_{ui} > 0$), allora si ha un'indicazione che $u$ è interessato a $i$. Diversamente, se $u$ non ha mai consumato $i$ la preferenza è uguale a 0. Inoltre, con l'aumento del valore di $r_{ui}$ si ha un indicazione più forte che l'utente sia davvero interessato all'oggetto. Di conseguenza, si può indicare con $c_{ui}$ la confidenza nell'osservare $p_{ui}$. Una possibile scelta è
+$$
+c_{ui} = 1 + \alpha r_{ui}
+$$
+In questo modo, si ha una confidenza minima su $p_{ui}$ per ogni coppia utente-oggetto, ma osservando più preferenze positive la confidenza su $p_{ui} = 1$ aumenta. La velocità di incremento è controllata dalla costante $\alpha$.
+
+Come spiegato nella \autoref{ssec:mf}, l'obiettivo è trovare un vettore $x_u \in R^f$ per ogni utente $u$, ed un vettore $y_i \in R^f$ per ogni oggetto $i$ che fattorizzano le preferenze degli utenti. Le preferenze possono essere poi calcolate come $p_{ui} = x_u^Ty_i$. I vettori latenti in ALS sono calcolati minimizzando la funzione obiettivo:	
+$$
+\min_{x_*,y_*} \sum_{u,i} c_{ui} (p_{ui} - x_u^Ty_i)^2 + 
+\lambda \left( \sum_u ||x_u||^2 + \sum_i ||y_i||^2 \right)
+$$
+Il termine $\lambda \left( \sum_u ||x_u||^2 + \sum_i ||y_i||^2 \right)$ è necessario per regolarizzare il modello ed evitare l'overfitting durante il training. Il valore esatto di $\lambda$ dipende dai dati e si determina tramite cross validation. 
+Quando il vettore latente degli utenti o degli oggetti rimane fissato, la funzione obiettivo diventa quadratica e si può calcolare un minimo globale. Questo porta ad un processo di ottimizzazione con il metodo dei minimi quadrati, in cui si alterna tra il ricalcolare il vettore degli utenti mantenendo fissato quello degli oggetti e viceversa. Ad ogni step il valore della funzione di costo diminuisce.
+
+\subsection{Neural collaborative filtering} \label{subsec:ncf}
+Gli algoritmi basati su matrix factorization sono sicuramente i più popolari nell'ambito dei sistemi di raccomandazione collaborative filtering. Nonostante l'efficacia di questi modelli, le loro prestazioni  posso variare in base alla scelta della funzione di interazione. Ad esempio, per quanto riguarda il task di rating prediction su feedback espliciti, è noto che le prestazioni di MF possono essere migliorate incorporando il bias di utenti e oggetti nella funzione di interazione. Anche se si tratta solo di una piccola modifica, dimostra l'effetto positivo di progettare una funzione migliore per modellare l'interazione delle feature latenti di utenti e oggetti. 
+Secondo gli autori di \cite{NCF} il prodotto scalare, che combina la moltiplicazione delle feature latenti in modo lineare, potrebbe non essere sufficiente per catturare la complessa struttura dei dati che rappresentano le interazioni dell'utente. 
+
+La \autoref{fig:mf-limits} mostra come il prodotto scalare può limitare l'espressività di MF. La similarità tra due utenti può essere misurata con il prodotto scalare tra i loro vettori latenti, o in modo equivalente con il coseno dell'angolo tra i loro vettori latenti. Dalla matrice utenti-oggetti, in \autoref{fig:mf-limits} indicata con (a), l'utente $u_4$ è più simile a $u_1$, seguito da $u_3$, e in ultimo da $u_2$. Tuttavia, nello spazio latente indicato con (b), posizionare $p_4$ più vicino a $p_1$ rende $p_4$ più vicino a $p_2$ e non a $p_3$.
+
+Viene quindi proposto di usare le reti neurali che sono considerate approssimatori universali \cite{NN-universal-approx} per imparare le interazioni utente-oggetto. In particolare sono proposti tre modelli basati su deep neural network:
+\begin{enumerate}
+ \item Generalized Matrix Factorization (GMF), illustrato in Sez. \ref{sssec:gmf} 
+ \item Multi-Layer Perceptron (MLP), illustrato in Sez. \ref{sssec:mlp} 
+ \item Neural Matrix Factorization (NeuMF), , illustrato in Sez. \ref{sssec:neumf} 
+\end{enumerate}
+
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.50]{immagini/user_item_vectors.png}
+  \caption{Limitazioni di matrix factorization}
+  \cite{NCF}
+  \label{fig:mf-limits}
+\end{figure}
+
+\subsubsection{Approccio generale}
+Per permettere un trattamento neurale di collaborative filtering, viene adottata una rappresentazione multi-layer per modellare le interazioni utente-oggetto $y_{ui}$, in cui l'output di un layer è l'input per il layer successivo. Il layer di input consiste di due vettori $v_u^U$ e $v_i^I$ che descrivono rispettivamente l'utente $u$ e l'oggetto $i$. Dato che l'input nei modelli collaborative filtering è composto dagli ID univoci di $u$ e $i$, essi devono essere convertiti con one-hot encoding in vettori binari sparsi. One-hot encoding è un processo che converte una variabile categorica in un vettore di uno e zero. La lunghezza del vettore in questo caso è pari al numero di utenti o oggetti, ed ogni elemento nel vettore rappresenta un utente/oggetto. Tutti gli elementi del vettore sono posti a zero, tranne l'elemento corrispondente all'utente/oggetto corrente che è posto ad uno. Sopra al layer di input c'è il layer di embedding: è un layer fully connected che proietta la rappresentazione sparsa in un vettore denso. Gli embedding di utenti e oggetti ottenuti possono essere visti come i vettori latenti di utenti e oggetti nel contesto dei modelli a fattori latenti come matrix factorization. I vettori di embedding di user e item sono dati in input a un architettura neurale multi-layer, i cui livelli sono chiamati neural collaborative filtering layer, e infine al layer di output per calcolare lo score predetto $y_{ui}$. Questo approccio generale è chiamato \textit{neural collaborative filtering} (NCF), ed è mostrato in \autoref{fig:ncf}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{immagini/ncf.png}
+  \caption{Approccio neural collaborative filtering}
+  \cite{NCF}
+  \label{fig:ncf}
+\end{figure}
+
+\subsubsection{Generalized matrix factorization} \label{sssec:gmf}
+In \cite{NCF} viene mostrato come la famiglia di metodi basata su matrix factorization possa essere considerata un caso particolare dell'approccio NCF. Come detto prima, i vettori di embedding possono essere visti come i vettori latenti di utenti e oggetti imparati dagli algoritmi di MF. Siano $p_u$ il vettore latente degli utenti e $q_i$ il vettore latente degli oggetti. Si può ridefinire la funzione del primo neural CF layer per eseguire la moltiplicazione tra i due vettori di embedding:
+$$
+\phi(p_u, q_1) = p_u \odot q_i
+$$
+in cui $\odot$ è il prodotto elemento per elemento dei vettori. Si proietta poi il vettore risultato sul layer di output:
+$$
+y_{ui} = a_{out}(h^T(p_u \odot q_i))
+$$
+dove $a_{out}$ e $h$ sono rispettivamente la funzione di attivazione e  i pesi del layer di output.  Se si usa una funzione identità per $a_{out}$ e si impone che $h$ sia un vettore uniforme di 1, si può ricostruire esattamente il modello MF. Questo modello è chiamato generalized matrix factorization (GMF).
+
+\subsubsection{Multi-layer perceptron} \label{sssec:mlp}
+In questa istanza di NCF, i vettori di embedding di utenti e oggetti ottenuti dai layer di embedding sono concatenati. Sopra al layer di concatenazione sono aggiunti dei layer nascosti, in modo da usare un multi-layer perceptron (MLP) standard per imparare le interazioni tra le feature latenti di utenti e oggetti. In questo caso, il modello impara una funzione non-lineare per le interazioni tra $p_u$ e $q_i$, invece di imparare un prodotto elemento per elemento come GMF. 
+
+\subsubsection{Neural matrix factorization} \label{sssec:neumf}
+A questo punto si hanno due diverse implementazioni del framework NCF: GMF che applica un funzione lineare per imparare le interazioni delle feature latenti, e MLP che invece applica un funzione non lineare. Le due reti possono essere combinate per modellare in modo più preciso le complesse interazioni utente-oggetto. Una soluzione semplice è permettere a GMF e MLP di condividere lo stesso layer di embedding; questo approccio però può limitare le performance del modello perchè GMF e MLP devono usare embedding della stessa dimensione. Per fornire più flessibilità al modello fuso, GMF e MLP imparano vettori di embedding separati, e i due modelli sono combinati concatenando l'output del loro ultimo layer nascosto. L'architettura del modello fuso chiamata neural matrix factorization (NeuMF) è mostrata in \autoref{fig:neumf}. A sinistra è rappresentata la rete GMF, a destra il MLP.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{immagini/neumf.png}
+  \caption{Neural matrix factorization}
+  \cite{NCF}
+  \label{fig:neumf}
+\end{figure}
+
+
+\subsection{Vantaggi e svantaggi dell'approccio CF} \label{ssec:pros-cons-cf}
+\textbf{Vantaggi:}
+\begin{itemize}
+
+ \item \textit{Nessuna conoscenza del dominio necessaria:} basandosi solo su interazioni utente - oggetto, il modello può funzionare in domini in cui non c'è nessun contenuto associato agli oggetti \cite{recsys-principle-methods-evaluation}. Questo permette di impiegarlo facilmente per realizzare RS multi-domain, che raccomandano oggetti di natura diversa (audio, film, testo, etc.).
+ 
+ \item \textit{Serendipity:} il modello ha la capacità di fornire consigli fortuiti, il che significa che può consigliare elementi pertinenti per l'utente senza che il contenuto si trovi nel profilo dell'utente, permettendo così all'utente di scoprire nuovi interessi \cite{recsys-principle-methods-evaluation} \cite{cf-advantages-google}.
+\end{itemize}
+
+\noindent \textbf{Svantaggi:}
+\begin{itemize}
+ \item \textit{Problema del cold-start:} si riferisce alla situazione in cui il sistema di raccomandazione non ha abbastanza informazioni su un utente od un oggetto per poter fare previsioni rilevanti. Un nuovo oggetto inserito nel RS di solito non ha voti, ed è quindi improbabile che venga raccomandato. Un oggetto non consigliato passa inosservato a gran parte della community. Il problema è presente anche per i nuovi utenti: gli utenti che hanno espresso nessuna o poche valutazioni non ricevono raccomandazioni affidabili \cite{cold-start}.   
+ 
+ \item  \textit{Problema di data sparsity:} questo è il problema che si verifica a causa della mancanza di informazioni sufficienti, cioè quando solo pochi rispetto al numero totale di oggetti disponibili in un database sono valutati dagli utenti. Ciò porta ad una rating matrix sparsa, e raccomandazioni poco efficaci \cite{recsys-principle-methods-evaluation}.
+ 
+ \item \textit{Scalabilità:} questo è un altro problema associato agli algoritmi di raccomandazione perché il tempo di computazione cresce linearmente sia con il numero di utenti, sia con il numero di oggetti. Un sistema di raccomandazione efficiente con un dataset limitato potrebbe non esserlo con un dataset di dimensioni maggiori \cite{recsys-principle-methods-evaluation}.
+\end{itemize}
+
+
+\section{Content-based recommender system}
+Nei recommender system content-based (CB), gli attributi descrittivi degli oggetti sono usati per produrre raccomandazioni. Il termine ``content" indica che il processo di raccomandazione si focalizza sui contenuti piuttosto che sulle interazioni utente - oggetto. Nei metodi content-based i rating degli utenti sono combinati con le informazioni disponibili sugli oggetti, per poi essere usati come training data per creare un modello di classificazione o regressione  specifico per l'utente. Nei problemi di classificazione si prevede se ad un utente può piacere un oggetto; nei problemi di regressione si prevede il rating dato da un utente ad un oggetto la cui valutazione è ancora sconosciuta \cite{recsys-book}.
+
+Mentre nei CF la similarità tra due oggetti (o due utenti) è calcolata come la correlazione o la similarità tra i rating forniti dagli altri utenti, i recommender system content-based sono progettati per consigliare oggetti simili a quelli che l'utente ha preferito in passato. Non considerando gli altri utenti, la lista di raccomandazioni può essere generata anche se c'è un solo utente nel sistema.
+
+\subsection{Vantaggi e svantaggi dell'approccio CB}
+\textbf{Vantaggi:}
+\begin{itemize}
+ \item \textit{Consigliare nuovi oggetti:} questi modelli hanno la capacità di consigliare nuovi oggetti anche se non ci sono valutazioni fornite dagli utenti, a differenza dei modelli collaborative filtering \cite{recsys-principle-methods-evaluation}.
+ 
+ \item \textit{Trasparenza:} le spiegazioni su come funziona il sistema di raccomandazione possono essere fornite elencando esplicitamente le caratteristiche del contenuto che hanno causato la presenza di un oggetto nell'elenco delle raccomandazioni \cite{transparency}. 
+\end{itemize}
+
+\noindent \textbf{Svantaggi:}
+\begin{itemize}
+ \item \textit{Feature degli oggetti:} la precisione del modello dipende dall'insieme delle feature che descrivono gli oggetti. Identificare le feature più rilevanti non è semplice e dipende molto dall'applicazione specifica \cite{survey-mattia}.
+ 
+ \item \textit{Content overspecialization:} dato che i metodi CB si affidano solo alle caratteristiche degli oggetti già valutati dall'utente corrente, egli riceverà solo raccomandazioni simili ad altri oggetti già definiti nel suo profilo \cite{recsys-principle-methods-evaluation}.
+ 
+ \item \textit{Raccomandazioni multi-dominio:} è difficile creare RS multi-dominio con un approccio content-based. Questo perché è complicato definire un insieme di feature che valgano per contenuti di natura diversa.
+\end{itemize}
+
+\section{Hybrid recommender system}
+I modelli ibridi combinano tipi diversi di sistemi di raccomandazione per formare dei modelli in grado di superare le debolezze dei modelli singoli. In \cite{recsys-book} sono descritti tre modi per creare recommender system ibridi:
+
+\begin{enumerate}
+ \item \textit{Ensemble design:} Con questo metodo i risultati degli algoritmi base sono combinati in un output singolo più robusto. Il principio fondamentale è molto simile ai metodi di ensemble usati in molte applicazioni di data mining come clustering, classificazione e analisi degli outlier. 
+Gli ensemble design possono essere formalizzati nel modo seguente. Sia $R^k$ una matrice $m \times n$ contenente le predizioni di $m$ utenti per $n$ oggetti dell'algoritmo $k$-esimo, con $k \in \{1, \dots ,q\}$. Pertanto, un totale di $q$ algoritmi diversi sono usati per ottenere queste predizioni. L'elemento $(u,j)$-esimo di $R^k$ contiene il rating predetto per l'utente $u$ sull'oggetto $j$ dall'algoritmo $k$-esimo. Gli elementi della matrice originale $R$ sono replicati in ogni $R^k$, e solo gli elementi non presenti in $R$ variano nei differenti $R^k$ a causa dei diversi risultati degli algoritmi. Il risultato finale è ottenuto combinando le predizioni $R^1, \dots, R^q$ in un singolo output. La combinazione può essere fatta in vari modi, ad esempio calcolando la media pesata delle varie predizioni. Le caratteristiche comuni di questi algoritmi sono: (i) usare sistemi di raccomandazione già esistenti, (ii) produrre uno score/ranking unico. Il problema di questo approccio è la complessità della soluzione: il risultato è ottenuto con l'esecuzione di $q$ algoritmi di raccomandazione diversi.
+
+ \item \textit{Monolithic design:} In questo caso, viene creato un algoritmo di raccomandazione integrato utilizzando vari tipi di dati. A volte non esiste una chiara distinzione tra le varie parti (es. content-based e collaborative filtering) dell'algoritmo. In altri casi, potrebbe essere necessario modificare algoritmi di raccomandazione esistenti per essere usati all'interno dell'approccio generale, anche quando c'è una chiara distinzione tra gli algoritmi utilizzati.  Pertanto, questo metodo tende a integrare più strettamente le varie fonti di dati e non è possibile visualizzare facilmente i singoli componenti come black-box separate.
+ 
+ \item \textit{Mixed system:}  Come per gli ensemble, questi sistemi usano diversi algoritmi di raccomandazione come black-box, ma gli oggetti raccomandati dai vari sistemi sono presentati insieme senza essere combinati.
+\end{enumerate} 
+
+\section{Context-aware recommender system}
+La maggior parte degli approcci esistenti per sviluppare sistemi di raccomandazione si concentra sul raccomandare gli oggetti più rilevanti ai singoli utenti senza considerare informazioni aggiuntive come il tempo, il luogo, etc. In altre parole, i sistemi di raccomandazione tradizionalmente si occupano di applicazioni che hanno solo due tipi di entità, utenti ed oggetti, e non li inseriscono in un contesto quando forniscono raccomandazioni. Tuttavia, in molte applicazioni potrebbe non essere sufficiente considerare solo utenti ed oggetti, ma è anche importante incorporare informazioni contestuali nel processo di raccomandazione al fine di consigliare oggetti agli utenti in determinate circostanze. I sistemi di raccomandazione che producono le loro raccomandazioni utilizzando il contesto sono chiamati recommender system context-aware (CARS). Alcuni esempi di contesto sono:
+
+\begin{enumerate}
+ \item \textit{Data e ora:} Dalle informazioni di data e ora è possibile estrarre diverse feature contestuali come il momento della giornata, il giorno della settimana, week-end, vacanze, stagioni ed altro ancora. Una raccomandazione potrebbe essere rilevante la mattina ma non il pomeriggio, e viceversa. Le raccomandazioni sui vestiti invernali o estivi possono essere molto diverse.
+ \item \textit{Posizione:} Con la crescente popolarità del GPS disponibile ormai su qualunque telefono, le raccomandazioni sensibili alla posizione dell'utente hanno guadagnato importanza. Per esempio, un viaggiatore potrebbe desiderare raccomandazioni su ristoranti vicini alla propria posizione. Questo può essere fatto aggiungendo la posizione come contesto nel recommender system.
+ \item \textit{Informazioni sociali:} Il contesto sociale è spesso importante per un sistema di raccomandazione. Le informazioni su amici, tag e relazioni sociali di un utente possono avere un impatto sul processo di raccomandazione. Per esempio un ragazzo potrebbe scegliere di guardare un film diverso a seconda che lo guardi con i suoi genitori o con i suoi amici.
+\end{enumerate} 
+
+% aggiungere esempi di CARS in letteratura
+
+\noindent Il contesto può essere ottenuto in vari modi \cite{recsys-handbook} che includono:
+\begin{enumerate}
+ \item \textit{Esplicitamente} ponendo domande dirette alle persone rilevanti o richiedendo le informazioni con altri mezzi. Per esempio, un sito web potrebbe ottenere informazioni contestuali chiedendo agli utenti di compilare un form.
+ \item \textit{Implicitamente} dai dati o dall'ambiente, come il cambio di posizione rilevato da una compagnia di telefonia mobile. In questo caso non è necessario fare nulla in termini di interazione con l'utente perché l'informazione contestuale è acceduta direttamente e i dati sono estratti da essa.
+ \item \textit{Per inferenza} usando metodi statistici o di data mining. 
+\end{enumerate}
+In letteratura sono stati proposti diversi sistemi di raccomandazione che integrano informazioni contestuali: in \cite{mf-context-aware} vengono ideati tre diversi metodi per consentire a MF di supportare informazioni di contesto, in \cite{tensor-context-aware} viene proposto un modello di tensor factorization context aware, in \cite{context-aware-deep-learning} è usato un approccio deep-learning per produrre raccomandazioni context-aware con una rete neurale. Per quanto riguarda le raccomandazioni in ambito mobile, in \cite{cars-music2} viene usato il contesto corrente dell'utente e i suoi ascolti passati per generare una playlist di canzoni. In \cite{cars-music} viene usato il contesto raccolto da uno smart device per raccomandazioni musicali, in \cite{cars-location} viene sfruttata la posizione dell'utente per fornire raccomandazioni su luoghi o eventi nelle vicinanze. Tutti questi sistemi producono raccomandazioni context-aware per dispositivi mobili, ma il RS non è implementato direttamente sul dispositivo dell'utente.
+
+\subsection{Approccio multidimensionale} \label{subsec:multidim}
+Il problema tradizionale di raccomandazione può essere visto come l'apprendimento di una funzione che associa le coppie utente-oggetto ai rating. La funzione corrispondente $f_R$ è definita come:
+
+$$
+f_R : U \times I \rightarrow rating
+$$
+Quindi la rating function mappa da uno spazio bidimensionale di utenti e oggetti ai rating.
+I CARS generalizzano questo metodo utilizzando un approccio multidimensionale in cui la rating function può essere vista come un mapping da una matrice $n$-dimensionale all'insieme dei rating \cite{survey-mattia}.
+$$
+f_R : D_1 \times D_2 \dots \times D_n \rightarrow rating
+$$
+In questo caso, il risultato è un cubo n-dimensionale invece di una matrice bidimensionale. Le diverse dimensioni sono denotate come $D_1 \dots D_n$. Due di queste dimensioni saranno sempre utenti e oggetti, le altre $D_i$ dimensioni corrispondono alle feature del contesto \cite{recsys-book}. In \autoref{fig:ratings-cube} è mostrato un esempio di un cubo tridimensionale che memorizza i ratings per $User \times Item \times Location$, in cui $f_R(u_1, i_4, home) = 5$ significa che l'utente $u_1$ ha valutato con un punteggio pari a 5 l'oggetto $i_4$ mentre era a casa.
+
+Il contesto può essere applicato nelle varie fasi del processo di raccomandazione. Come rappresentato in \autoref{fig:context-paradigm} si possono identificare tre paradigmi principali per integrare il contesto nei sistemi di raccomandazione \cite{recsys-handbook}:
+
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.75]{immagini/rating_cube.png}
+  \caption{Esempio di un cubo multidimensionale per $User \times Item \times Location$}
+  \cite{survey-mattia}
+  \label{fig:ratings-cube}
+\end{figure}
+
+\begin{enumerate}
+ \item \textit{Contextual pre-filtering:} In questo paradigma, le informazioni riguardo il contesto attuale sono utilizzate per selezionare o costruire l'insieme dei dati rilevanti (la matrice dei rating). Poi i rating mancanti dai dati selezionati possono essere predetti utilizzando qualsiasi sistema di raccomandazione 2D tradizionale.
+ \item \textit{Contextual post-filtering:} In questo paradigma, le informazioni contestuali sono inizialmente ignorate e i rating sono predetti utilizzando qualsiasi sistema di raccomandazione 2D tradizionale. Poi, l'insieme di raccomandazioni non rilevanti nel contesto $c$ sono filtrate, e la lista di raccomandazioni è regolata in base a $c$.
+ \item  \textit{Contextual modeling:} Mentre gli approcci di contextual pre-filtering e post filtering fanno uso di una funzione di raccomandazione 2D, gli approcci di contextual modeling danno luogo a funzioni di raccomandazione veramente multidimensionali che rappresentano modelli predittivi o euristiche che incorporano informazioni contestuali in aggiunta ai dati di utenti e oggetti.
+\end{enumerate}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{immagini/paradigm_for_context_inclusion.png}
+  \caption{Paradigmi per incorporare il contesto nei sistemi di raccomandazione}
+  \cite{context-paradigm}
+  \label{fig:context-paradigm}
+\end{figure}
+
+%spostare in context aware
+\subsection{Raccomandazioni context-aware con modelli di deep learning}
+I sistemi di raccomandazione context-aware tradizionali come matrix factorization \cite{mf-context-aware} o tensor factorization \cite{tensor-context-aware}, usano principalmente un insieme selezionato di informazioni contestuali. Il contesto specifico descrive le circostanze in cui le informazioni sono state raccolte, quali ad esempio il meteo (soleggiato, nuvoloso, etc.), o il tempo (giorno della settimana, ora, etc.). Il vantaggio principale è la bassa dimensionalità del contesto che permette di integrarlo facilmente nei sistemi di raccomandazione esistenti \cite{context-aware-deep-learning}. Infatti un dataset con molte feature porta naturalmente ad uno spazio multidimensionale e quindi a sparsità.
+
+Tuttavia, i CARS tradizionali  hanno le seguenti limitazioni: (1) la selezione del contesto specifico è un task che richiede tempo essendo fatto a mano da esperti di dominio, (2) il contesto selezionato potrebbe non rappresentare l'insieme di feature contestuali più efficace per il recommender system in questione; (3) l'utilizzo di contesti espliciti, come la posizione dell'utente, può sollevare problemi di privacy  \cite{context-aware-deep-learning}. La limitazione sul numero di feature contestuali potrebbe essere un problema in quegli ambienti in cui il contesto è complesso e dinamico. Ad esempio, sfruttando i numerosi sensori presenti sugli smartphone come accelerometro, campo magnetico, GPS, e sensore di luminosità, possono essere raccolte informazioni di contesto ad alta dimensionalità. Queste informazioni sono poi utilizzate per inferire il contesto e il comportamento dell'utente; dall'accelerometro si può capire l'attività dell'utente (es. camminare, stare seduto, correre), mentre con il GPS si può inferire la posizione (es. a casa, al lavoro, all'aperto).
+
+Per risolvere i problemi legati all'utilizzo del contesto multidimensionale, viene proposto in letteratura di ridurre la dimensionalità del contesto con autoencoder o Principal Component Analysis (PCA) \cite{latent-context} \cite{context-autoencoder}, di costruire una rappresentazione gerarchica del contesto \cite{hierarchical-context}, e di usare dei modelli di deep learning in grado di supportare molte feature di contesto\cite{context-aware-deep-learning}.
+
+\subsubsection{Estrazione del contesto latente} 
+\label{ssec:latent-context}
+\begin{figure}
+ \centering
+  \includegraphics[scale=0.50]{immagini/autoencoder.png}
+  \caption{Esempio struttura di un autoencoder}
+  \cite{hierarchical-context}
+  \label{fig:ae}
+\end{figure}
+
+Come detto prima, il contesto ad alta dimensionalità è spesso composto da dati di sensori (GPS, accelerometro, etc.) che possono essere correlati tra loro. Si può usare un autoencoder (AE) per scoprire le correlazioni tra feature differenti ed estrarre una rappresentazione a bassa dimensionalità del contesto \cite{latent-context}. Un autoencoder è una rete neurale che trasforma l'input ad alta dimensionalità in una rappresentazione latente a bassa dimensionalità (encoder), poi esegue una ricostruzione dell'input originale a partire dalla rappresentazione latente (decoder) \cite{autoencoder}. Limitando il numero di unità nei layer nascosti di un AE, la rete è costretta a imparare una rappresentazione compressa dell'input. In \autoref{fig:ae} è rappresentata la struttura di un autoencoder che ricostruisce il vettore di contesto dato in input $\overrightarrow{Context_t}$. Il contesto ottenuto può essere usato al posto delle feature di contesto estratte dai dati raw, e può portare ad un miglioramento nelle raccomandazioni prodotte dal recommender system.
+
+L'algoritmo \autoref{alg:latent-context} descrive come utilizzare un AE per estrarre gli attributi latenti del contesto. L'input per l'algoritmo è un training set $S = \{s_1, s_2, \dots, s_n\}$, in cui ogni campione è $r-$dimensionale e contiene le feature di contesto estratte dai dati raw, $f$ è la funzione di attivazione dell'autoencoder. L'output è $O$, l'insieme delle feature latenti estratte da $S$. L'algoritmo inizia normalizzando il dataset $S$ (riga 1); la normalizzazione include la conversione delle variabili categoriche in valori binari e la normalizzazione delle variabili numeriche. Il risultato è il dataset normalizzato $S'$. Poi viene eseguito il training di un AE sul training set normalizzato (riga 2). A training terminato si ricava la matrice $W$, in cui $w_{ij}$ è il peso dell'arco che connette il neurone di input $j$-esimo con il neurone nascosto $i$-esimo (riga 3). Dopo aver inizializzato $O$ (riga 4), si itera su ogni sample di $S'$ (riga 5), moltiplicandolo per la trasposta di $W$ (riga 6), e applicando la funzione di attivazione $f$ su ogni elemento del vettore risultato (riga 7). Questo vettore è concatenato a $O$ che a ciclo terminato viene ritornato (riga 9). Le righe 10, 11 e 12 descrivono come estrarre il contesto latente da un nuovo campione $t$. Per prima cosa $t$ viene normalizzato esattamente come nella riga 1, poi usando la matrice $W$ e la funzione di attivazione $f$ si ottiene il contesto latente $res$.
+
+\begin{algorithm}
+\floatname{algorithm}{Algoritmo}
+\caption{Estrarre il contesto latente usando un auto-encoder \cite{latent-context}}
+\label{alg:latent-context}
+ \hspace*{\algorithmicindent} \textbf{Input:} $S$ - training set, $n$ latent context size, $f$ - activation function.\\
+ \hspace*{\algorithmicindent} \textbf{Output:} $O$ - latent context attributes of the training set; extraction function\\ 
+ \hspace*{\algorithmicindent} for a new sample $t$
+\begin{algorithmic}[1]
+\STATE $S' \leftarrow$ Normalize all samples in $S$
+\STATE $AE \leftarrow$ Train an auto-encoder $(n,f)$ on the normalized training dataset $S'$
+\STATE $W \leftarrow$ Retrieve weight matrix from $AE$
+\STATE $O \leftarrow \varnothing$
+\FORALL{$s' \in S'$} 
+	\STATE $o \leftarrow s'W^T$
+	\STATE $O \leftarrow O \; \cup$ activate $f$ on each element in $o$ 
+\ENDFOR
+
+\STATE Return $O$
+
+Extraction for a new data sample $t$:
+\STATE $t' \leftarrow$ normalize $t$
+\STATE $res \leftarrow$ activate $f$ on each element in $t'W^T$ 
+\RETURN $res$
+
+\end{algorithmic}
+\end{algorithm}
+
+
+Nonostante la rappresentazione compressa del contesto possa portare a delle raccomandazioni più precise, l'applicazione di questa tecnica non è consigliabile in ambiente mobile. Il problema in ambiente mobile è che il dataset $S$ è in continua evoluzione, e nuovi campioni $t$ sono aggiunti al dataset quando un utente interagisce con altri dispositivi tramite comunicazione D2D. Questo significa che il contesto latente calcolato con la matrice $W$ ottenuta dall'autoencoder con training sul dataset $S$, dovrà essere aggiornato nel momento in cui sono ottenuti nuovi campioni $t$ di contesto. Aggiornare il contesto latente significa continuare il training dell'autoencoder sull'insieme dei nuovi campioni $S^1$, ricavare la matrice $W$ dei pesi a training finito, e calcolare il contesto latente per i campioni vecchi e nuovi. Questo processo aggiunge una complessità indesiderabile che non giustifica il miglioramento nelle prestazioni del RS.
+
+\subsubsection{Rappresentazione gerarchica del contesto}
+\label{ssec:hierarchical}
+Il metodo per ridurre la dimensionalità del contesto descritto nella \autoref{ssec:latent-context} modella le informazioni contestuali in vettori a dimensionalità minore, ignorando però la struttura delle variabili latenti di contesto. In particolare, questi metodi, mentre riducono la dimensionalità dello spazio contestuale, non tengono conto della struttura delle variabili latenti di contesto e delle relazioni semantiche tra queste variabili. In \cite{hierarchical-context} viene proposta una nuova rappresentazione strutturata del contesto latente organizzata in maniera gerarchica che include gruppi di contesti latenti simili chiamati \textit{situazioni contestuali}. Per esempio, se un vettore latente del contesto rappresenta le variabili di contesto ``mattina", ``rumoroso", ``fermo" e la posizione è ``università", allora queste variabili di contesto collettivamente rappresentano la situazione di uno studente che segue una lezione in università. Le situazioni contestuali possono poi essere organizzate in una struttura gerarchica aggregando i vettori latenti del contesto in una rappresentazione ad alto livello. Per esempio, ``seguire una lezione in università" e ``pranzare in università" possono essere aggregati in una situazione contestuale più ad alto livello come ``essere situati in università".
+
+\begin{figure}
+ \centering
+  \includegraphics[scale=0.70]{immagini/hierarchical.png}
+  \caption{Gerarchia delle situazioni contestuali}
+  \label{fig:hierarchical}
+  \cite{hierarchical-context}
+\end{figure}
+
+Il processo di costruzione del modello gerarchico è svolto raggruppando l'insieme di tutti i vettori latenti non strutturati del contesto in un insieme finito di cluster, in cui ogni cluster rappresenta una situazione contestuale. Si applica Agglomerative Hierarchical Clustering (AHC) \cite{AHC} ai vettori latenti per stimare in automatico il numero di situazioni contestuali $S$ che sono rappresentate come cluster. Poi si applica l'algoritmo k-means  per raggruppare vettori simili nella stessa situazione contestuale. Il clustering gerarchico produrrà un albero come quello in \autoref{fig:hierarchical}. Per ogni vettore del contesto latente $\overrightarrow{lc_j}$, i quali sono sempre nodi foglia dell'albero, esiste un nodo $s_{h_ti}$ che è un antenato del nodo $\overrightarrow{lc_j}$. Il nodo $s_{h_ti}$ rappresenta una situazione contestuale simile per il vettore $\overrightarrow{lc_j}$ al livello $h_t$ della gerarchia. Il contesto gerarchico per un vettore $\overrightarrow{lc_j}$ è il percorso dalla sua foglia fino alla radice dell'albero. Per esempio il contesto gerarchico per il vettore di contesto latente $\overrightarrow{lc_{19}}$ in \autoref{fig:hierarchical}, è $\overrightarrow{hlc_{19}} = [s_{19}, s_{26}, s_{33}, s_{41}]$.
+
+L'estrazione del contesto gerarchico è un'operazione irrealizzabile su dispositivo mobile. Infatti, come è sottolineato in \cite{hierarchical-context}, il training di un autoencoder su $n$ vettori di contesto per comprimere le feature di contesto originali da $l$ a $r$ dimensioni, ha una complessità di $O(n \cdot l \cdot r)$. Per estrarre il contesto gerarchico dai vettori di contesto latente viene applicato AHC che ha complessità $O(n^2)$ per $n$ osservazioni. AHC richiede inoltre $O(n^2)$ memoria, che è un requisito troppo alto per dispositivi mobili. 
+
+\subsubsection{Modelli CARS deep learning}
+In \cite{context-aware-deep-learning} viene proposto di estendere il modello NeuMF \cite{NCF} descritto nella \autoref{subsec:ncf} aggiungendo un nuovo componente di informazioni contestuali: un vettore di contesto denotato come "Context ($c$)". Il vettore del contesto $c$ è concatenato ai vettori di embedding degli utenti $u$ e degli oggetti $i$ per imparare una nuova funzione tra i tre componenti (utenti, oggetti, e contesto). In questo modo, la dimensione del contesto viene considerata all'interno del framework neurale e la rete apprende automaticamente la sua influenza sul valore di output. Il contesto è concatenato solo agli embedding del multi-layer perceptron, mentre la parte della rete denominata come generalized matrix factorization e i suoi embedding rimangono invariati. \`E importante notare che il vettore di contesto può avere un'alta dimensionalità, infatti questo modello non soffre del problema di ``curse of dimensionality" che affligge i CARS tradizionali.
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{immagini/cars-ncf.png}
+  \caption{Estensione di NeuMF con features di contesto}
+  \label{fig:context-neumf}
+  \cite{context-aware-deep-learning}
+\end{figure}
+
+Le informazioni contestuali sono modellate come un insieme di feature di contesto esplicite, latenti non strutturate o latenti strutturate (gerarchiche). Questo dà luogo a tre diverse estensioni di NeuMF:
+\begin{enumerate}
+ \item \textit{Explicit context-aware model (ECAM)}: tutto il contesto disponibile viene incorporato nel modello.
+ \item \textit{Unstructured context-aware model (UCAM)}: il contesto viene processato da un autoencoder \cite{latent-context} come descritto nella \autoref{ssec:latent-context} prima di essere incorporato nel modello.
+ \item \textit{Hierarchical context-aware model (HCAM)}: il contesto viene organizzato in un albero gerarchico \cite{hierarchical-context} come descritto nella \autoref{ssec:hierarchical} prima di essere incorporato nel modello.
+\end{enumerate}
+In \autoref{fig:context-neumf} è schematizzato il modello NeuMF  esteso per supportare il vettore del contesto. A sinistra è rappresentata la rete GMF, a destra il MLP con il vettore del contesto.
+
+
+\section{Problemi RS centralizzati} \label{sec:trad-rs-prob}
+In letteratura la stragrande maggioranza dei RS proposti si basa su un'architettura client-server. Il RS che esegue sul server ha una conoscenza completa di utenti, oggetti e rating. Il client, fisso o mobile, esegue delle query al RS per ricevere raccomandazioni. I problemi nel realizzare un RS context-aware che esegue sul dispositivo locale dell'utente sono principalmente due:
+\begin{enumerate}
+ \item I sistemi di raccomandazione mobile hanno una conoscenza solo parziale di utenti, oggetti, e dei feedback che gli utenti hanno lasciato sugli oggetti. Questo è dovuto al fatto che il RS inizialmente è a conoscenza solo dei feedback dell'utente locale, e ne scopre di nuovi tramite comunicazione D2D con altri dispositivi. 
+ 
+ \item \`E difficile integrare le numerose informazioni di contesto fisico generate dai dispositivi mobili, e le informazioni di contesto sociale che caratterizzano la situazione dell'utente.
+\end{enumerate}
+Più nel dettaglio per gli algoritmi visti in questo capitolo:
+
+
+\myparagraph{ALS}
+L'input di ALS (\autoref{subsec:als}) è una matrice $R$ di dimensione $u \times i$ con $u$ numero di utenti, e $i$ numero di oggetti. In ambiente mobile inizialmente la matrice $R$ è vuota perché l'utente non ha espresso nessuna valutazione e non ha incontrato altri utenti. Ogni volta che un nuovo utente o un nuovo oggetto viene scoperto, si aggiunge una nuova riga/colonna alla matrice $R$. Il primo problema di questo algoritmo, e più in generale degli algoritmi di matrix factorization, è l'aggiunta di un nuovo utente/oggetto che comporta un cambiamento nella dimensione della matrice $R$. \textit{L'algoritmo deve essere addestrato nuovamente da zero} sulla nuova matrice $R$ per poter raccomandare i nuovi oggetti, e tenere conto delle valutazioni dei nuovi utenti. Il secondo problema di MF è l'aggiunta del contesto. Come detto nella \autoref{subsec:multidim}, ogni feature di contesto è una dimensione aggiunta alla matrice dei rating $R$. Per mantenere una complessità computazionale bassa, per i modelli MF context-aware si seleziona un insieme molti limitato di feature contestuali, che potrebbero non rappresentare pienamente il contesto corrente dell'utente.
+
+\myparagraph{NeuMF}
+Neural matrix factorization (\autoref{subsec:ncf}) implementa un RS
+collaborative-filtering con una deep neural network. La dimensione dell'input della rete, e di conseguenza la dimensione dell'input del layer di embedding è da definire a livello di compilazione della rete prima di eseguire il training. Una volta terminato il training, la rete è in grado di predire i rating solo degli stessi utenti/oggetti già presenti durante il training. Questo perché l'input deve avere la  dimensione definita a livello di compilazione, e di conseguenza il numero di utenti e oggetti è lo stesso definito a livello di compilazione. Come per ALS, aggiungere un nuovo utente od un nuovo oggetto significa dover compilare di nuovo il modello ed eseguire il training da zero. Questo modello inoltre, come presentato in \cite{NCF} non ha nessun supporto per le feature di contesto.
+
+\myparagraph{Context-aware NeuMF}
+Context-aware neural matrix factorization è un estensione di NeuMF che supporta le feature di contesto. Rimangono le stesse limitazioni di NeuMF sull'input, dato che gli ID di utenti e oggetti sono dati in input come vettori in one-hot encoding con dimensione fissata. 
 
 % 
 %			CAPITOLO 3: Lavoro svolto
@@ -186,7 +554,13 @@ La tesi è organizzata come segue:
 
 \chapter{moveCARS}
 \label{chap:classificatore}
-Come abbiamo visto nel capitolo precedente, la maggior parte dei RS produce le proprie raccomandazioni usando unicamente informazioni su utenti, oggetti, e le valutazioni che gli utenti hanno dato agli oggetti (rating). Meno comuni sono invece i sistemi di raccomandazione context-aware, che considerano nel processo di raccomandazione anche il contesto in cui un rating è stato generato. La maggior parte dei CARS sfruttano un insieme limitato di feature di contesto selezionate manualmente, in modo da evitare di dover gestire una matrice dei rating con dimensionalità elevata. Recentemente sono stati proposti i primi sistemi di raccomandazioni context-aware che integrano nel processo di raccomandazione un alto numero di feature contestuali, come può essere quello estratto dai sensori di un dispositivo mobile. Come spiegato in conclusione al \autoref{chap:stato_arte}, le soluzioni proposte non sono tuttavia adatte per essere implementate direttamente su dispositivo mobile, anche se dimostrano come un approccio deep learning possa essere un'ottima soluzione per gestire la dimensionalità del contesto. Per questi motivi in questo capitolo è descritto un nuovo sistema di raccomandazione context-aware basato su deep learning per sistemi mobili e pervasivi, progettato nel corso di questo lavoro di tesi. Il sistema di raccomandazione è stato pensato per eseguire le fasi di training e inferenza su dispositivo mobile - così da ridurre problemi di privacy derivanti da trasferimento dei dati ed elaborazione in un'infrastruttura cloud remota - e per supportare un grande numero di feature di contesto. Per le caratteristiche appena elencate, questo nuovo RS è chiamato \textit{moveCARS} (MObile pervasiVE Context-Aware Recommender System).
+Come abbiamo visto nel capitolo precedente, la maggior parte dei RS produce le proprie raccomandazioni usando unicamente informazioni su utenti, oggetti, e le valutazioni che gli utenti hanno dato agli oggetti (rating). Meno comuni sono invece i sistemi di raccomandazione context-aware, che considerano nel processo di raccomandazione anche il contesto in cui un rating è stato generato. La maggior parte dei CARS sfruttano un insieme limitato di feature di contesto selezionate manualmente, in modo da evitare di dover gestire una matrice dei rating con dimensionalità elevata. Recentemente sono stati proposti i primi sistemi di raccomandazioni context-aware che integrano nel processo di raccomandazione un alto numero di feature contestuali, come può essere quello estratto dai sensori di un dispositivo mobile. Come spiegato in conclusione al \autoref{chap:stato_arte}, le soluzioni proposte non sono tuttavia adatte per essere implementate direttamente su dispositivo mobile, anche se dimostrano come un approccio deep learning possa essere un'ottima soluzione per gestire la dimensionalità del contesto. Per questi motivi in questo capitolo è descritto un nuovo sistema di raccomandazione context-aware basato su deep learning per sistemi mobili e pervasivi, progettato nel corso di questo lavoro di tesi. Il sistema di raccomandazione ha due caratteristiche fondamentali: 
+\begin{enumerate}
+\item \`E stato pensato per eseguire la fase di inferenza su dispositivo mobile: ciò permette di ridurre problemi di privacy derivanti da trasferimento dei dati ed elaborazione in un'infrastruttura cloud remota. Inoltre, è possibile generare raccomandazioni quasi in tempo reale, non appena il dispositivo scopre un nuovo contenuto nelle vicinanze.
+\item Può supportare un grande numero di feature di contesto per descrivere dettagliatamente la situazione contestuale in cui si trova un utente. 
+\end{enumerate}
+
+Per le caratteristiche appena elencate, questo nuovo RS è chiamato \textit{moveCARS} (MObile pervasiVE Context-Aware Recommender System).
 
 \begin{figure}
   \centering
@@ -221,10 +595,11 @@ Solitamente l'input dei modelli collaborative filtering context-aware è compost
 \end{figure}
 
 \subsection{Struttura della rete neurale}
-Il vettore di feature appena descritto è dato in input ad una rete neurale che deve prevedere se l'utente caratterizzato da \texttt{user\_feature} è interessato all'oggetto caratterizzato da \texttt{item\_feature} nei contesti fisici e sociali \texttt{physical\_context} e \texttt{social\_context}. Si tratta quindi di un problema di classificazione binaria. Nei problemi di classificazione, l'obiettivo è prevedere il valore di una variabile che può assumere diversi valori discreti. I problemi di classificazione in cui una variabile può assumere solo due valori possibili (come 0 o 1) sono chiamati problemi di classificazione binaria \cite{hands-on-ml}.
+Il vettore di feature appena descritto è dato in input ad una rete neurale che deve prevedere se l'utente caratterizzato da \texttt{user\_feature} è interessato all'oggetto caratterizzato da \texttt{item\_feature} nei contesti fisici e sociali \texttt{physical\_context} e \texttt{social\_context}. Si tratta quindi di un problema di classificazione, più specificatamente di classificazione binaria. Nei problemi di classificazione, l'obiettivo è prevedere il valore di una variabile che può assumere diversi valori discreti. I problemi di classificazione in cui una variabile può assumere solo due valori possibili (come 0 o 1) sono chiamati problemi di classificazione binaria \cite{hands-on-ml}.
 
 \paragraph{Layer e neuroni}
-La rete neurale scelta rientra nella categoria feed-forward fully connected. Una rete feed-forward non contiene cicli nel suo grafo \cite{Goodfellow-et-al-2016}, fully connected indica che ogni neurone del layer $i$ è connesso a tutti i neuroni del layer $i+1$. La rete ha un layer di input, un layer di output e $l$ layer nascosti. Il layer di input ha un numero di neuroni pari alle feature in ingresso (sommando user, item e context feature), il layer di output ha sempre un neurone, mentre il numero di neuroni nei layer nascosti $l$, e il numero di layer nascosti è calcolato facendo il tuning della rete tramite grid search, scegliendo la combinazione che ottiene i risultati migliori. In questa tesi è stato utilizzato lo stesso numero di neuroni in ogni layer nascosto, ma si può ad esempio adottare un design a torre in cui i layer più profondi contengono meno neuroni rispetto ai layer meno profondi.
+La rete neurale scelta rientra nella categoria feed-forward fully connected. \`E l'architettura più indicata per fare classificazione, ed è meno complessa di altre architetture come le Convolutional Neural Networks o le Long Short-Term Memory Networks. 
+Una rete feed-forward non contiene cicli nel suo grafo \cite{Goodfellow-et-al-2016}, fully connected indica che ogni neurone del layer $i$ è connesso a tutti i neuroni del layer $i+1$. La rete ha un layer di input, un layer di output e $l$ layer nascosti. Il layer di input ha un numero di neuroni pari alle feature in ingresso (sommando user, item e context feature), il layer di output ha sempre un neurone, mentre il numero di neuroni nei layer nascosti $l$, e il numero di layer nascosti è calcolato facendo il tuning della rete tramite grid search, scegliendo la combinazione che ottiene i risultati migliori. In questa tesi è stato utilizzato lo stesso numero di neuroni in ogni layer nascosto, ma si può ad esempio adottare un design a torre in cui i layer più profondi contengono meno neuroni rispetto ai layer meno profondi.
 
 \paragraph{Funzione di attivazione}
 Una funzione di attivazione di un neurone definisce l'output di quel neurone in base all'insieme dei suoi input. Come funzione di attivazione dei layer nascosti ho scelto la funzione rectified linear unit (ReLU) definita come $f(x) = max\{0, x\}$. La funzione ReLU è consigliata per la maggior parte delle reti feed-forward \cite{Goodfellow-et-al-2016}, e ha diversi vantaggi rispetto a funzioni di attivazione come sigmoide e tanh: è più plausibile biologicamente, non viene saturata (a differenza di tanh e sigmoide che hanno un output massimo uguale a 1), e incoraggiando l'attivazione sparsa dei neuroni rende più difficile che si verifichi l'overfitting del modello durante il training \cite{relu}. Come funzione di attivazione del layer di output ho scelto la funzione sigmoide definita come 
@@ -241,7 +616,7 @@ $$
 dove $y$ è il valore reale del feedback di un utente su un oggetto (0 oppure 1), $p(y)$ è la probabilità predetta dalla rete che $y$ abbia valore 1, e $1-p(y_i)$ è la probabilità che $y$ abbia valore 0 \cite{cross-entropy}.
 
 \paragraph{Ottimizzatore}
-Un ottimizzatore è un algoritmo che modifica i pesi del modello in modo da minimizzare la funzione di loss e rendere le previsioni della rete più accurate possibile. Come ottimizzatore ho scelto Adam; nell'articolo in cui é introdotto viene dimostrato empiricamente di essere generalmente migliore rispetto ad altri algoritmi di ottimizzazione stocastici, e di risolvere in modo efficiente problemi di deep learning \cite{adam}. Adam ha diversi iperparametri configurabili, il più importante è il learning rate (chiamato $\alpha$ in Adam) che regola la velocità con cui il modello è adattato al problema. Gli altri parametri ($\beta_1, \beta_2, \varepsilon$) sono lasciati al valore di default della libreria Keras\footnote{\url{https://keras.io/api/optimizers/adam/}}. 
+Un ottimizzatore è un algoritmo che modifica i pesi del modello in modo da minimizzare la funzione di loss e rendere le previsioni della rete più accurate possibile. Come ottimizzatore ho scelto Adam; nell'articolo in cui é introdotto viene dimostrato empiricamente di essere generalmente migliore rispetto ad altri algoritmi di ottimizzazione stocastici, e di risolvere in modo efficiente problemi di deep learning \cite{adam}. Adam ha diversi iper-parametri configurabili, il più importante è il learning rate (chiamato $\alpha$ in Adam) che regola la velocità con cui il modello è adattato al problema. Gli altri parametri ($\beta_1, \beta_2, \varepsilon$) sono lasciati al valore di default della libreria Keras\footnote{\url{https://keras.io/api/optimizers/adam/}}. 
 
 \paragraph{Epoche e batch size}
 Epoche e batch size sono due parametri molto importanti da ottimizzare, il numero di epoche e la dimensione della batch size ideali sono calcolate tramite grid search nel \autoref{chap:risultati}. La batch size corrisponde al numero di campioni processati prima di aggiornare i parametri del modello. Il numero di epoche indica quante volte viene presentato alla rete il training set prima di concludere il training.
@@ -391,9 +766,10 @@ Qualsiasi dataset per sistemi di raccomandazione ha tre feature fondamentali: us
 Le feature degli oggetti sono caratteristiche che descrivono le applicazioni usate dagli utenti di Frappe. Il dataset contiene tre feature rilevanti per il task di classificazione: la categoria dell'applicazione, la lingua, e il costo.
 
 \paragraph{Category} è la categoria delle applicazioni ottenuta dal Google Play Store. In Frappe le applicazioni sono divise in 23 categorie che descrivono la loro funzionalità principale (es. videogiochi, notizie, social). Come si può vedere in \autoref{fig:frappe-categories}, il numero di campioni per ogni categoria è molto sbilanciato: la categoria Communication che comprende applicazioni di messaggistica come WhatsApp e Telegram ha più di 20k campioni. La seconda categoria più popolare è Social che comprende applicazioni come Facebook, Instagram e Twitter.
+
 \begin{figure}
   \centering
-  \includegraphics[width=\linewidth]{immagini/frappe-category.png}
+  \includegraphics[width=\linewidth]{immagini/frappe-category.pdf}
   \caption{Numero di campioni per ogni categoria di applicazioni nel dataset Frappe}
   \label{fig:frappe-categories}
 \end{figure}
@@ -521,7 +897,7 @@ MDF le applicazioni sono divise in 26 categorie che descrivono la loro funzional
 
 \begin{figure}
   \centering
-  \includegraphics[width=\linewidth]{immagini/mdf-category.png}
+  \includegraphics[width=\linewidth]{immagini/mdf-category.pdf}
   \caption{Numero di campioni per ogni categoria di applicazioni nel dataset My Digital Footprint}
   \label{fig:mdf-categories}
 \end{figure}
@@ -548,7 +924,7 @@ Ricapitolando, il dataset MDF processato contiene 73176 campioni, 31 utenti e 33
 % 
 
 \chapter{Risultati} \label{chap:risultati}
-In questo capitolo sono riportati i risultati sui dataset Frappe e MDF. Nella \autoref{sec:comp-model} sono spiegati i modelli scelti per comparare le prestazioni di moveCARS e il motivo della selezione. Nella \autoref{sec:auc} è spiegata la metrica utilizzata per la valutazione dei modelli e i vantaggi che comporta. Nelle sezioni \ref{sec:k-fold} e \ref{sec:grid-search} sono spiegati $k$-fold e grid search per identificare gli iperparametri migliori dei modelli. Nella \autoref{sec:results} sono riportati i risultati sui dataset presentati nel \autoref{chap:datasets}, e in ultimo i tempi di esecuzione su dispositivi Android (\autoref{sec:smartphone}).
+In questo capitolo sono riportate le misure di prestazione di moveCARS in confronto ai migliori approcci esistenti in letteratura, valutate sui dataset Frappe e MDF. Nella \autoref{sec:comp-model} sono spiegati i modelli scelti per comparare le prestazioni di moveCARS e il motivo della selezione. Nella \autoref{sec:auc} è spiegata la metrica utilizzata per la valutazione dei modelli e i vantaggi che comporta. Nelle sezioni \ref{sec:k-fold} e \ref{sec:grid-search} sono spiegati $k$-fold e grid search per identificare gli iper-parametri migliori dei modelli. Nella \autoref{sec:results} sono riportati i risultati sui dataset presentati nel \autoref{chap:datasets}, e in ultimo i tempi di esecuzione su dispositivi Android (\autoref{sec:smartphone}).
 
 \section{Modelli} \label{sec:comp-model}
 Ho comparato il modello moveCARS con tre modelli collaborative-filtering già discussi nel \autoref{chap:stato_arte}:
@@ -562,7 +938,7 @@ per valutare l'impatto del contesto nella produzione di raccomandazioni, confron
 \item \textit{ECAM NeuMF:} Delle tre estensioni context-aware di NeuMF (ECAM, UCAM, HCAM), ho scelto ECAM NeuMF che utilizza un vettore di contesto senza ulteriori elaborazioni. Nonostante ECAM NeuMF sia la versione meno performante delle tre varianti \cite{context-aware-deep-learning}, è l'unica plausibile per essere implementata su dispositivi mobili. Questo modello è utile per un confronto diretto con moveCARS, dato che i due modelli utilizzano lo stesso insieme di feature di contesto. Gli autori dell'articolo in cui l'algoritmo è presentato non hanno rilasciato il codice sorgente o dettagli sull'implementazione. Per questo motivo ho implementato ECAM NeuMF in Keras, a partire da NeuMF.
 \end{enumerate}
 
-\section{AUC} \label{sec:auc}
+\section{Area Under the ROC Curve (AUC)} \label{sec:auc}
 
 \begin{figure}
   \centering
@@ -594,15 +970,15 @@ L'AUC possiede tre proprietà fondamentali che la rendono un'ottima metrica per 
 \item \textit{Distribuzione delle classi:} L'AUC è insensibile a cambiamenti nella distribuzione delle classi. Per questo motivo è una metrica adatta a dataset leggermente sbilanciati come MDF e Frappe.
 \end{enumerate}
 
-\noindent Per le proprietà elencate, ho scelto di usare l'AUC come metrica di paragone sia per ottimizzare gli iperparametri, sia per valutare le prestazioni dei modelli proposti nella \autoref{sec:comp-model} rispetto a moveCARS.
+\noindent Per le proprietà elencate, ho scelto di usare l'AUC come metrica di paragone sia per ottimizzare gli iper-parametri, sia per valutare le prestazioni dei modelli proposti nella \autoref{sec:comp-model} rispetto a moveCARS.
 
 \subsection{AUC per ALS}
-Per calcolare l'AUC di una rete neurale si divide il dataset $D$ in due sottoinsiemi $D_{train}$ e $D_{val}$. Il modello è addestrato su $D_{train}$ e valutato su $D_{val}$, calcolando l'AUC in base ai valori predetti dalla rete $y_{pred}$ e i valori reali $y_{val}$ nel dataset $D_{val}$. Per gli algoritmi di matrix factorization come ALS, la divisione in train e test è effettuata mascherando una percentuale dei feedback positivi dalla matrice originale. L'AUC è poi calcolata sulla lista prodotta delle $k$ migliori raccomandazioni (AUC@$k$), o sull'errore di ricostruzione della matrice prodotta da ALS rispetto alla matrice originale.
+Per calcolare l'AUC di una rete neurale, si divide il dataset $D$ in due sottoinsiemi $D_{train}$ e $D_{val}$. Il modello è addestrato su $D_{train}$ e valutato su $D_{val}$, calcolando l'AUC in base ai valori predetti dalla rete $y_{pred}$ e i valori reali $y_{val}$ nel dataset $D_{val}$. Per gli algoritmi di matrix factorization come ALS, la divisione in train e test è effettuata mascherando una percentuale dei feedback positivi dalla matrice originale. L'AUC è poi calcolata sulla lista prodotta delle $k$ migliori raccomandazioni (AUC@$k$), o sull'errore di ricostruzione della matrice prodotta da ALS rispetto alla matrice originale.
 Per confrontare ALS con i modelli di deep learning ho seguito l'approccio suggerito in \cite{auc-als}, che punta a calcolare l'AUC solo per gli utenti che hanno avuto uno o più feedback mascherati, anziché su tutta la matrice. 
 L'algoritmo \ref{alg:auc-als} riporta lo pseudocodice della procedura. Gli input sono una matrice $D_{train}$ che corrisponde alla matrice originale $D$ con una percentuale di feedback positivi alterati in feedback negativi, $D_{test}$ che è una matrice i cui feedback positivi corrispondono ai feedback mascherati da $D_{train}$, e $D_{pred}$ che è la matrice ricostruita dal modello ALS dopo essere stato addestrato su $D_{train}$. 
 L'output è l'AUC di ALS su $D$. L'algoritmo inizia creando una lista di tutti gli utenti che hanno almeno un feedback alterato (riga 1). Per ogni utente $u$ nella lista degli utenti alterati (riga 2), si estraggono i vettori $u_{train}$, $u_{test}$ e $u_{pred}$ che corrispondono alla riga dell'utente $u$ nelle matrici $D_{train}$, $D_{test}$ e $D_{pred}$ (righe 3, 4, 5). 
 Successivamente viene generato un vettore di indici $u_{idx}$ che denota le posizioni in $u_{train}$ che contengono un feedback negativo (riga 6). Il motivo per cui si fa questo è che sono da escludere dal calcolo dell'AUC i feedback positivi noti in fase di training, i quali sono zero in $u_{test}$. Dei vettori $u_{test}$ e $u_{pred}$ vengono quindi considerati solo gli elementi in posizione $u_{idx}$ (righe 7, 8).
-A questo punto viene calcolata con la funzione $auc\_score$, l'AUC per l'utente $u$ tra $u_{test}$ e $u_{pred}$ (riga 9). Il risultato $u_{auc}$ è sommato all'AUC globale (riga 10). Calcolata l'AUC per tutti gli utenti $u$, l'AUC globale viene ritornata come media di tutte le AUC degli utenti (riga 12).
+A questo punto viene calcolata, con la funzione $auc\_score$, l'AUC per l'utente $u$ tra $u_{test}$ e $u_{pred}$ (riga 9). Il risultato $u_{auc}$ è sommato all'AUC globale (riga 10). Calcolata l'AUC per tutti gli utenti $u$, l'AUC globale viene ritornata come media di tutte le AUC degli utenti (riga 12).
 
 \begin{algorithm}
 \floatname{algorithm}{Algoritmo}
@@ -651,17 +1027,19 @@ La convalida incrociata è una delle tecniche di ricampionamento dei dati più u
 Non esiste una regola formale per selezionare il valore corretto di $k$, i valori più comuni sono $k=5$ (l'80\% dei dati è usato come training set), oppure $k=10$ (il 90\% dei dati è usato come training set). Al crescere di $k$ la dimensione del training set aumenta, mentre la dimensione del test set diminuisce. In questa tesi per misurare le prestazioni dei modelli ho scelto $k = 10$.
 
 \section{Grid search} \label{sec:grid-search}
-Un iperparametro di un modello è una caratteristica esterna al modello il cui valore non può essere stimato dai dati. Il valore dell'iperparametro va impostato prima di iniziare il processo di apprendimento. All'opposto, un parametro è una caratteristica interna al modello e il suo valore può essere stimato dai dati. La grid search è usata per trovare gli iperparametri ottimali di un modello che portano ad ottenere le predizioni più accurate. 
+Un iperparametro di un modello è una caratteristica esterna al modello il cui valore non può essere stimato dai dati. Il valore dell'iperparametro va impostato prima di iniziare il processo di apprendimento. All'opposto, un parametro è una caratteristica interna al modello e il suo valore può essere stimato dai dati. La grid search è usata per trovare gli iper-parametri ottimali di un modello che portano ad ottenere le predizioni più accurate. 
 
 Uno spazio di ricerca è un volume in cui ogni dimensione rappresenta un iperparametro, ed ogni punto rappresenta una specifica configurazione del modello. Un punto nello spazio di ricerca è un vettore con una valore specifico per ogni iperparametro. La grid search è un processo che testa l'algoritmo selezionato in modo esaustivo, considerando un sottoinsieme definito manualmente dello spazio di ricerca. In pratica, per ogni iperparametro viene specificato manualmente un sottoinsieme di valori che può assumere, e la grid search testa l'algoritmo scelto
-considerando tutte le possibili combinazioni di iperparametri.
-In questa tesi, è stata scelta come combinazione di iperparametri migliore quella con cui il modello ottiene un valore di AUC più alto. Per maggiore robustezza, l'AUC è calcolata con 5-fold cross validation, scegliendo gli iperparametri che portano ad l'AUC più alta su una media di 5 fold. La \autoref{tab:grid-search} mostra gli iperparametri selezionati per la calibrazione dei modelli, e i possibili valori che possono assumere. Le ultime due colonne riportano il risultato della grid search sui dataset MDF e Frappe.
+considerando tutte le possibili combinazioni di iper-parametri.
+In questa tesi, è stata scelta come combinazione di iper-parametri migliore quella con cui il modello ottiene un valore di AUC più alto. Per maggiore robustezza, l'AUC è calcolata con 5-fold cross validation, scegliendo gli iper-parametri che portano all'AUC più alta su una media di 5 fold. La \autoref{tab:grid-search} mostra gli iper-parametri selezionati per la calibrazione dei modelli, e i possibili valori che possono assumere. Le ultime due colonne riportano il risultato della grid search sui dataset MDF e Frappe.
 
 \begin{table}[]
 \centering
+\caption{\label{tab:grid-search}Spazio di ricerca della grid search e risultati su MDF e Frappe}
+\bigskip
 \begin{tabular}{@{}lllll@{}}
 \toprule
-\textbf{Modelli}                     & \textbf{Iperparametri}  & \textbf{Valori}       & \textbf{MDF} & \textbf{Frappe}                    \\ \midrule 
+\textbf{Modelli}                     & \textbf{Iper-parametri}  & \textbf{Valori}       & \textbf{MDF} & \textbf{Frappe}                    \\ \midrule 
 \multirow{3}{*}[-11pt]{ALS}        & Fattori latenti       & {[}64, 128, 256, 512{]} & 128 & 64          \\ \addlinespace[1em]
                             & Regolarizzazione & {[}0.01, 0.1, 1, 5, 7, 10{]}  & 5 & 10  \\  \addlinespace[1em]
                             & Iterazioni      & {[}1, 10, 50, 100, 200{]}   & 10  & 1   \\  \midrule 
@@ -680,16 +1058,15 @@ In questa tesi, è stata scelta come combinazione di iperparametri migliore quel
                             & Layer nascosti        & {[}3, 4, 5{]} & 3 & 3                    \\ \addlinespace[1em]
                             & Neuroni        & {[}100, 200, 300{]} & 100 & 200\\           \bottomrule
 \end{tabular}
-\caption{\label{tab:grid-search}Spazio di ricerca della grid search e risultati su MDF e Frappe}
 \end{table}
 
 \section{Risultati sui dataset} \label{sec:results}
-In questa sezione sono riportati i risultati sui dataset MDF e Frappe. Come già spiegato, la metrica scelta per confrontare i modelli è l'AUC calcolata con 10-fold cross-validation. Gli iperparametri dei modelli sono impostati al valore migliore calcolato tramite grid search riportato nella \autoref{tab:grid-search}.
+In questa sezione sono riportati i risultati sui dataset MDF e Frappe. Come già spiegato, la metrica scelta per confrontare i modelli è l'AUC calcolata con 10-fold cross-validation. Gli iper-parametri dei modelli sono impostati al valore migliore calcolato tramite grid search riportato nella \autoref{tab:grid-search}.
 \subsection{Risultati MDF}
 I risultati su MDF sono divisi in tre parti: (i) confronto di moveCARS con i modelli riportati nella \autoref{sec:comp-model}, (ii) analisi dell'importanza delle feature di contesto nel processo di raccomandazione, (iii) confronto con un dataset diverso per ogni utente.
 
-\myparagraph{Confronto con altri modelli di raccomandazione}
-La \autoref{fig:result-mdf} riporta un grafico a barre con le prestazioni dei modelli rispetto all'AUC sul dataset MDF. Per prima cosa si può notare come i modelli basati su reti neurali (NeuMF, ECAM NeuMF e moveCARS) hanno un'AUC superiore rispetto ad ALS, l'unico sistema di raccomandazione non neurale. Oltre a ciò, si può vedere come i modelli context-aware (ECAM NeuMF e moveCARS) sono superiori ai modelli non-context aware (ALS e NeuMF). In particolare ECAM NeuMF ha un'AUC più alta del 6,15\%  rispetto alla controparte non-context aware NeuMF, dimostrando che integrare informazioni contestuali nel processo di raccomandazione può migliorare la qualità delle raccomandazioni. Il modello moveCARS si è rivelato leggermente inferiore rispetto a ECAM NeuMF, ma allo stesso tempo ha un'AUC superiore del 5,33\% rispetto a NeuMF. Nonostante moveCARS non si sia rivelato il modello migliore ci sono due considerazioni importanti da fare: (i) moveCARS non soffre delle restrizioni sull'input imposte dalla struttura della rete come ECAM NeuMF (\autoref{sec:trad-rs-prob}), (ii) il dataset MDF contiene poche informazioni associate agli utenti e oggetti, non è da escludere un miglioramento delle prestazioni con l'utilizzo di feature più descrittive.
+\subsubsection{Confronto con altri modelli di raccomandazione}
+La \autoref{fig:result-mdf} riporta un grafico a barre con le prestazioni dei modelli rispetto all'AUC sul dataset MDF. Per prima cosa si può notare come i modelli basati su reti neurali (NeuMF, ECAM NeuMF e moveCARS) hanno un'AUC superiore rispetto ad ALS, l'unico sistema di raccomandazione non neurale. Oltre a ciò, si può vedere come i modelli context-aware (ECAM NeuMF e moveCARS) sono superiori ai modelli non-context aware (ALS e NeuMF). In particolare ECAM NeuMF ha un'AUC più alta del 6,15\%  rispetto alla controparte non-context aware NeuMF, dimostrando che integrare informazioni contestuali nel processo di raccomandazione può migliorare la qualità delle raccomandazioni. Il modello moveCARS si è rivelato leggermente inferiore rispetto a ECAM NeuMF, ma allo stesso tempo ha un'AUC superiore del 5,33\% rispetto a NeuMF. Nonostante moveCARS non si sia rivelato il modello migliore ci sono due considerazioni importanti da fare: (i) \textit{moveCARS non soffre delle restrizioni sull'input imposte dalla struttura della rete} come ECAM NeuMF (\autoref{sec:trad-rs-prob}), (ii) il dataset MDF contiene poche informazioni associate agli utenti e oggetti, pertanto non è da escludere un miglioramento delle prestazioni con l'utilizzo di feature più descrittive.
 
 \begin{figure}
   \centering
@@ -698,11 +1075,11 @@ La \autoref{fig:result-mdf} riporta un grafico a barre con le prestazioni dei mo
   \label{fig:result-mdf}
 \end{figure}
 
-\myparagraph{Confronto sulle feature di contesto}
-La \autoref{fig:result-movecars-mdf} riporta un grafico a barre con i risultati di moveCARS addestrato su sottoinsiemi diversi delle feature di MDF, così da valutare l'importanza del contesto nelle raccomandazioni. In particolare viene addestrato con le seguenti combinazioni di feature: (i) solo feature di utenti e oggetti, (ii) feature di utenti, oggetti e contesto sociale, (iii) feature di utenti, oggetti e contesto fisico, (iv) feature di utenti, oggetti, contesto fisico e contesto sociale. Si può notare che il modello addestrato solo su feature di utenti e oggetti ha l'AUC bassa, pari a 0.7119. Ciò è dovuto alla scarsità di feature che non descrivono in modo esaustivo gli utenti e gli oggetti. Aggiungendo il contesto sociale, che indica il tipo di persone in prossimità dell'utente nel momento in cui ha utilizzato un'applicazione, l'AUC aumenta a 0.7767. Ovviamente le informazioni di contesto sociale non sono sufficienti a descrivere interamente la situazione contestuale di un utente. Aggiungendo il contesto fisico alle feature di utenti e oggetti, l'AUC aumenta a 0.9583. Ciò dimostra ancora una volta che il contesto ha un effetto molto rilevante sulle raccomandazioni. Combinando il contesto fisico e sociale si ottiene l'AUC più alta, pari a 0.9731. Questa è un'indicazione che utilizzare un numero elevato di informazioni contestuali può migliorare ulteriormente le raccomandazioni.
+\subsubsection{Confronto sulle feature di contesto}
+La \autoref{fig:result-movecars-mdf} riporta un grafico a barre con i risultati di moveCARS addestrato su sottoinsiemi diversi delle feature di MDF, così da valutare l'importanza del contesto nelle raccomandazioni. In particolare viene addestrato con le seguenti combinazioni di feature: (i) solo feature di utenti e oggetti, (ii) feature di utenti, oggetti e contesto sociale, (iii) feature di utenti, oggetti e contesto fisico, (iv) feature di utenti, oggetti, contesto fisico e contesto sociale. Si può notare che il modello addestrato solo su feature di utenti e oggetti ha l'AUC bassa, pari a 0.7119. Ciò è dovuto alla scarsità di feature che non descrivono in modo esaustivo gli utenti e gli oggetti. Aggiungendo il solo contesto sociale, che indica il tipo di persone in prossimità dell'utente nel momento in cui ha utilizzato un'applicazione, l'AUC aumenta a 0.7767. Ovviamente le informazioni di contesto sociale non sono sufficienti a descrivere interamente la situazione contestuale di un utente. Aggiungendo il solo contesto fisico alle feature di utenti e oggetti, l'AUC aumenta a 0.9583. Ciò dimostra ancora una volta che il contesto ha un effetto molto rilevante sulle raccomandazioni. Combinando il contesto fisico e sociale si ottiene l'AUC più alta, pari a 0.9731. Questa è un'indicazione che utilizzare un numero elevato di informazioni contestuali può migliorare ulteriormente le raccomandazioni.
 
-\myparagraph{Confronto sulla feature sociale layer}
-Nelle valutazioni precedenti, come feature di contesto sociale sono state considerate solo \texttt{social\_c1, social\_c2, social\_c3, social\_c4} che descrivono gli alter in prossimità dell'utente nel momento in cui ha utilizzato un'applicazione. Non è stata considerata la feature \texttt{layer} che indica la cerchia sociale dell'utente da cui è stata ricevuta una raccomandazione. Questo perché aggiungere questa nuova feature significa dover generare un dataset diverso e personale per ogni utente, in cui ogni riga contiene un valore che indica la cerchia dell'utente da cui è stata ricevuta la raccomandazione. Come ultimo test ho quindi generato un dataset per ciascuno dei 31 utenti, ogni dataset contiene tutti i campioni disponibili e tutte le feature già descritte, con l'aggiunta della feature \texttt{layer}. Per la valutazione, moveCARS è addestrato su tutti i dataset degli utenti, e viene memorizzata l'AUC ottenuta su ogni dataset. Di questi valori viene fatta la media per calcolare il risultato finale. L'AUC media è pari a 0.9822, superiore rispetto all'AUC di moveCARS calcolata precedentemente (0.9731), e superiore all'AUC di ECAM NeuMF (0.9815).
+\subsubsection{Confronto sulla feature sociale ``layer"}
+Nelle valutazioni precedenti, come feature di contesto sociale sono state considerate solo \texttt{social\_c1, social\_c2, social\_c3, social\_c4} che descrivono gli alter in prossimità dell'utente nel momento in cui ha utilizzato un'applicazione. Non è stata considerata la feature \texttt{layer} che indica la cerchia sociale dell'utente da cui è stata ricevuta una raccomandazione. Questo perché aggiungere questa nuova feature significa dover generare un dataset diverso e personale per ogni utente, in cui ogni riga contiene un valore che indica la cerchia dell'utente da cui è stata ricevuta la raccomandazione. Come ultimo test ho quindi generato un dataset per ciascuno dei 31 utenti: ogni dataset contiene tutti i campioni disponibili e tutte le feature già descritte, con l'aggiunta della feature \texttt{layer}. Per la valutazione, moveCARS è addestrato su tutti i dataset degli utenti, e viene memorizzata l'AUC ottenuta su ogni dataset. Di questi valori viene fatta la media per calcolare il risultato finale. \textit{L'AUC media diventa in questo caso pari a 0.9822, superiore rispetto all'AUC di moveCARS calcolata precedentemente (0.9731), e superiore all'AUC di ECAM NeuMF (0.9815).}
 
 \begin{figure}
   \centering
@@ -723,12 +1100,12 @@ In \autoref{fig:result-frappe} è riportato un grafico a barre con i risultati d
 \end{figure}
 
 \section{Test su smartphone} \label{sec:smartphone}
-L'ultima parte di questo capitolo è dedicata a valutare se il modello moveCARS e gli altri algoritmi di deep learning proposti come confronto possano essere eseguiti su dispositivi mobili, e se ci siano differenze significative in termini di tempo di esecuzione. Non è stata valutata la fase di addestramento dei modelli, che è rimandata agli sviluppi futuri, ma solo il tempo di inizializzazione e di inferenza. Dato che i modelli selezionati sono scritti in Keras con Tensorflow come backend, ho scelto di ricorrere al framework TensorFlow Lite. 
+L'ultima parte di questo capitolo è dedicata a valutare se il modello moveCARS e gli altri algoritmi di deep learning proposti come confronto possano essere eseguiti su dispositivi mobili  - che è il contesto operativo scelto in questa tesi - e se ci siano differenze significative in termini di tempo di esecuzione. Non è stata valutata la fase di addestramento dei modelli, che è rimandata agli sviluppi futuri, ma solo il tempo di inizializzazione e di inferenza. Dato che i modelli selezionati sono scritti in Keras con Tensorflow come backend, ho scelto di ricorrere al framework TensorFlow Lite. 
 
 \subsection{TensorFlow Lite}
 TensorFlow Lite\footnote{\url{https://www.tensorflow.org/lite}} (TF Lite) è un framework di deep learning open-source, multipiattaforma distribuito con TensorFlow 2.0. TF Lite permette di convertire un modello TensorFlow precedentemente addestrato in un formato speciale che può essere ottimizzato in velocità e memoria occupata. Questo formato speciale può essere distribuito su smartphone con Android o iOS, o dispositivi basati su Linux come il Raspberry Pi e altri microcontrollori.
 
-TF Lite contiene principalmente due componenti fondamentali:  il convertitore (TF Lite Converter) e l'interprete (TF Lite Interpreter) che può essere installato indipendentemente sul dispositivo su cui si vuole fare inferenza.  Il convertitore ha il compito principale di ottimizzare il modello, riducendo le sue dimensioni e aumentando la sua velocità di esecuzione. Sono disponibili diverse ottimizzazioni, ad esempio è possibile ridurre la precisione del modello convertendo tutti i pesi del modello da float a 32 bit a interi a 8 bit, a discapito naturalmente dell'accuratezza delle inferenze. Nei test effettuati in questa tesi sono state mantenute le impostazioni predefinite di TF Lite che riducono le dimensioni del modello senza quantizzazione dei pesi o delle attivazioni.
+TF Lite contiene principalmente due componenti fondamentali:  il convertitore (TF Lite Converter) e l'interprete (TF Lite Interpreter) che può essere installato indipendentemente sul dispositivo su cui si vuole fare inferenza.  Il convertitore ha il compito principale di ottimizzare il modello, riducendo le sue dimensioni e aumentando la sua velocità di esecuzione. Sono disponibili diverse ottimizzazioni, ad esempio è possibile ridurre la precisione del modello convertendo tutti i pesi del modello da float a 32 bit in interi a 8 bit, a discapito naturalmente dell'accuratezza delle inferenze. Nei test effettuati in questa tesi sono state mantenute le impostazioni predefinite di TF Lite che riducono le dimensioni del modello senza quantizzazione dei pesi o delle attivazioni.
 
 La conversione di un modello TensorFlow 2.0 in un modello TF Lite compatibile con dispositivi Android si compone di quattro passaggi:
 \begin{enumerate}
@@ -756,7 +1133,7 @@ La conversione di un modello TensorFlow 2.0 in un modello TF Lite compatibile co
   \label{fig:init-time}
 \end{figure}
 
-\subsection{Risultati benchmark su Android}
+\subsection{Risultati benchmark su Android} \label{sec:benchmark}
 \noindent Per una valutazione accurata, ho usato quattro diversi smartphone Android su cui sono stati misurati i tempi di inizializzazione e inferenza dei modelli usando l'applicazione Android BenchmarkModel:
 \begin{itemize}
 \item \textit{Google Nexus 5:} \`E un telefono rilasciato sul mercato a fine 2013 dotato di processore Qualcomm Snapdragon 800 e 2GB di RAM. Monta la versione di fabbrica di Android rilasciata da Google, e non ha installate applicazioni addizionali che potrebbero influire sui test.
@@ -789,28 +1166,31 @@ In conclusione, considerando i risultati dei test effettuati su smartphone con p
 \chapter{Conclusioni} \label{chap:conclusioni}
 
 \section{Conclusioni}
-In questo lavoro, il cui obiettivo principale è sviluppare un nuovo sistema di raccomandazione context-aware per dispositivi mobili, sono state affrontate le problematiche relative allo sviluppo e alla valutazione di un sistema di raccomandazione in questo nuovo ambito che si discosta dal tradizionale paradigma client-server.
+In questa tesi sono state affrontate le problematiche relative allo sviluppo e alla valutazione di un sistema di raccomandazione context-aware per dispositivi mobili e pervasivi.
 
-Innanzitutto, sono stati analizzati alcuni algoritmi proposti in letteratura, ed è stato osservato che non sono direttamente applicabili in ambiente mobile a causa delle  restrizioni proposte da questo nuovo scenario. Per quanto riguarda il contesto, è stato riscontrato che la maggior parte dei lavori proposti in letteratura sono orientati ad un contesto a bassa dimensionalità, che potrebbe non essere abbastanza descrittivo della situazione attuale dell'utente. Recentemente, sono però stati proposti i primi lavori che mirano ad integrare il contesto ottenuto dai sensori di dispositivi mobili nel processo di raccomandazione. 
+Innanzitutto, sono stati analizzati alcuni algoritmi proposti in letteratura, ed è stato osservato che non sono direttamente applicabili in ambiente mobile a causa delle  restrizioni imposte da questo nuovo scenario. Per quanto riguarda il contesto, è stato riscontrato che la maggior parte dei lavori proposti in letteratura sono orientati ad un contesto a bassa dimensionalità, che potrebbe non essere abbastanza descrittivo della situazione attuale dell'utente. Recentemente, sono però stati proposti i primi lavori che mirano ad integrare il contesto ottenuto dai sensori di dispositivi mobili nel processo di raccomandazione. 
 
-\`E stato quindi proposto il modello moveCARS, sviluppato tenendo a mente sia le restrizioni di un ambiente distribuito, sia la necessità di integrare un gran numero di feature di contesto.
+\`E stato quindi proposto il modello moveCARS, sviluppato tenendo a mente sia le restrizioni di un ambiente distribuito, sia la necessità di integrare un numero elevato di feature di contesto.
 
-Un altro problema riscontrato per quanto riguarda i CARS, è la scarsità di dataset pubblici contenenti informazioni contestuali. In questo lavoro sono stati analizzati i dataset context-aware presenti in letteratura, scegliendo infine due dataset che potessero essere usati per valutare in modo accurato il modello proposto.
+Un altro problema riscontrato per quanto riguarda i CARS è la scarsità di dataset pubblici contenenti informazioni contestuali. In questa tesi sono stati analizzati i dataset context-aware presenti in letteratura, scegliendo infine due dataset che potessero essere usati per valutare in modo accurato il modello proposto.
 
 A proposito della valutazione, moveCARS è stato confrontato con altri sistemi di raccomandazione presentati in letteratura, dimostrando di ottenere risultati molto simili ma leggermente inferiori agli algoritmi context-aware stato dell'arte. Questo può essere considerato un compromesso accettabile, considerando i vantaggi che moveCARS comporta nell'implementazione su dispositivi mobili rispetto agli altri algoritmi.
 
-L'ultima valutazione ha riguardato i tempi di esecuzione degli algoritmi NeuMF, ECAM NeuMF e moveCARS dimostrando che è possibile svolgere inizializzazione e inferenza di tutti i modelli direttamente su dispositivi mobili. I tempi di inferenza molto bassi suggeriscono che è possibile generare raccomandazioni per l'utente quasi in tempo reale direttamente dal suo dispositivo personale.
+L'ultima valutazione ha riguardato i tempi di esecuzione degli algoritmi NeuMF, ECAM NeuMF e moveCARS, dimostrando che è possibile svolgere inizializzazione e inferenza di tutti i modelli direttamente su dispositivi mobili. I tempi di inferenza molto bassi suggeriscono che è possibile generare raccomandazioni per l'utente quasi in tempo reale direttamente dal suo dispositivo personale.
 
 \section{Sviluppi futuri}
 Per quanto riguarda gli sviluppi futuri, sicuramente la valutazione di moveCARS su nuovi dataset context-aware può essere utile sia a confermare i risultati ottenuti su MDF e Frappe, sia a capire come si comporta l'algoritmo con insiemi diversi di feature di utenti, oggetti e contesto.
 
-In merito a quanto non trattato in questa tesi ci sono diversi approfondimenti futuri sui cui ci si può concentrare. Uno di questi è il training della rete neurale su dispositivo mobile. \`E da definire in quali condizioni moveCARS termina la fase di training ed è pronto a fare inferenza, e indagare se in certe condizioni possa essere necessario ricominciare di nuovo il training. Ad esempio, le predizioni dell'algoritmo potrebbero non essere più accurate nel momento in cui un utente si sposta per un periodo di tempo lungo in un'area geografica diversa rispetto a quella usuale, e di conseguenza si trova in contesti diversi.
+In merito a quanto non trattato in questa tesi ci sono diversi approfondimenti futuri sui cui ci si può concentrare. Uno di questi è il training della rete neurale su dispositivo mobile.
+\`E da valutare il tempo necessario per il training di moveCARS, così da completare i benchmark su inizializzazione ed inferenza presentati nella \autoref{sec:benchmark}, ed avere un'idea più chiara dell'applicabilità su dispositivo mobile.
+
+ \`E da definire inoltre in quali condizioni moveCARS termina la fase di training ed è pronto a fare inferenza, e indagare se in certe condizioni possa essere necessario ricominciare di nuovo il training. Ad esempio, le predizioni dell'algoritmo potrebbero non essere più accurate nel momento in cui un utente si sposta per un periodo di tempo lungo in un'area geografica diversa rispetto a quella usuale, e di conseguenza si trova in contesti diversi.
 
 Un altro aspetto da valutare in futuro sono le prestazioni di moveCARS con una conoscenza parziale delle informazioni. Nelle valutazioni effettuate in questa tesi, l'algoritmo era a conoscenza di tutto l'insieme di training, condizione che non si verifica in un ambiente reale. Scrivere un simulatore per riprodurre le interazioni e lo scambio di informazioni tra utenti, e valutare le prestazioni di moveCARS nel corso del tempo può chiarire questo aspetto.
 
-In ultimo si potrebbe sviluppare un'applicazione per Android o iOS per e valutare le predizioni di moveCARS in un ambiente reale. Lo sviluppo pone nuove sfide, dato che si dovranno definire diversi aspetti come ad esempio lo scambio di dati tra i dispositivi personali degli utenti, l'acquisizione e l'elaborazione del contesto, e il modo in cui le raccomandazioni sono prodotte.
+In ultimo si potrebbe sviluppare un'applicazione per Android o iOS per valutare le raccomandazioni di moveCARS in un ambiente reale. Lo sviluppo pone nuove sfide, dato che si dovranno definire diversi aspetti come ad esempio lo scambio di dati tra i dispositivi personali degli utenti, l'acquisizione e l'elaborazione del contesto, e il modo in cui le raccomandazioni sono prodotte.
 
-Concludendo, l'algoritmo proposto in questa tesi riguarda solo una parte dell'architettura necessaria per realizzare un sistema di raccomandazione per dispositivi mobili e pervasivi.
+Concludendo, l'algoritmo proposto in questa tesi riguarda solo una parte dell'architettura necessaria per realizzare un sistema di raccomandazione per dispositivi mobili e pervasivi, e ci sono ancora alcuni aspetti da studiare prima che possa essere implementato in un'applicazione reale.
 
 %
 %			BIBLIOGRAFIA
