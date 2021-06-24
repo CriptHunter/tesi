@@ -390,9 +390,9 @@ Gli ensemble design possono essere formalizzati nel modo seguente. Sia $R^k$ una
 \end{enumerate} 
 
 \section{Context-aware recommender system}
-La maggior parte degli approcci esistenti per sviluppare sistemi di raccomandazione si concentra sul raccomandare gli oggetti più rilevanti ai singoli utenti senza considerare informazioni aggiuntive come il tempo, il luogo, etc. In altre parole, i sistemi di raccomandazione tradizionalmente si occupano di applicazioni che hanno solo due tipi di entità, utenti ed oggetti, e non li inseriscono in un contesto quando forniscono raccomandazioni. Tuttavia, in molte applicazioni potrebbe non essere sufficiente considerare solo utenti ed oggetti, ma è anche importante incorporare informazioni contestuali nel processo di raccomandazione al fine di consigliare oggetti agli utenti in determinate circostanze. Il contesto assume una rilevanza ancora maggiore in ambito mobile: a differenza del contesto ricavabile da un dispositivo fisso, dai sensori dei dispositivi mobili degli utenti si può ricavare un contesto ad alta dimensionalità che descrive nel dettaglio la situazione contestuale di un utente. Questo contesto è usato poi per fornire raccomandazioni personalizzate in base alla specifica situazione contestuale in cui è immerso l'utente in un certo istante.
+La maggior parte degli approcci esistenti per sviluppare sistemi di raccomandazione si concentra sul raccomandare gli oggetti più rilevanti ai singoli utenti senza considerare informazioni aggiuntive come il tempo, il luogo, etc. In altre parole, i sistemi di raccomandazione tradizionalmente si occupano di applicazioni che hanno solo due tipi di entità, utenti ed oggetti, e non li inseriscono in un contesto quando forniscono raccomandazioni. Tuttavia, in molte applicazioni potrebbe non essere sufficiente considerare solo utenti ed oggetti, ma è anche importante incorporare informazioni contestuali nel processo di raccomandazione al fine di consigliare oggetti agli utenti in determinate circostanze. Il contesto assume una rilevanza ancora maggiore in ambito mobile: a differenza del contesto ottenibile da un dispositivo fisso, che spesso è limitato al timestamp dei feedback, dai sensori dei dispositivi mobili degli utenti si può ricavare un contesto ad alta dimensionalità che descrive nel dettaglio la situazione contestuale degli utenti. Questo contesto è usato poi per fornire raccomandazioni personalizzate in base alla specifica situazione contestuale in cui l'utente è immerso in un certo istante.
 
-I sistemi di raccomandazione che producono le loro raccomandazioni utilizzando il contesto sono chiamati recommender system context-aware (CARS). Alcuni esempi di contesto sono:
+I sistemi di raccomandazione che producono le loro raccomandazioni utilizzando il contesto sono chiamati context-aware recommender system  (CARS). Alcuni esempi di contesto sono:
 
 \begin{enumerate}
  \item \textit{Data e ora:} Dalle informazioni di data e ora è possibile estrarre diverse feature contestuali come il momento della giornata, il giorno della settimana, week-end, vacanze, stagioni ed altro ancora. Una raccomandazione potrebbe essere rilevante la mattina ma non il pomeriggio, e viceversa. Le raccomandazioni sui vestiti invernali o estivi possono essere molto diverse.
@@ -684,23 +684,15 @@ Il contesto fisico è composto da tutte quelle informazioni rilevanti che posson
 \paragraph{Data e ora} Dalla data si possono generare feature come il giorno della settimana, la stagione, comprendere se è il fine settimana o un periodo di vacanza, etc. Dall'orario invece si può capire il momento della giornata (mattina, pomeriggio, sera, notte).
 
 \subsection{Contesto sociale} \label{subsec:social-context}
-Il contesto sociale si riferisce all'insieme di persone con cui l'utente ha interazioni sociali durante la vita giornaliera, come lavorare con i colleghi o messaggiare con gli amici. \'E stato provato in letteratura che esiste una forte correlazione tra le attività umane e i dati sociali \cite{ego-net}. Questo implica che modellare una rete di relazioni sociali specifica per l'utente  può contribuire a sottolineare le differenze tra i vari contesti in cui è coinvolto.
-
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.50]{immagini/ego-network.png}
-  \caption{Ego network}
-  \label{fig:ego-network}
-  \cite{ego-net}
-\end{figure}
+Il contesto sociale si riferisce all'insieme di persone con cui l'utente ha interazioni sociali durante la vita giornaliera, come lavorare con i colleghi o messaggiare con gli amici. \'E stato provato in letteratura che esiste una forte correlazione tra le attività umane e i dati sociali \cite{ego-net}. Questo implica che modellare una rete di relazioni sociali specifica per l'utente  può contribuire a sottolineare le differenze tra i vari contesti in cui è coinvolto. Una rete sociale consiste in un qualsiasi gruppo di individui connessi tra loro da diversi legami sociali. Di solito, le reti sociali vengono studiate considerando tutte le interazioni tra gli utenti dello stesso sistema (es. il grafo di Facebook). Per lo scopo di questa tesi però, ci si focalizza solo sulle relazioni interpersonali di ogni singolo utente, e per modellare queste relazioni la tecnica più utilizzata in letteratura è rappresentata dalla Ego Network.
 
 \subsubsection{Ego Network}
-Una ego network è una rete sociale composta da un individuo chiamato ego, e dalle persone con cui l'ego ha un collegamento sociale, chiamati alter. I legami sociali in una ego network non hanno tutti la stessa importanza. Ogni individuo ha solo pochi collegamenti forti e molti collegamenti deboli, dovuti alla capacità umana di gestire un numero limitato di relazioni sociali. Una rappresentazione della ego network è mostrata in \autoref{fig:ego-network}: l'ego è il punto rosso al centro dei quattro cerchi concentrici chiamati layer, in cui gli alter sono distribuiti in base alla forza del legame sociale con l'ego. Il cerchio più interno (support clique) è il layer più piccolo, e contiene solo pochi alter che rappresentato le relazioni sociali più forti con l'ego (es. i famigliari). Il secondo layer (sympathy group) contiene le persone che possono essere considerate gli amici più cari. Il terzo cerchio (affinity group) è composto da amici e membri della famiglia meno vicini, mentre l'ultimo layer include persone con cui l'individuo ha interazioni sociali occasionali \cite{ego-net}.
+Una ego network è una rete sociale composta da un individuo chiamato ego, e dalle persone con cui l'ego ha un collegamento sociale, chiamati alter. Secondo la teoria formulata da Roberts e Dunbar \cite{roberts-dunbar}, i legami sociali in una ego network non hanno tutti la stessa importanza. Ogni individuo ha solo pochi collegamenti forti e molti collegamenti deboli, dovuti alla capacità umana di gestire un numero limitato di relazioni sociali. Per questo motivo l'ego network è divisa in layer rappresentati da cerchi concentrici in cui sono distribuiti gli alter. Il cerchio più interno (support clique) è il layer più piccolo, e contiene solo pochi alter che rappresentato le relazioni sociali più forti con l'ego (es. i famigliari). Il secondo layer (sympathy group) contiene le persone che possono essere considerate gli amici più cari. Il terzo cerchio (affinity group) è composto da amici e membri della famiglia meno vicini, mentre l'ultimo layer include persone con cui l'individuo ha interazioni sociali occasionali \cite{ego-net}.
 
 \subsubsection{Modellare il contesto sociale dell'utente}
-Per modellare il contesto sociale di un utente in ambiente mobile, si caratterizzano le interazioni sociali usando le seguenti sorgenti di dati: (i) chiamate telefoniche e log degli SMS, (ii) dati di prossimità, e (iii) attività svolte dall'utente sugli online social network (OSN).
+Per caratterizzare il contesto sociale dell'utente in ambiente mobile, in questa tesi facciamo riferimento al modello proposto in \cite{ego-net} considerando le seguenti sorgenti di dati: (i) chiamate telefoniche e log degli SMS, (ii) dati di prossimità, e (iii) attività svolte dall'utente sugli online social network (OSN).
 
-Il primo step per costruire la ego network di un individuo è stimare la forza dei legami sociali con i suoi alter. Un buon indicatore della forza delle relazioni sociale tra due persone è data dal numero di interazioni che le due persone hanno avuto in passato. Basandosi su questa considerazione, per modellare la forza dei legami sociali dell'utente online, sono prese in considerazione diverse attività svolte dall'utente su OSN, inclusi commenti, reazioni (come ``mi piace") e persone menzionate. Formalmente, la forza dei legami sociali virtuali tra l'ego $e$ ed uno dei suoi alter $a$, $\omega_{osn}(e,a)$ è calcolata nel modo seguente:
+Il primo step per costruire la ego network di un individuo è stimare la forza dei legami sociali con i suoi alter. Un buon indicatore della forza delle relazioni sociali tra due persone è data dal numero di interazioni che le due persone hanno avuto in passato \cite{OSN-strength}. Basandosi su questa considerazione, per modellare la forza dei legami sociali dell'utente online, sono prese in considerazione diverse attività svolte dall'utente su OSN, inclusi commenti, reazioni (come ``mi piace") e persone menzionate. Formalmente, la forza dei legami sociali virtuali tra l'ego $e$ ed uno dei suoi alter $a$, $\omega_{osn}(e,a)$ è calcolata nel modo seguente:
 \begin{equation}	
 	\omega_{osn}(e,a)=\sum_{v_\in V}I_S (e, a)
 \end{equation}
@@ -720,14 +712,15 @@ Per caratterizzare i link sociali fisici di un utente si calcola il numero di in
 \end{equation}
 con il parametro $\lambda$ che regola l'importanza delle interazioni sociali e fisiche. Per ogni alter, solo l'ultimo peso calcolato è mantenuto in memoria, e viene aggiornato quando nuove interazioni sociali sono identificate. I link sociali tra l'utente locale e le altre persone sono raggruppati in base al peso calcolato nell'\autoref{eqn:final-weights}. L'output finale è un array di valori in cui ogni elemento rappresenta la percentuale di utenti attivi in ogni cerchio della ego network di un utente \cite{ego-net}. 
 
-La \autoref{fig:ego-array} mostra un esempio del processo di riconoscimento del contesto. Basandosi sui dati raccolti dal Sensing Manager, viene riconosciuta la rilevanza degli alter per l'utente locale in base al livello in cui essi sono posizionati nella ego network. L'output caratterizza il contesto sociale dell'utente, indicando chiaramente che sta interagendo con tre persone diverse che si trovano nel secondo, terzo e quarto layer rispettivamente.
+La \autoref{fig:ego-array} mostra la ego network di un utente (in rosso), in cui sono presenti tre alter posizionati rispettivamente nei layer 2, 3 e 4. L'array di valori che rappresenta la ego network in questo caso è 
+$[0, \frac{1}{3}, \frac{1}{3}, \frac{1}{3}]$.
+
 
 \begin{figure}
   \centering
-  \includegraphics[scale=0.80]{immagini/ego-array.png}
-  \caption{Riconoscimento del contesto sociale di un utente}
+  \includegraphics[scale=1]{immagini/ego-net.pdf}
+  \caption{Rappresentazione della ego network di un utente}
   \label{fig:ego-array}	
-  \cite{ego-net}
 \end{figure}
 
 Nei prossimi due capitoli sono descritti nel dettaglio due dataset context-aware, ed è presentata una valutazione delle prestazioni di moveCARS comparata con le principali soluzioni in letteratura.
