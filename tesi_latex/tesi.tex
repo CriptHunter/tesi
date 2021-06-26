@@ -60,9 +60,9 @@
 \def\myMat{Matr. Nr. 939416}
 
 % RELATORE E CORRELATORE:
-\def\myRefereeA{Prof. Elena Pagani}
-\def\myRefereeB{Dr. Franca Delmastro}
-\def\myRefereeC{Dr. Mattia Campana}
+\def\myRefereeA{Prof.ssa Elena Pagani}
+\def\myRefereeB{Dott.ssa Franca Delmastro}
+\def\myRefereeC{Dott. Mattia Campana}
 
 % ANNO ACCADEMICO
 \def\myYY{2020-2021}
@@ -110,7 +110,7 @@
 %			facoltativa, questa è l'unica cosa che dovete formattare a mano, un po' come vi pare
 %
 
-{\raggedleft \large \sl Dedica \\}
+{\raggedleft \large \sl Ai miei genitori \\ Ai miei fratelli \\}
          
 % 
 %			PREFAZIONE (facoltativa)
@@ -124,8 +124,7 @@
 %
 
 \prefacesection{Ringraziamenti}
-Questa sezione, facoltativa, contiene i ringraziamenti.
-
+Ci tenevo a ringraziare la Prof.ssa Elena Pagani, la Dott.ssa Franca Delmastro e il Dott. Mattia Campana per la guida e l'aiuto che mi hanno fornito nella stesura di questa tesi.
 %
 %			Creazione automatica dell'indice
 %
@@ -138,15 +137,14 @@ Questa sezione, facoltativa, contiene i ringraziamenti.
 
 \chapter{Introduzione}
 \label{cap:introduzione}
-I dispositivi mobili che ci circondano sono dotati di capacità computazionali e di rete sempre crescenti e sempre più vicine ai computer desktop. La potenza di calcolo, unita alla quantità e alla pervasività di questi dispositivi ha contribuito all'evoluzione dell'edge computing. L'edge computing si riferisce alle tecnologie che permettono di spostare la computazione dal cloud ai 
-margini della rete. Con ``edge" si intende qualsiasi risorsa di calcolo o di rete che si trova lungo il percorso tra le fonti di dati e i cloud \cite{edge-computing}.
+I dispositivi mobili che ci circondano sono dotati di capacità computazionali e di rete sempre crescenti e sempre più vicine ai computer desktop. La potenza di calcolo, unita alla quantità e alla pervasività di questi dispositivi ha contribuito all'evoluzione dell'edge computing. L'edge computing si riferisce alle tecnologie che permettono di spostare la computazione dal cloud a dove i dati vengono prodotti, beneficiando di una riduzione della latenza di elaborazione e risparmio di banda, e ponendo al centro gli utenti e i loro dispositivi personali.
 
 In un ambiente pervasivo, i dispositivi personali degli utenti possono sfruttare diverse tecnologie wireless per stabilire una connessione device-to-device (D2D) con altri dispositivi nelle vicinanze e scoprire nuovi contenuti per l'utente. Un recommender system (RS) può essere utile per filtrare i contenuti più adatti ad un utente tra quelli 
 scoperti nelle vicinanze. Non è però semplice estendere le soluzioni esistenti per adattarle alle 
 limitazioni imposte da questo nuovo scenario. I recommender system tradizionali si appoggiano su un'architettura centralizzata (come  un server remoto o un'infrastruttura cloud), in cui il sistema di raccomandazione esegue sul server, e processa le richieste in arrivo dai client che possono essere dispositivi mobili o fissi. 
-Al contrario, l'ambiente mobile è altamente dinamico e il contesto dell'utente - che rappresenta qualsiasi informazione che può essere utilizzata per caratterizzare la situazione di un utente - può  variare molto velocemente. Per questo motivo è necessario che il sistema di raccomandazione esegua su dispositivo mobile, e possa quindi adattarsi velocemente al contesto dell'utente e fornire raccomandazioni accurate nel più breve tempo possibile. Un altro aspetto da considerare è la privacy dell'utente. Le informazioni di contesto, così come altre informazioni personali dell'utente (ad esempio i suoi interessi), sono informazioni sensibili e inviarle a server di terze parti potrebbe non essere la soluzione migliore.
+Al contrario, l'ambiente mobile è altamente dinamico e il contesto dell'utente - che rappresenta qualsiasi informazione che può essere utilizzata per caratterizzare la situazione di un utente - può  variare molto velocemente. Per questo motivo è necessario che il sistema di raccomandazione esegua su dispositivo mobile, e possa quindi adattarsi velocemente al contesto dell'utente e fornire raccomandazioni accurate nel più breve tempo possibile. Un altro aspetto da considerare è la privacy dell'utente. Le informazioni di contesto, così come altre informazioni personali dell'utente (ad esempio i suoi interessi), sono informazioni sensibili e inviarle a server di terze parti potrebbe disincentivare molti utenti ad usufruire di servizi pervasivi.
 
-Oltre alle differenze appena indicate, il task di raccomandazione per un RS pervasivo è diverso rispetto a quello di un RS client/server. Tipicamente un sistema di raccomandazione ha una conoscenza globale di tutti gli utenti e oggetti del sistema, ed impara un modello singolo per generare raccomandazioni per tutti gli utenti. Al contrario in soluzioni distribuite ogni dispositivo potrebbe
+Oltre alle differenze appena indicate, il task di raccomandazione per un RS pervasivo è diverso rispetto a quello di un RS centralizzato. Tipicamente un sistema di raccomandazione ha una conoscenza globale di tutti gli utenti e oggetti del sistema, ed impara un modello singolo per generare raccomandazioni per tutti gli utenti. Al contrario in soluzioni distribuite ogni dispositivo potrebbe
 essere a conoscenza solo di una piccola parte dell'informazione globale. Questa conoscenza è inizialmente 
 circoscritta alle sole informazioni sull'utente locale, per poi allargarsi con lo scambio di informazioni 
 tramite comunicazione D2D con dispositivi di altri utenti o di diversa natura. Di conseguenza, 
@@ -163,13 +161,13 @@ L'obiettivo di questa tesi è lo studio e sviluppo di un nuovo sistema di raccom
 \label{sec:organizzazione}
 La tesi è organizzata come segue: 
 \begin{enumerate}
-\item Nel \autoref{chap:stato_arte} sono introdotte le diverse categorie di sistemi di raccomandazione, spiegato cosa si intende per contesto, mostrati alcuni algoritmi stato dell'arte, e discussi i problemi dell'implementazione su dispositivi mobili.
+\item Nel \autoref{chap:stato_arte} sono introdotte le diverse categorie di sistemi di raccomandazione, è spiegato cosa si intende per contesto, sono mostrati alcuni algoritmi stato dell'arte, e sono discussi i problemi dell'implementazione su dispositivi mobili.
 
-\item Nel \autoref{chap:classificatore} è spiegato nel dettaglio il nuovo sistema di raccomandazione proposto, la sua architettura, i vantaggi e gli svantaggi, e l'insieme di informazioni contestuali proposto.
+\item Nel \autoref{chap:classificatore} sono spiegati nel dettaglio il nuovo sistema di raccomandazione proposto, la sua architettura, i vantaggi e gli svantaggi, e l'insieme di informazioni contestuali proposto.
 
 \item Nel \autoref{chap:datasets} sono presentati i dataset context-aware usati per la valutazione, è descritto l'insieme di feature selezionate, e come è stato fatto il preprocessing e l'encoding di queste feature.
 
-\item Nel \autoref{chap:risultati} sono spiegati i modelli selezionati come confronto, la metrica utilizzata, sono commentati i risultati sui dataset proposti, ed eseguiti alcuni test per verificare i tempi di esecuzione su smartphone.
+\item Nel \autoref{chap:risultati} sono spiegati i modelli selezionati come confronto con il nuovo sistema proposto, la metrica utilizzata, sono commentati i risultati sui dataset proposti, ed eseguiti alcuni test per verificare i tempi di esecuzione su smartphone.
 
 \item Nel \autoref{chap:conclusioni}, infine, vengono tratte le conclusioni sul lavoro svolto e prospettati i possibili sviluppi futuri. 
 \end{enumerate}
@@ -427,7 +425,7 @@ Il contesto può essere applicato nelle varie fasi del processo di raccomandazio
 
 \begin{figure}
   \centering
-  \includegraphics[scale=0.75]{immagini/rating_cube.png}
+  \includegraphics[scale=0.60]{immagini/rating_cube.png}
   \caption{Esempio di un cubo multidimensionale per $User \times Item \times Location$}
   \cite{survey-mattia}
   \label{fig:ratings-cube}
@@ -560,10 +558,11 @@ Context-aware neural matrix factorization è un estensione di NeuMF che supporta
 
 \chapter{moveCARS}
 \label{chap:classificatore}
-Come abbiamo visto nel capitolo precedente, la maggior parte dei RS produce le proprie raccomandazioni usando unicamente informazioni su utenti, oggetti, e le valutazioni che gli utenti hanno dato agli oggetti (rating). Meno comuni sono invece i sistemi di raccomandazione context-aware, che considerano nel processo di raccomandazione anche il contesto in cui un rating è stato generato. La maggior parte dei CARS sfruttano un insieme limitato di feature di contesto selezionate manualmente, in modo da evitare di dover gestire una matrice dei rating con dimensionalità elevata. Recentemente sono stati proposti i primi sistemi di raccomandazioni context-aware che integrano nel processo di raccomandazione un alto numero di feature contestuali, come può essere quello estratto dai sensori di un dispositivo mobile. Come spiegato in conclusione al \autoref{chap:stato_arte}, le soluzioni proposte non sono tuttavia adatte per essere implementate direttamente su dispositivo mobile, anche se dimostrano come un approccio deep learning possa essere un'ottima soluzione per gestire la dimensionalità del contesto. Per questi motivi in questo capitolo è descritto un nuovo sistema di raccomandazione context-aware basato su deep learning per sistemi mobili e pervasivi, progettato nel corso di questo lavoro di tesi. Il sistema di raccomandazione ha due caratteristiche fondamentali: 
+Come abbiamo visto nel capitolo precedente, la maggior parte dei RS produce le proprie raccomandazioni usando unicamente informazioni su utenti, oggetti, e le valutazioni che gli utenti hanno dato agli oggetti (rating). Meno comuni sono invece i sistemi di raccomandazione context-aware, che considerano nel processo di raccomandazione anche il contesto in cui un rating è stato generato. La maggior parte dei CARS sfruttano un insieme limitato di feature di contesto selezionate manualmente, in modo da evitare di dover gestire una matrice dei rating con dimensionalità elevata. Recentemente sono stati proposti i primi sistemi di raccomandazioni context-aware che integrano nel processo di raccomandazione un alto numero di feature contestuali, come può essere quello estratto dai sensori di un dispositivo mobile. Come spiegato in conclusione al \autoref{chap:stato_arte}, le soluzioni proposte non sono tuttavia adatte per essere implementate direttamente su dispositivo mobile, anche se dimostrano come un approccio deep learning possa essere un'ottima soluzione per gestire la dimensionalità del contesto. Per questi motivi in questo capitolo è descritto un nuovo sistema di raccomandazione context-aware basato su deep learning per sistemi mobili e pervasivi, progettato nel corso di questo lavoro di tesi. Il sistema di raccomandazione ha tre caratteristiche fondamentali: 
 \begin{enumerate}
-\item \`E stato pensato per eseguire la fase di inferenza su dispositivo mobile: ciò permette di ridurre problemi di privacy derivanti da trasferimento dei dati ed elaborazione in un'infrastruttura cloud remota. Inoltre, è possibile generare raccomandazioni quasi in tempo reale, non appena il dispositivo scopre un nuovo contenuto nelle vicinanze.
+\item \`E stato pensato per eseguire la fase di inferenza su dispositivo mobile: ciò permette di ridurre i problemi di privacy derivanti da trasferimento dei dati ed elaborazione in un'infrastruttura cloud remota. Inoltre, è possibile generare raccomandazioni quasi in tempo reale, non appena il dispositivo scopre un nuovo contenuto nelle vicinanze.
 \item Può supportare un grande numero di feature di contesto per descrivere dettagliatamente la situazione contestuale in cui si trova un utente. 
+\item Utilizza i feedback impliciti: essi sono più semplici da collezionare dato che non richiedono alcuna azione da parte dell'utente. Inoltre, la raccomandazione si basa unicamente sul prevedere se un utente è interessato ad un oggetto, e non è necessario calcolare la valutazione che lo stesso utente assegnerebbe all'oggetto.
 \end{enumerate}
 
 Per le caratteristiche appena elencate, questo nuovo RS è chiamato \textit{moveCARS} (MObile pervasiVE Context-Aware Recommender System).
@@ -581,7 +580,7 @@ L'architettura ad alto livello è composta da quattro componenti (\autoref{fig:f
 \begin{enumerate}
  \item \textit{Sensing manager.} Il primo componente (SM) interagisce con il sistema operativo per raccogliere continuamente dati di contesto via sensori a bordo (come GPS e accelerometro), e dati che rappresentano informazioni sullo hardware e il software del dispositivo come lo stato del display e il livello di batteria. Tutte queste informazioni sono chiamate dati raw perché non sono ancora state processate.
  
- \item \textit{Context modeling.} I dati raw prodotti dal sensing manager devono essere processati per inferire una rappresentazione più astratta del contesto dell'utente. A questo scopo, il componente context modeling (CM) raccoglie periodicamente gli ultimi dati disponibili del SM. Queste osservazioni sono processate per estrarre feature numeriche e categoriche che caratterizzano il contesto dell'utente locale (es. attività utente, luogo in cui si trova l'utente, temperatura). Il contesto è diviso in contesto fisico e sociale. Il contesto fisico è ottenuto  dai sensori del dispositivo dell'utente, mentre il contesto sociale è ottenuto considerando gli individui in prossimità dell'utente. Dell'insieme di feature eterogenee ottenute viene fatto l'encoding per poi essere combinate in un singolo vettore di feature che rappresenta una fotografia del contesto corrente dell'utente. L'insieme di feature che compongono il contesto fisico e sociale dell'utente è descritto nel dettaglio nella \autoref{sec:context-info}.
+ \item \textit{Context modeling.} I dati raw prodotti dal sensing manager devono essere processati per inferire una rappresentazione più astratta del contesto dell'utente. A questo scopo, il componente context modeling (CM) raccoglie periodicamente gli ultimi dati disponibili del SM. Queste osservazioni sono processate per estrarre feature numeriche e categoriche che caratterizzano il contesto dell'utente locale (es. attività utente, luogo in cui si trova l'utente, temperatura). Il contesto è diviso in contesto fisico e sociale. Il contesto fisico è ottenuto  dai sensori del dispositivo dell'utente, mentre il contesto sociale è ottenuto considerando gli individui in prossimità dell'utente e le interazioni sugli online social network (OSN). Dell'insieme di feature eterogenee ottenute viene fatto l'encoding per poi essere combinate in un singolo vettore di feature che rappresenta una fotografia del contesto corrente dell'utente. L'insieme di feature che compongono il contesto fisico e sociale dell'utente è descritto nel dettaglio nella \autoref{sec:context-info}.
  
  \item  \textit{Database.} Interagendo con altri dispositivi tramite comunicazione D2D, il device dell'utente scopre nuovi utenti e oggetti che sono identificati con le feature che li caratterizzano. Oltre a questo il dispositivo riceve anche i feedback che gli utenti hanno generato sugli oggetti in un certo contesto. Tutte queste informazioni sono date in input al sistema di raccomandazione durante la fase di apprendimento per imparare a prevedere i feedback dell'utente locale. A training terminato, le feature degli oggetti presenti nel database, e le feature dell'utente corrente, sono usate per produrre raccomandazioni. Le fasi di training e inferenza sono descritte nella \autoref{subsec: training}.
  
@@ -648,6 +647,8 @@ Di seguito sono elencati vantaggi e svantaggi del modello moveCARS. Dato che pu�
  \item \textit{Serendipity:} Il modello ha la capacità di fornire consigli fortuiti. Ciò significa che può proporre oggetti non esattamente in linea con le preferenze passate dell'utente, sfruttando il suo contesto corrente e le preferenze degli altri utenti. Questo non succede nei metodi content-based in cui sono consigliati solo oggetti simili a quelli apprezzati dall'utente in passato.
 \end{enumerate}
 
+\hfill
+
 \myparagraph{Svantaggi:}
 \begin{enumerate}
  \item \textit{Feature di utenti e oggetti:} La precisione del modello dipende dall'insieme delle feature che descrivono gli utenti e gli oggetti. \`E necessario selezionare attentamente le feature più adatte che descrivono utenti e oggetti in un'applicazione specifica.
@@ -687,10 +688,10 @@ Il contesto fisico è composto da tutte quelle informazioni rilevanti che posson
 Il contesto sociale si riferisce all'insieme di persone con cui l'utente ha interazioni sociali durante la vita giornaliera, come lavorare con i colleghi o messaggiare con gli amici. \'E stato provato in letteratura che esiste una forte correlazione tra le attività umane e i dati sociali \cite{ego-net}. Questo implica che modellare una rete di relazioni sociali specifica per l'utente  può contribuire a sottolineare le differenze tra i vari contesti in cui è coinvolto. Una rete sociale consiste in un qualsiasi gruppo di individui connessi tra loro da diversi legami sociali. Di solito, le reti sociali vengono studiate considerando tutte le interazioni tra gli utenti dello stesso sistema (es. il grafo di Facebook). Per lo scopo di questa tesi però, ci si focalizza solo sulle relazioni interpersonali di ogni singolo utente, e per modellare queste relazioni la tecnica più utilizzata in letteratura è rappresentata dalla Ego Network.
 
 \subsubsection{Ego Network}
-Una ego network è una rete sociale composta da un individuo chiamato ego, e dalle persone con cui l'ego ha un collegamento sociale, chiamati alter. Secondo la teoria formulata da Roberts e Dunbar \cite{roberts-dunbar}, i legami sociali in una ego network non hanno tutti la stessa importanza. Ogni individuo ha solo pochi collegamenti forti e molti collegamenti deboli, dovuti alla capacità umana di gestire un numero limitato di relazioni sociali. Per questo motivo l'ego network è divisa in layer rappresentati da cerchi concentrici in cui sono distribuiti gli alter. Il cerchio più interno (support clique) è il layer più piccolo, e contiene solo pochi alter che rappresentato le relazioni sociali più forti con l'ego (es. i famigliari). Il secondo layer (sympathy group) contiene le persone che possono essere considerate gli amici più cari. Il terzo cerchio (affinity group) è composto da amici e membri della famiglia meno vicini, mentre l'ultimo layer include persone con cui l'individuo ha interazioni sociali occasionali \cite{ego-net}.
+Una ego network è una rete sociale composta da un individuo chiamato ego, e dalle persone con cui l'ego ha un collegamento sociale, chiamati alter. Secondo la teoria formulata da Roberts e Dunbar \cite{roberts-dunbar}, i legami sociali in una ego network non hanno tutti la stessa importanza. Ogni individuo ha solo pochi legami sociali rilevanti e molti legami sociali meno rilevanti, dovuti alla capacità umana di gestire un numero limitato di relazioni sociali. Per questo motivo l'ego network è divisa in layer rappresentati da cerchi concentrici in cui sono distribuiti gli alter. Il cerchio più interno (support clique) è il layer più piccolo, e contiene solo pochi alter che rappresentato le relazioni sociali più forti con l'ego (es. i famigliari). Il secondo layer (sympathy group) contiene le persone che possono essere considerate gli amici più cari. Il terzo cerchio (affinity group) è composto da amici e membri della famiglia meno vicini, mentre l'ultimo layer include persone con cui l'individuo ha interazioni sociali occasionali \cite{ego-net}.
 
 \subsubsection{Modellare il contesto sociale dell'utente}
-Per caratterizzare il contesto sociale dell'utente in ambiente mobile, in questa tesi facciamo riferimento al modello proposto in \cite{ego-net} considerando le seguenti sorgenti di dati: (i) chiamate telefoniche e log degli SMS, (ii) dati di prossimità, e (iii) attività svolte dall'utente sugli online social network (OSN).
+Per caratterizzare il contesto sociale dell'utente in ambiente mobile, in questa tesi facciamo riferimento al modello proposto in \cite{ego-net} considerando le seguenti sorgenti di dati: (i) chiamate telefoniche e log degli SMS, (ii) dati di prossimità, e (iii) attività svolte dall'utente sugli online social network.
 
 Il primo step per costruire la ego network di un individuo è stimare la forza dei legami sociali con i suoi alter. Un buon indicatore della forza delle relazioni sociali tra due persone è data dal numero di interazioni che le due persone hanno avuto in passato \cite{OSN-strength}. Basandosi su questa considerazione, per modellare la forza dei legami sociali dell'utente online, sono prese in considerazione diverse attività svolte dall'utente su OSN, inclusi commenti, reazioni (come ``mi piace") e persone menzionate. Formalmente, la forza dei legami sociali virtuali tra l'ego $e$ ed uno dei suoi alter $a$, $\omega_{osn}(e,a)$ è calcolata nel modo seguente:
 \begin{equation}	
@@ -712,10 +713,6 @@ Per caratterizzare i link sociali fisici di un utente si calcola il numero di in
 \end{equation}
 con il parametro $\lambda$ che regola l'importanza delle interazioni sociali e fisiche. Per ogni alter, solo l'ultimo peso calcolato è mantenuto in memoria, e viene aggiornato quando nuove interazioni sociali sono identificate. I link sociali tra l'utente locale e le altre persone sono raggruppati in base al peso calcolato nell'\autoref{eqn:final-weights}. L'output finale è un array di valori in cui ogni elemento rappresenta la percentuale di utenti attivi in ogni cerchio della ego network di un utente \cite{ego-net}. 
 
-La \autoref{fig:ego-array} mostra la ego network di un utente (in rosso), in cui sono presenti tre alter posizionati rispettivamente nei layer 2, 3 e 4. L'array di valori che rappresenta la ego network in questo caso è 
-$[0, \frac{1}{3}, \frac{1}{3}, \frac{1}{3}]$.
-
-
 \begin{figure}
   \centering
   \includegraphics[scale=1]{immagini/ego-net.pdf}
@@ -723,14 +720,18 @@ $[0, \frac{1}{3}, \frac{1}{3}, \frac{1}{3}]$.
   \label{fig:ego-array}	
 \end{figure}
 
+La \autoref{fig:ego-array} mostra la ego network di un utente (in rosso), che si trova in prossimità di tre alter posizionati rispettivamente nei layer 2, 3 e 4. L'array di output è generato in base alla posizione che le tre persone, con cui l'utente sta interagendo, occupano nella ego network. Nel caso rappresentato in figura l'array ha valori:
+$[0, \frac{1}{3}, \frac{1}{3}, \frac{1}{3}]$ perché lo 0\% di alter attivi occupa il layer 1, mentre i layer 2, 3 e 4 sono occupati ognuno dal 33.33\% di alter attivi. 
+
 Nei prossimi due capitoli sono descritti nel dettaglio due dataset context-aware, ed è presentata una valutazione delle prestazioni di moveCARS comparata con le principali soluzioni in letteratura.
 
 % 
 %			CAPITOLO 4: Datasets
 % 
+
 \chapter{Dataset} \label{chap:datasets}
 In questo capitolo sono descritti i dataset context-aware usati per valutare il modello moveCARS, e confrontarlo con altre soluzioni stato dell'arte. I risultati sono riportati nel \autoref{chap:risultati}. Uno dei problemi nella valutazione dei CARS è la scarsità di dataset pubblici che contengono informazioni di contesto ad alta dimensionalità. Molti dataset pubblici infatti, hanno informazioni di contesto limitate unicamente al timestamp dei rating o alla posizione dell'utente, come ad esempio Yelp\footnote{\url{https://www.yelp.com/dataset}}, Nowplaying-RS\footnote{\url{https://zenodo.org/record/3247476\#.YK9FxqgzY2x}}, Travel TripAdvisor\footnote{\url{https://github.com/irecsys/CARSKit/blob/master/context-aware_data_sets/Travel_TripAdvisor_v1.zip}}. Esistono invece dataset privati come CARS \cite{context-aware-deep-learning} e Hearo \cite{latent-context}, che contengono i dati raccolti da esperimenti sul campo, in cui gli utenti interagivano con il proprio telefono con un RS che raccomandava punti di interesse nelle vicinanze. I rating raccolti sono associati a numerose feature di contesto estratte da sensori di apparati mobili come accelerometro, microfono, giroscopio, etc.
-\`E difficile trovare dataset pubblici simili a Hearo e CARS, che caratterizzano il contesto fisico e sociale dell'utente con una grande quantità di feature. Dato che il modello moveCARS si inserisce in un ambiente mobile e pervasivo, ho selezionato due dataset context-aware in cui i feedback impliciti corrispondono alle applicazioni in esecuzione sui dispositivi Android degli utenti: (i) My Digital Footprint\footnote{\url{https://github.com/contextkit/MyDigitalFootprint}}, (ii) Frappe\footnote{\url{https://www.baltrunas.info/context-aware}}.
+\`E difficile trovare dataset pubblici simili a Hearo e CARS, che caratterizzano il contesto fisico e sociale dell'utente con una grande quantità di feature. Dato che il modello moveCARS si inserisce in un ambiente mobile e pervasivo, ho selezionato due dataset context-aware appartenenti a questo ambito: (i) My Digital Footprint\footnote{\url{https://github.com/contextkit/MyDigitalFootprint}} è un dataset composto da dati di sensori di smartphone, informazioni di prossimità fisica, e interazioni sugli online social network ancora più ricco di informazioni di contesto rispetto a Hearo e CARS, (ii) Frappe\footnote{\url{https://www.baltrunas.info/context-aware}} è un dataset context-aware a bassa dimensionalità contenente feedback di utilizzo di applicazioni Android.
 
 \section{Frappe}
 Frappe \cite{frappe} è un dataset di feedback impliciti pubblicamente disponibile collezionato da un sistema di raccomandazione context-aware di applicazioni Android. L'applicazione che monitora l'utilizzo degli smartphone, è stata installata da 957 utenti che hanno utilizzato un totale di 4082 applicazioni. Le informazioni raccolte descrivono la frequenza di utilizzo di un'applicazione da parte di un utente per un periodo di due mesi. Il numero totale di feedback presenti è 96203. L'obiettivo per un recommender system su questo dataset è prevedere se un'applicazione Android è rilevante per un utente in un determinato contesto.
@@ -1092,6 +1093,8 @@ Nelle valutazioni precedenti, come feature di contesto sociale sono state consid
 
 \subsection{Risultati Frappe}
 In \autoref{fig:result-frappe} è riportato un grafico a barre con i risultati dei modelli sul dataset Frappe. Come per MDF si può notare che i modelli basati su reti neurali hanno un AUC superiore ad ALS. Inoltre, anche su questo dataset i modelli context-aware hanno prestazioni superiori rispetto ai modelli non context-aware. In particolare, ECAM NeuMF ha un'AUC più alta del 3,16\% più alta rispetto a NeuMF. La differenza meno marcata rispetto al dataset MDF si può spiegare nella minore dimensionalità del contesto di Frappe. Di nuovo, moveCARS si è rivelato leggermente inferiore rispetto ad ECAM NeuMF ma allo stesso tempo ha un'AUC superiore del 2,46\% rispetto a NeuMF. Anche su questo dataset, che ha informazioni di contesto meno rilevanti ma un maggior numero di feature di utenti e oggetti, il modello moveCARS riesce ad ottenere risultati paragonabili a ECAM NeuMF, e superiori ai modelli non context-aware.
+
+Sul dataset Frappe non sono state condotte ulteriori analisi perché non contiene nessuna feature che rientra nel contesto sociale.
 
 \begin{figure}
   \centering
